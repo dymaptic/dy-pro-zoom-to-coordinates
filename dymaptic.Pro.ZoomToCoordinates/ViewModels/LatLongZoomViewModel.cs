@@ -3,7 +3,6 @@ using ArcGIS.Core.Geometry;
 using ArcGIS.Core.Internal.CIM;
 using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Contracts;
-using ArcGIS.Desktop.Framework.Dialogs;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
@@ -30,7 +29,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 			{
 				if (value < -90 || value > 90)
 				{
-					System.Windows.MessageBox.Show("Latitude must be between -90 and 90.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+					ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Latitude must be between -90 and 90.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
 				}
 				else
 				{
@@ -45,7 +44,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 			{
 				if (value < -180 || value > 180)
 				{
-					System.Windows.MessageBox.Show("Longitude must be between -180 and 180.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+					ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Longitude must be between -180 and 180.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
 				}
 				else
 				{
@@ -119,7 +118,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 					if (map.MapType != ArcGIS.Core.CIM.MapType.Map)
 					{
 						// https://github.com/Esri/arcgis-pro-sdk/wiki/ProConcepts-GraphicsLayers
-						System.Windows.MessageBox.Show("Graphics are supported in 2D only.", "Error", MessageBoxButton.OK);
+						ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Graphics are supported in 2D only.", "Error", MessageBoxButton.OK);
 						return;
 					}
 
