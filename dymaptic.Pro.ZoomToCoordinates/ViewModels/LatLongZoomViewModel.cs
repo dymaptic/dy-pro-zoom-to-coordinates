@@ -79,45 +79,6 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 		// Constructor
 		internal LatLongZoomViewModel()
 		{
-			/*
-             * A synchronous method returns when its work is complete (step 5), but an async method returns a 
-             * task value when its work is suspended (steps 3 and 6). When the async method eventually completes 
-             * its work, the task is marked as completed and the result, if any, is stored in the task.
-            
-               async is a modifier.
-
-               Use await to designate suspension points. The await operator tells the compiler that the async 
-               method can't continue past that point until the awaited asynchronous process is complete. In the 
-               meantime, control returns to the caller of the async method.
-
-            Examples of how you declare and use a method that returns a Task<TResult> or Task.
-                async Task<int> GetTaskOfTResultAsync()
-                {
-                    int hours = 0;
-                    await Task.Delay(0);
-
-                    return hours;
-                }
-
-
-                Task<int> returnedTaskTResult = GetTaskOfTResultAsync();
-                int intResult = await returnedTaskTResult;
-                // Single line
-                // int intResult = await GetTaskOfTResultAsync();
-
-                async Task GetTaskAsync()
-                {
-                    await Task.Delay(0);
-                    // No return statement needed
-                }
-
-                Task returnedTask = GetTaskAsync();
-                await returnedTask;
-                // Single line
-                await GetTaskAsync();
-
-             */
-
 			// Starting values
 			Latitude = 40.1059757;
 			Longitude = -106.6340134;
@@ -137,9 +98,6 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 				// Create new camera object with WGS84, if active map has different spatial reference 
 				if (camera.SpatialReference.Wkid != 4326)
 				{
-					//SpatialReferenceBuilder srBuilder = new(4326);
-					//SpatialReference sr = srBuilder.ToSpatialReference();
-
 					ArcGIS.Core.Geometry.SpatialReference sr = SpatialReferenceBuilder.CreateSpatialReference(4326);
 					Camera newCamera = new(x: Longitude, y: Latitude, scale: Scale, heading: 0, spatialReference: sr);
 					mapView.ZoomTo(newCamera, TimeSpan.Zero);
@@ -175,8 +133,6 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 					if (camera.SpatialReference.Wkid != 4326)
 					{
 						ArcGIS.Core.Geometry.SpatialReference sr = SpatialReferenceBuilder.CreateSpatialReference(wkid:4326);
-						//MapPointBuilderEx ptBuilder = new MapPointBuilderEx(x: Longitude, y: Latitude);
-						//MapPoint point = ptBuilder.ToGeometry();
 						mapPoint = MapPointBuilderEx.CreateMapPoint(new Coordinate2D(Longitude, Latitude), sr);
 					}
 					else 

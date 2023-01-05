@@ -20,14 +20,14 @@ using System.Windows.Input;
 
 namespace dymaptic.Pro.ZoomToCoordinates
 {
-	internal class Module1 : Module
+	internal class ZoomToCoordinatesModule : Module
 	{
-		private static Module1 _this = null;
+		private static ZoomToCoordinatesModule _this = null;
 
 		/// <summary>
 		/// Retrieve the singleton instance to this module here
 		/// </summary>
-		public static Module1 Current => _this ??= (Module1)FrameworkApplication.FindModule("dymaptic.Pro.ZoomToCoordinates_Module");
+		public static ZoomToCoordinatesModule Current => _this ??= (ZoomToCoordinatesModule)FrameworkApplication.FindModule("dymaptic.Pro.ZoomToCoordinates_Module");
 
 		#region Overrides
 		/// <summary>
