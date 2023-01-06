@@ -91,7 +91,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 				// Create new camera object with WGS84, if active map has different spatial reference 
 				if (camera.SpatialReference.Wkid != 4326)
 				{
-					ArcGIS.Core.Geometry.SpatialReference sr = SpatialReferenceBuilder.CreateSpatialReference(4326);
+					SpatialReference sr = SpatialReferenceBuilder.CreateSpatialReference(4326);
 					Camera newCamera = new(x: Longitude, y: Latitude, scale: Scale, heading: 0, spatialReference: sr);
 					mapView.ZoomTo(newCamera, TimeSpan.Zero);
 				}
@@ -120,36 +120,36 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 					MapPoint mapPoint;
 	
 					// Container that will hold the point graphic
-					GraphicsLayerCreationParams graphicsLayerParams = new() { Name = "Graphics Layer" };
-					GraphicsLayer graphicsLayer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(layerParams:graphicsLayerParams, container:map);
+					GraphicsLayerCreationParams lyrParams = new() { Name = $"Point ({Latitude} {Longitude})" };
+					GraphicsLayer pointGraphicContainer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(layerParams:lyrParams, container:map);
 
-					if (camera.SpatialReference.Wkid != 4326)
+					SpatialReference sr; 
+					if (camera.SpatialReference.Wkid == 4326)
 					{
-						SpatialReference sr = SpatialReferenceBuilder.CreateSpatialReference(wkid:4326);
-						mapPoint = MapPointBuilderEx.CreateMapPoint(new Coordinate2D(Longitude, Latitude), sr);
+						sr = camera.SpatialReference;
 					}
 					else 
 					{
-						mapPoint = MapPointBuilderEx.CreateMapPoint(new Coordinate2D(Longitude, Latitude), camera.SpatialReference);
+						sr = SpatialReferenceBuilder.CreateSpatialReference(wkid: 4326);
 					}
+					mapPoint = MapPointBuilderEx.CreateMapPoint(new Coordinate2D(Longitude, Latitude), sr);
 
-					// specify a text symbol
-					var text_symbol = SymbolFactory.Instance.ConstructTextSymbol(ColorFactory.Instance.BlackRGB, 8.5, "Corbel", "Regular");
 
-					var textGraphic = new CIMTextGraphic
+					// Create symbol, actual graphic, put them together and add them to the GraphicsLayer container created above
+					CIMPointSymbol greenPoint = SymbolFactory.Instance.ConstructPointSymbol(color:ColorFactory.Instance.GreenRGB, size:8);
+					CIMGraphic graphic = GraphicFactory.Instance.CreateSimpleGraphic(geometry:mapPoint, symbol: greenPoint);
+					
+					ElementFactory.Instance.CreateGraphicElement(elementContainer: pointGraphicContainer, cimGraphic: graphic, select:false);
+
+					// label graphic with coordinates
+					CIMTextGraphic label = new()
 					{
 						Symbol = SymbolFactory.Instance.ConstructTextSymbol(ColorFactory.Instance.BlackRGB, 12, "Times New Roman", "Regular").MakeSymbolReference(),
 						Text = $"  <b>{Longitude} {Latitude}</b>",
 						Shape = mapPoint
 					};
 
-					graphicsLayer.AddElement(textGraphic, select:false, elementName:"added text");
-
-					// Create symbol, actual graphic, put them together and add them to the GraphicsLayer container created above
-					var pointSymbol = SymbolFactory.Instance.ConstructPointSymbol(color:ColorFactory.Instance.GreenRGB, size:8);
-					var cimGraphicElement = GraphicFactory.Instance.CreateSimpleGraphic(geometry:mapPoint, symbol:pointSymbol);
-					
-					ElementFactory.Instance.CreateGraphicElement(elementContainer: graphicsLayer, cimGraphic:cimGraphicElement, elementName:"doesThisWork?", select:false);
+					pointGraphicContainer.AddElement(label, select: false);
 				}
 			});
 		}
