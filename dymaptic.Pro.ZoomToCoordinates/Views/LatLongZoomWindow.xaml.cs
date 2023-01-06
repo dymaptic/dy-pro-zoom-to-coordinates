@@ -15,7 +15,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.Views
 
 		internal LatLongZoomViewModel ViewModel
 		{
-			get => DataContext as LatLongZoomViewModel;
+			get => (LatLongZoomViewModel)DataContext;
 			set => DataContext = value;
 		}
 
