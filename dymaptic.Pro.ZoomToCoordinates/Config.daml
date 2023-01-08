@@ -11,7 +11,7 @@
                     Content, Framework, Editing, Geodatabase, Geometry, Geoprocessing, Layouts, Map Authoring, Map Exploration -->
   </AddInInfo>
   <modules>
-    <insertModule id="ZoomToCoordinates_Module" className="ZoomToCoordinatesModule" autoLoad="false" caption="Zoom To Coordinates Button">
+    <insertModule id="ZoomToCoordinates_Module" className="ZoomToCoordinatesModule" autoLoad="false" caption="Zoom To Coordinates">
       <!-- uncomment to have the control hosted on a separate tab-->
       <tabs>
         <!--<tab id="dymaptic.Pro.ZoomToCoordinates_Tab1" caption="New Tab">
@@ -21,24 +21,16 @@
       <groups>
         <!-- comment this out if you have no controls on the Addin tab to avoid
               an empty group-->
-        <group id="ZoomToCoordinates_Group1" caption="Add-In" appearsOnAddInTab="true">
+        <group id="ZoomToCoordinates_Group1" caption="Zoom To Coordinates" appearsOnAddInTab="true">
           <!-- host controls within groups -->
           <button refID="ZoomToCoordinates_Views_LatLongZoomWindow" size="large" />
         </group>
       </groups>
       <controls>
         <!-- add your controls here -->
-		  <button id="ZoomToCoordinates_Views_LatLongZoomWindow"
-				  caption="Zoom to Coordinates"
-				  className="dymaptic.Pro.ZoomToCoordinates.Views.ShowLatLongZoomWindow"
-				  loadOnClick="true"
-				  smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/GenericButtonPurple16.png"
-				  largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/GenericButtonPurple32.png"
-			      condition="esri_mapping_mapPane">
-			  <tooltip heading="Zoom to Lat/Long">
-				  Zoom to latitude/longitude.<disabledText />
-			  </tooltip>
-		  </button>
+        <button id="ZoomToCoordinates_Views_LatLongZoomWindow" caption="Zoom" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowLatLongZoomWindow" loadOnClick="true" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/GenericButtonPurple16.png" largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/GenericButtonPurple32.png" condition="esri_mapping_mapPane">
+          <tooltip heading="Zoom">Zoom to coordinates.<disabledText /></tooltip>
+        </button>
       </controls>
     </insertModule>
   </modules>

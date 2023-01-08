@@ -6,7 +6,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.Views
 	internal class ShowLatLongZoomWindow : Button
 	{
 
-		private LatLongZoomWindow _latlongzoomwindow = null;
+		private LatLongZoomWindow? _latlongzoomwindow = null;
 
 		protected override void OnClick()
 		{

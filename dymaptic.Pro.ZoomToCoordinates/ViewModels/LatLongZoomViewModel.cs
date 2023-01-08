@@ -6,19 +6,23 @@ using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 {
-	internal class LatLongZoomViewModel : PropertyChangedBase
+	public class LatLongZoomViewModel : PropertyChangedBase
 	{
 		// Private backing-fields to the public properties
 		private double _latitude;
 		private double _longitude;
 		private double _scale;
 		private bool _keepGraphic;
+		private string _color;
+		private string _font;
 
 		// Properties
 		public double Latitude
@@ -64,6 +68,21 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 			set => SetProperty(ref _keepGraphic, value);
 		}
 
+		public List<string> ColorSchemes { get; set; } = new List<string> { "Black", "Gray", "White", "Red", "Green", "Blue"};
+		public List<string> FontSchemes { get; set; } = new List<string> { "Arial", "Papyrus", "Tahoma", "Times New Roman"};
+
+		public string Color 
+		{
+			get => _color;
+			set => SetProperty(ref _color, value); 
+		}
+
+		public string Font
+		{
+			get => _font;
+			set => SetProperty(ref _font, value);
+		}
+
 		/// <summary>
 		/// Command to validate and zoom to coordinates
 		/// </summary>
@@ -73,9 +92,9 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 		internal LatLongZoomViewModel()
 		{
 			// Starting values
-			Latitude = 40.1059757;
-			Longitude = -106.6340134;
-			Scale = 100_000;
+			//Latitude = 40.1059757;
+			//Longitude = -106.6340134;
+			//Scale = 100_000;
 
 			// Command is grayed out if there isn't an active map view or scale isn't set
 			ZoomCommand = new RelayCommand(async () => { await ZoomToCoordinates(); }, () => MapView.Active != null && Scale != 0);
@@ -87,11 +106,12 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 			{
 				MapView mapView = MapView.Active;
 				Camera camera = mapView.Camera;
+				SpatialReference sr = camera.SpatialReference;
 
-				// Create new camera object with WGS84, if active map has different spatial reference 
-				if (camera.SpatialReference.Wkid != 4326)
+				// Create new camera & spatial reference objects, if active map isn't WGS84
+				if (sr.Wkid != 4326)
 				{
-					SpatialReference sr = SpatialReferenceBuilder.CreateSpatialReference(4326);
+					sr = SpatialReferenceBuilder.CreateSpatialReference(4326);
 					Camera newCamera = new(x: Longitude, y: Latitude, scale: Scale, heading: 0, spatialReference: sr);
 					mapView.ZoomTo(newCamera, TimeSpan.Zero);
 				}
@@ -109,49 +129,78 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 				if (KeepGraphic)
 				{
 					Map map = MapView.Active.Map;
-					if (map.MapType != MapType.Map)
+					CIMPointSymbol symbol = SymbolFactory.Instance.ConstructPointSymbol(color: GetColor(), size: 20, SimpleMarkerStyle.Pushpin);
+
+					// 2D Map
+					if (map.MapType == MapType.Map)
 					{
-						// https://github.com/Esri/arcgis-pro-sdk/wiki/ProConcepts-GraphicsLayers
-						ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Graphics are supported in 2D only.", "Error", MessageBoxButton.OK);
-						return;
+						// Create the outer Group Layer container (if necessary) which is where point graphics will be placed in ArcGIS Pro Table of Contents
+						string groupLyrName = "Coordinates (Graphics Layers)";
+						var groupLyrContainer = map.GetLayersAsFlattenedList().OfType<GroupLayer>().Where(x => x.Name.StartsWith(groupLyrName)).FirstOrDefault();
+						groupLyrContainer ??= LayerFactory.Instance.CreateGroupLayer(container: map, index: 0, layerName: groupLyrName);
+
+						// Create point at specified coordinates & graphic for the map
+						MapPoint point = MapPointBuilderEx.CreateMapPoint(new Coordinate2D(Longitude, Latitude), sr);
+						CIMGraphic graphic = GraphicFactory.Instance.CreateSimpleGraphic(geometry: point, symbol: symbol);
+
+						// Create the point container inside the group layer container and place graphic into it to create graphic element
+						GraphicsLayerCreationParams lyrParams = new() { Name = $"{Longitude} {Latitude}" };
+						GraphicsLayer pointGraphicContainer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(layerParams: lyrParams, container: groupLyrContainer);
+						ElementFactory.Instance.CreateGraphicElement(elementContainer: pointGraphicContainer, cimGraphic: graphic, select: false);
+
+						// Finally create a point label graphic & add it to the point container
+						CIMTextGraphic label = new()
+						{
+							Symbol = SymbolFactory.Instance.ConstructTextSymbol(color:ColorFactory.Instance.BlackRGB, size:12, fontFamilyName:Font, fontStyleName:"Regular").MakeSymbolReference(),
+							Text = $"    <b>{Longitude} {Latitude}</b>",
+							Shape = point
+						};
+
+						pointGraphicContainer.AddElement(cimGraphic:label, select: false);
 					}
 
-					// mapPoint dependent on map's spatial reference
-					MapPoint mapPoint;
-	
-					// Container that will hold the point graphic
-					GraphicsLayerCreationParams lyrParams = new() { Name = $"Point ({Latitude} {Longitude})" };
-					GraphicsLayer pointGraphicContainer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(layerParams:lyrParams, container:map);
-
-					SpatialReference sr; 
-					if (camera.SpatialReference.Wkid == 4326)
+					// 3D Map (only adds a Pushpin without a label, and without it being in a Graphics container in the ArcGIS Pro Table of Contents
+					else if (map.IsScene)
 					{
-						sr = camera.SpatialReference;
+						MapPoint point = MapPointBuilderEx.CreateMapPoint(new Coordinate3D(x: Longitude, y: Latitude, z: 0), sr);
+						mapView.AddOverlay(point, symbol.MakeSymbolReference());
 					}
-					else 
-					{
-						sr = SpatialReferenceBuilder.CreateSpatialReference(wkid: 4326);
-					}
-					mapPoint = MapPointBuilderEx.CreateMapPoint(new Coordinate2D(Longitude, Latitude), sr);
-
-
-					// Create symbol, actual graphic, put them together and add them to the GraphicsLayer container created above
-					CIMPointSymbol greenPoint = SymbolFactory.Instance.ConstructPointSymbol(color:ColorFactory.Instance.GreenRGB, size:8);
-					CIMGraphic graphic = GraphicFactory.Instance.CreateSimpleGraphic(geometry:mapPoint, symbol: greenPoint);
-					
-					ElementFactory.Instance.CreateGraphicElement(elementContainer: pointGraphicContainer, cimGraphic: graphic, select:false);
-
-					// label graphic with coordinates
-					CIMTextGraphic label = new()
-					{
-						Symbol = SymbolFactory.Instance.ConstructTextSymbol(ColorFactory.Instance.BlackRGB, 12, "Times New Roman", "Regular").MakeSymbolReference(),
-						Text = $"  <b>{Longitude} {Latitude}</b>",
-						Shape = mapPoint
-					};
-
-					pointGraphicContainer.AddElement(label, select: false);
 				}
 			});
 		}
+
+		private CIMColor GetColor()
+		{
+			CIMColor color = ColorFactory.Instance.BlackRGB;
+			switch (Color)
+			{
+				case "Black":
+					color = ColorFactory.Instance.BlackRGB;
+
+					break;
+				case "Gray":
+					color = ColorFactory.Instance.GreyRGB;
+
+					break;
+				case "White":
+					color = ColorFactory.Instance.WhiteRGB;
+				
+					break;
+				case "Red":
+					color = ColorFactory.Instance.RedRGB;
+
+					break;
+				case "Green":
+					color = ColorFactory.Instance.GreenRGB;
+
+					break;
+				case "Blue":
+					color = ColorFactory.Instance.BlueRGB;
+					
+					break;
+			}
+			return color;
+		}
+
 	}
 }
