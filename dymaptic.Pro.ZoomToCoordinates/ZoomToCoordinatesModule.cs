@@ -1,5 +1,9 @@
-﻿using ArcGIS.Desktop.Framework;
+﻿using ArcGIS.Desktop.Core;
+using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Contracts;
+using Newtonsoft.Json;
+using System;
+using System.Threading.Tasks;
 
 namespace dymaptic.Pro.ZoomToCoordinates
 {
@@ -8,9 +12,26 @@ namespace dymaptic.Pro.ZoomToCoordinates
 		/// <summary>
 		/// Retrieve the singleton instance to this module here
 		/// </summary>
-		public static ZoomToCoordinatesModule Current => _this ??= (ZoomToCoordinatesModule)FrameworkApplication.FindModule("dymaptic.Pro.ZoomToCoordinates_Module");
+		public static ZoomToCoordinatesModule Current => _this ??= (ZoomToCoordinatesModule)FrameworkApplication.FindModule("ZoomToCoordinates_Module");
+
+		public event EventHandler SettingsLoaded;
+		public event EventHandler SettingsUpdated;
+
+		public static Settings GetSettings()
+		{
+			_settings ??= new Settings();
+			return _settings;
+		}
+
+		public static void SaveSettings(Settings settings)
+		{
+			_settings = settings;
+			Project.Current.SetDirty();
+			Current.SettingsUpdated?.Invoke(Current, EventArgs.Empty);
+		}
 
 		private static ZoomToCoordinatesModule _this;
+		private static Settings _settings;
 
 		#region Overrides
 		/// <summary>
@@ -22,6 +43,21 @@ namespace dymaptic.Pro.ZoomToCoordinates
 			//TODO - add your business logic
 			//return false to ~cancel~ Application close
 			return true;
+		}
+		protected override Task OnReadSettingsAsync(ModuleSettingsReader settings)
+		{
+			string value = (string)settings.Get("ZoomToCoordinates.Settings");
+			if (value != null) _settings = JsonConvert.DeserializeObject<Settings>(value) ?? new Settings();
+			SettingsLoaded?.Invoke(this, EventArgs.Empty);
+
+			return Task.FromResult(0);
+		}
+
+		protected override Task OnWriteSettingsAsync(ModuleSettingsWriter settings)
+		{
+			settings.Add("ZoomToCoordinates.Settings", JsonConvert.SerializeObject(_settings));
+
+			return Task.FromResult(0);
 		}
 		#endregion Overrides
 	}

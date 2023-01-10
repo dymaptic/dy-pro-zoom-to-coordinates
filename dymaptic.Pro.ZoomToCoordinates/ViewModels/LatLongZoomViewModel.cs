@@ -6,7 +6,6 @@ using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,9 +19,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 		private double _latitude;
 		private double _longitude;
 		private double _scale;
-		private bool _keepGraphic;
-		private string _color;
-		private string _font;
+		private bool _createGraphic;
 
 		// Properties
 		public double Latitude
@@ -62,40 +59,17 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 			set => SetProperty(ref _scale, value);
 		}
 
-		public bool KeepGraphic
+		public bool CreateGraphic
 		{
-			get => _keepGraphic;
-			set => SetProperty(ref _keepGraphic, value);
+			get => _createGraphic;
+			set => SetProperty(ref _createGraphic, value);
 		}
 
-		public List<string> ColorSchemes { get; set; } = new List<string> { "Black", "Gray", "White", "Red", "Green", "Blue"};
-		public List<string> FontSchemes { get; set; } = new List<string> { "Arial", "Papyrus", "Tahoma", "Times New Roman"};
-
-		public string Color 
-		{
-			get => _color;
-			set => SetProperty(ref _color, value); 
-		}
-
-		public string Font
-		{
-			get => _font;
-			set => SetProperty(ref _font, value);
-		}
-
-		/// <summary>
-		/// Command to validate and zoom to coordinates
-		/// </summary>
 		public ICommand ZoomCommand { get; }
-
+		
 		// Constructor
-		internal LatLongZoomViewModel()
+		public LatLongZoomViewModel()
 		{
-			// Starting values
-			//Latitude = 40.1059757;
-			//Longitude = -106.6340134;
-			//Scale = 100_000;
-
 			// Command is grayed out if there isn't an active map view or scale isn't set
 			ZoomCommand = new RelayCommand(async () => { await ZoomToCoordinates(); }, () => MapView.Active != null && Scale != 0);
 		}
@@ -125,11 +99,10 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 					mapView.ZoomTo(camera, TimeSpan.Zero);
 				}
 
-				// Create point graphic
-				if (KeepGraphic)
+				if (CreateGraphic)
 				{
 					Map map = MapView.Active.Map;
-					CIMPointSymbol symbol = SymbolFactory.Instance.ConstructPointSymbol(color: GetColor(), size: 20, SimpleMarkerStyle.Pushpin);
+					CIMPointSymbol symbol = SymbolFactory.Instance.ConstructPointSymbol(color: GetColor(_settings.MarkerColor), size: 20, style: GetMarkerStyle(_settings.Marker));
 
 					// 2D Map
 					if (map.MapType == MapType.Map)
@@ -151,7 +124,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 						// Finally create a point label graphic & add it to the point container
 						CIMTextGraphic label = new()
 						{
-							Symbol = SymbolFactory.Instance.ConstructTextSymbol(color:ColorFactory.Instance.BlackRGB, size:12, fontFamilyName:Font, fontStyleName:"Regular").MakeSymbolReference(),
+							Symbol = SymbolFactory.Instance.ConstructTextSymbol(color: GetColor(_settings.FontColor), size:12, fontFamilyName:_settings.FontFamily, fontStyleName: _settings.FontStyle).MakeSymbolReference(),
 							Text = $"    <b>{Longitude} {Latitude}</b>",
 							Shape = point
 						};
@@ -159,7 +132,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 						pointGraphicContainer.AddElement(cimGraphic:label, select: false);
 					}
 
-					// 3D Map (only adds a Pushpin without a label, and without it being in a Graphics container in the ArcGIS Pro Table of Contents
+					// 3D Map (adds an overlay without a label, since CIMTextGraphic is a graphic & graphics are 2D only. Therefore, there isn't a graphics container in the ArcGIS Pro Table of Contents).
 					else if (map.IsScene)
 					{
 						MapPoint point = MapPointBuilderEx.CreateMapPoint(new Coordinate3D(x: Longitude, y: Latitude, z: 0), sr);
@@ -169,10 +142,10 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 			});
 		}
 
-		private CIMColor GetColor()
+		private static CIMColor GetColor(string selectedColor)
 		{
 			CIMColor color = ColorFactory.Instance.BlackRGB;
-			switch (Color)
+			switch (selectedColor)
 			{
 				case "Black":
 					color = ColorFactory.Instance.BlackRGB;
@@ -184,7 +157,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 					break;
 				case "White":
 					color = ColorFactory.Instance.WhiteRGB;
-				
+
 					break;
 				case "Red":
 					color = ColorFactory.Instance.RedRGB;
@@ -196,11 +169,93 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 					break;
 				case "Blue":
 					color = ColorFactory.Instance.BlueRGB;
-					
+
 					break;
 			}
 			return color;
 		}
 
+		private static SimpleMarkerStyle GetMarkerStyle(string selectedMarker)
+		{
+			SimpleMarkerStyle marker = SimpleMarkerStyle.Circle;
+			switch (selectedMarker)
+			{
+				case "Circle":
+					marker = SimpleMarkerStyle.Circle;
+					
+					break;
+				case "Cross":
+					marker = SimpleMarkerStyle.Cross;
+					
+					break;
+				case "Diamond":
+					marker = SimpleMarkerStyle.Diamond;
+					
+					break;
+				case "Square":
+					marker = SimpleMarkerStyle.Square;
+					
+					break;
+				case "X":
+					marker = SimpleMarkerStyle.X;
+					
+					break;
+				case "Triangle":
+					marker = SimpleMarkerStyle.Triangle;
+					
+					break;
+				case "Pushpin":
+					marker = SimpleMarkerStyle.Pushpin;
+					
+					break;
+				case "Star":
+					marker = SimpleMarkerStyle.Star;
+					
+					break;
+				case "RoundedSquare":
+					marker = SimpleMarkerStyle.RoundedSquare;
+					
+					break;
+				case "RoundedTriangle":
+					marker = SimpleMarkerStyle.RoundedTriangle;
+					
+					break;
+				case "Rod":
+					marker = SimpleMarkerStyle.Rod;
+					
+					break;
+				case "Rectangle":
+					marker = SimpleMarkerStyle.Rectangle;
+					
+					break;
+				case "RoundedRectangle":
+					marker = SimpleMarkerStyle.RoundedRectangle;
+					
+					break;
+				case "Hexagon":
+					marker = SimpleMarkerStyle.Hexagon;
+					
+					break;
+				case "StretchedHexagon":
+					marker = SimpleMarkerStyle.StretchedHexagon;
+					
+					break;
+				case "RaceTrack":
+					marker = SimpleMarkerStyle.RaceTrack;
+					
+					break;
+				case "HalfCircle":
+					marker = SimpleMarkerStyle.HalfCircle;
+					
+					break;
+				case "Cloud":
+					marker = SimpleMarkerStyle.Cloud;
+					
+					break;
+			}
+			return marker;
+		}
+
+		private static readonly Settings _settings = ZoomToCoordinatesModule.GetSettings();
 	}
 }

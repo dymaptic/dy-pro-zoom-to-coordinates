@@ -9,9 +9,8 @@
         xmlns:viewmodels="clr-namespace:dymaptic.Pro.ZoomToCoordinates.ViewModels" 
         d:DataContext="{d:DesignInstance Type=viewmodels:LatLongZoomViewModel}"
         mc:Ignorable="d"
-        Title="Zoom To Latitude/Longitude" Height="350" Width="300"
-        WindowStartupLocation="CenterOwner"
-    >
+        Title="Zoom To Coordinates" Height="290" Width="250"
+        WindowStartupLocation="CenterOwner">
     <controls:ProWindow.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -27,25 +26,23 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="100"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         
         <!-- Latitude/Longitude text boxes -->
-        <Label Grid.Row="0" Grid.Column="0" Margin="5" HorizontalAlignment="Right" Content="Latitude:" Width="55" />
-        <TextBox Grid.Row="0" Grid.Column="1" Width="85" Margin="5" Text="{Binding Latitude}"/>
-        <Label Grid.Row="1" Grid.Column="0" Margin="5" HorizontalAlignment="Right" Content="Longitude:" Width="66" />
-        <TextBox Grid.Row="1" Grid.Column="1" Width="85" Margin="5" Text="{Binding Longitude}"/>
+        <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="Latitude:" />
+        <TextBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5" Text="{Binding Latitude}" />
+        <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="Longitude:" />
+        <TextBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5" Text="{Binding Longitude}"/>
 
         <!-- Radio Button Group -->
-        <StackPanel Orientation="Vertical" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="10">
-            <Label Content="Zoom Scale:" Margin="-3 0 0 0"/>
+        <Label Grid.Row="2" Grid.Column="0" Content="Zoom Scale:" Margin="5"/>
+        <StackPanel Orientation="Vertical" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="5,8,0,0">
+            <RadioButton Content="5,000,000 - State" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=5000000}" Margin="0,0,0,5"/>
             <RadioButton Content="1,000,000 - County" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=1000000}" Margin="0,0,0,5"/>
             <RadioButton Content="100,000 - City" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=100000}" Margin="0,0,0,5"/>
             <RadioButton Content="10,000 - Block" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=10000}"  Margin="0,0,0,5"/>
@@ -53,17 +50,13 @@
         </StackPanel>
 
         <!-- Checkbox -->
-        <Label Grid.Row="3" Grid.Column="0" Content="Graphic (Optional)" Grid.ColumnSpan="2"/>
-        <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Keep?" IsChecked="{Binding KeepGraphic}"/>
-        <Label Grid.Row="4" Grid.Column="1" Content="Pushpin Color"/>
-        <ComboBox  Grid.Row="4" Grid.Column="2" Margin="5" ItemsSource="{Binding ColorSchemes}" SelectionChanged="ColorSchemeDropdown_SelectionChanged" SelectedIndex="4"/>
-        <Label Grid.Row="5" Grid.Column="1" Content="Font"/>
-        <ComboBox  Grid.Row="5" Grid.Column="2" Margin="5" ItemsSource="{Binding FontSchemes}" SelectedIndex="2" SelectionChanged="ComboBox_SelectionChanged"/>
-
+        <Label Grid.Row="3" Grid.Column="0" Content="Create Graphic?" Margin="5,0,0,0"/>
+        <CheckBox Grid.Row="3" Grid.Column="1" Margin="5,5,0,0" IsChecked="{Binding CreateGraphic}"/>
 
         <!-- Buttons -->
-        <Button Grid.Row="6" Grid.Column="0" Margin="5" Width="75" Content="Settings" ToolTip="Settings" Command="{Binding SettingsCommand}"/>
-        <Button Grid.Row="6" Grid.Column="1" Margin="5" Width="75" Content="Zoom" ToolTip="Zoom" Command="{Binding ZoomCommand}"/>
-        <Button Grid.Row="6" Grid.Column="2" Margin="5" Width="75" Content="Close" ToolTip="Close" Click="CloseButton_Click" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2">
+            <Button Margin="5,5,25,5" Height="30" Width="85" Content="Zoom" ToolTip="Zoom" Command="{Binding ZoomCommand}"/>
+            <Button Margin="5" Width="85" Content="Close" ToolTip="Close" Click="CloseButton_Click"/>
+        </StackPanel>
     </Grid>
 </controls:ProWindow>

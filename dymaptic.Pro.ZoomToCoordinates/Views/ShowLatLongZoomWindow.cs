@@ -20,6 +20,5 @@ namespace dymaptic.Pro.ZoomToCoordinates.Views
 			//uncomment for modal
 			//_latlongzoomwindow.ShowDialog();
 		}
-
 	}
 }

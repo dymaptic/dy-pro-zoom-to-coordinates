@@ -24,15 +24,5 @@ namespace dymaptic.Pro.ZoomToCoordinates.Views
 		{
 			Close();
 		}
-
-		private void ColorSchemeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			ViewModel.Color = ((ComboBox)sender).SelectedItem as string;
-		}
-
-		private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			ViewModel.Font = ((ComboBox)sender).SelectedItem as string;
-		}
 	}
 }
