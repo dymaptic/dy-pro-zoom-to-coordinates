@@ -13,11 +13,67 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 
 		public ObservableCollection<string> MarkerSchemes { get; set; } = new ObservableCollection<string>() { "Circle", "Cross", "Diamond", "Square", "X", "Triangle", "Pushpin", "Star", "RoundedSquare", "RoundedTriangle", "Rod", "Rectangle", "RoundedRectangle", "Hexagon", "StretchedHexagon", "RaceTrack", "HalfCircle", "Cloud" };
 
-		public ObservableCollection<string> ColorSchemes { get; set; } = new () { "Black", "Gray", "White", "Red", "Green", "Blue" };
-		
+		public ObservableCollection<string> ColorSchemes { get; set; } = new() { "Black", "Gray", "White", "Red", "Green", "Blue" };
+
 		public ObservableCollection<string> FontFamilySchemes { get; set; } = new ObservableCollection<string> { "Arial", "Broadway", "Papyrus", "Tahoma", "Times New Roman" };
 
-		public ObservableCollection<string> FontStyleSchemes { get; set; } = new ObservableCollection<string> { "Regular", "Bold", "Italic"};
+		public ObservableCollection<string> FontStyleSchemes { get; set; } = new ObservableCollection<string> { "Regular", "Bold", "Italic" };
+
+		public double Longitude
+		{
+			get => _settings.Longitude;
+			set
+			{
+				if (_settings.Longitude != value)
+				{
+					_settings.Longitude = value;
+					ZoomToCoordinatesModule.SaveSettings(_settings);
+					NotifyPropertyChanged();
+				}
+			}
+		}
+
+		public double Latitude
+		{
+			get => _settings.Latitude;
+			set
+			{
+				if (_settings.Latitude != value)
+				{
+					_settings.Latitude = value;
+					ZoomToCoordinatesModule.SaveSettings(_settings);
+					NotifyPropertyChanged();
+				}
+			}
+		}
+
+		public double Scale
+		{
+			get => _settings.Scale;
+			set
+			{
+				if (_settings.Scale != value)
+				{
+					_settings.Scale = value;
+					ZoomToCoordinatesModule.SaveSettings(_settings);
+					NotifyPropertyChanged();
+				}
+			}
+		}
+
+		public bool CreateGraphic
+		{
+			get => _settings.CreateGraphic;
+			set
+			{
+				if (_settings.CreateGraphic != value)
+				{
+					_settings.CreateGraphic = value;
+					ZoomToCoordinatesModule.SaveSettings(_settings);
+					NotifyPropertyChanged();
+				}
+			}
+		}
 
 		public string Marker
 		{

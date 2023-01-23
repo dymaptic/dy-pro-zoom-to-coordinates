@@ -70,8 +70,14 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels
 		// Constructor
 		public LatLongZoomViewModel()
 		{
-			// Command is grayed out if there isn't an active map view or scale isn't set
-			ZoomCommand = new RelayCommand(async () => { await ZoomToCoordinates(); }, () => MapView.Active != null && Scale != 0);
+			// On startup, set property values from settings
+			_longitude = _settings.Longitude;
+			_latitude = _settings.Latitude;
+			_scale = _settings.Scale;
+			_createGraphic = _settings.CreateGraphic;
+
+			// Command is grayed out if there isn't an active map view
+			ZoomCommand = new RelayCommand(async () => { await ZoomToCoordinates(); }, () => MapView.Active != null);
 		}
 
 		internal async Task ZoomToCoordinates()

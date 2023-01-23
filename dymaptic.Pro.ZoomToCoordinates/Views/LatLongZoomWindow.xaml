@@ -17,6 +17,17 @@
                 <extensions:DesignOnlyResourceDictionary Source="pack://application:,,,/ArcGIS.Desktop.Framework;component\Themes\Default.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <converters:ScaleToBoolConverter x:Key="scaleToBoolConverterKey"/>
+            <Style TargetType="RadioButton">
+                <Setter Property="Margin" Value="5,0,0,0"/>
+                <Setter Property="Foreground" Value="{DynamicResource Esri_TextStyleDisabledBrush}"/>
+                <Style.Triggers>
+                    <Trigger Property="IsChecked" Value="True">
+                        <Trigger.Setters>
+                            <Setter Property="Foreground" Value="{DynamicResource Esri_TextStyleDefaultBrush}"/>
+                        </Trigger.Setters>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </controls:ProWindow.Resources>
     <Grid>
@@ -56,7 +67,7 @@
         <!-- Buttons -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2">
             <Button Margin="5,5,25,5" Height="30" Width="85" Content="Zoom" ToolTip="Zoom" Command="{Binding ZoomCommand}"/>
-            <Button Margin="5" Width="85" Content="Close" ToolTip="Close" Click="CloseButton_Click"/>
+            <Button Style="{DynamicResource Esri_Button}" Margin="5" Width="85" Content="Close" ToolTip="Close" Click="CloseButton_Click"/>
         </StackPanel>
     </Grid>
 </controls:ProWindow>

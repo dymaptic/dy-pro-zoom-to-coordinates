@@ -11,13 +11,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.Views
 		public LatLongZoomWindow()
 		{
 			InitializeComponent();
-			ViewModel = new LatLongZoomViewModel();
-		}
-
-		internal LatLongZoomViewModel ViewModel
-		{
-			get => DataContext as LatLongZoomViewModel;
-			set => DataContext = value;
+			DataContext = new LatLongZoomViewModel();
 		}
 
 		private void CloseButton_Click(object sender, System.Windows.RoutedEventArgs e)

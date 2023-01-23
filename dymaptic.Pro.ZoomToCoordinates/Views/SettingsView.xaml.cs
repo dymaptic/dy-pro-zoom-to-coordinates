@@ -11,13 +11,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.Views
 		public SettingsView()
 		{
 			InitializeComponent(); InitializeComponent();
-			ViewModel = new SettingsViewModel();
-		}
-
-		internal SettingsViewModel ViewModel
-		{
-			get => DataContext as SettingsViewModel;
-			set => DataContext = value;
+			DataContext = new SettingsViewModel();
 		}
 	}
 }
