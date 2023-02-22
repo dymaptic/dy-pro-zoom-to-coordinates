@@ -10,3 +10,6 @@ load the user's chosen settings, and any changes made from the settings window u
 Note that if the user has an active scene (3D), an overlay is added rather than a graphic if a graphic is requested since 
 graphics are 2D only. The overlay still respects the marker style and marker color, but the font settings are ignored since
 the "label" is a text graphic.
+
+
+https://user-images.githubusercontent.com/32423158/220716443-6c9ba5a6-1f12-49e1-beda-ac375acc13d9.png
