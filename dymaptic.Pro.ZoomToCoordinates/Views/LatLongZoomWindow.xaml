@@ -9,7 +9,7 @@
         xmlns:viewmodels="clr-namespace:dymaptic.Pro.ZoomToCoordinates.ViewModels" 
         d:DataContext="{d:DesignInstance Type=viewmodels:LatLongZoomViewModel}"
         mc:Ignorable="d"
-        Title="Zoom To Coordinates" Height="290" Width="250"
+        Title="Zoom To Coordinates" Height="290" Width="265"
         WindowStartupLocation="CenterOwner">
     <controls:ProWindow.Resources>
         <ResourceDictionary>
@@ -66,7 +66,7 @@
 
         <!-- Buttons -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2">
-            <Button Margin="5,5,25,5" Height="30" Width="85" Content="Zoom" ToolTip="Zoom" Command="{Binding ZoomCommand}"/>
+            <Button Style="{DynamicResource Esri_Button}" Margin="5" Width="85" Content="Zoom" ToolTip="Zoom" Command="{Binding ZoomCommand}"/>
             <Button Style="{DynamicResource Esri_Button}" Margin="5" Width="85" Content="Close" ToolTip="Close" Click="CloseButton_Click"/>
         </StackPanel>
     </Grid>
