@@ -20,8 +20,8 @@ https://support.esri.com/en/technical-article/000026259
 
 ## Install Instructions
 - Download and unzip directory with the GUID as a name.
-- Recommend placing folder in your default ArcGIS Pro AddIn directory (C:\[user profile]\Documents\ArcGIS\AddIns\ArcGISPro)
-- Ensure that ArcGIS Pro is configured to find the directory from the step above (ArcGIS Pro -> Add-In Manager -> Options)
-- Double-click the actual AddIn inside the directory, dymaptic.Pro.ZoomToCoordinates.esriAddinX
-- You may receive an Esri ArcGIS Add-In Installation Utility dialog box saying that installation failed, but this is misleading. 
-- Dismiss the dialog and AddIn will be available from the ArcGIS Pro AddIn tab & also viewable here (ArcGIS Pro -> Add-In Manager -> Add-Ins)
+- Open the directory with the GUID as name and double-click dymaptic.Pro.ZoomToCoordinates.esriAddinX.
+	- Double-clicking .esriAddinX will copy the AddIn to your default ArcGIS Pro AddIn directory (C:\[user profile]\Documents\ArcGIS\AddIns\ArcGISPro)
+	- The installed AddIn is also visible from ArcGIS Pro (ArcGIS Pro Project tab -> Add-In Manager -> My Add-Ins)
+	- Ensure that ArcGIS Pro is configured to find your Add-In directory after double-clicking .esriAddinX (ArcGIS Pro Project tab -> Add-In Manager -> Options)
+- The ZoomToCoordinates AddIn is now available for use from the ArcGIS Pro AddIn tab.
