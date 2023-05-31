@@ -1,5 +1,6 @@
 ﻿using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Contracts;
+using System;
 
 namespace dymaptic.Pro.ZoomToCoordinates.Views
 {
@@ -15,10 +16,19 @@ namespace dymaptic.Pro.ZoomToCoordinates.Views
 				return;
 			_latlongzoomwindow = new LatLongZoomWindow();
 			_latlongzoomwindow.Owner = FrameworkApplication.Current.MainWindow;
-			_latlongzoomwindow.Closed += (o, e) => { _latlongzoomwindow = null; };
+			_latlongzoomwindow.Closed += OnZoomClosed;
 			_latlongzoomwindow.Show();
 			//uncomment for modal
 			//_latlongzoomwindow.ShowDialog();
 		}
-	}
+
+        private void OnZoomClosed(object? o, EventArgs e)
+        {
+            if (_latlongzoomwindow != null)
+            {
+                _latlongzoomwindow.Closed -= OnZoomClosed;
+                _latlongzoomwindow = null;
+            }
+        }
+    }
 }
