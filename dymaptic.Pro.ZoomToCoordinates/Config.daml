@@ -1,11 +1,11 @@
 ﻿<ArcGIS defaultAssembly="dymaptic.Pro.ZoomToCoordinates.dll" defaultNamespace="dymaptic.Pro.ZoomToCoordinates" xmlns="http://schemas.esri.com/DADF/Registry" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.esri.com/DADF/Registry file:///C:/Program%20Files/ArcGIS/Pro/bin/ArcGIS.Desktop.Framework.xsd">
   <AddInInfo id="{c3985968-87f0-4fd7-adkl-159710c61ac2}" version="1.1" desktopVersion="3.0.36057">
     <Name>dymaptic.Pro.ZoomToCoordinates</Name>
-    <Description>The Zoom to Coordinates Add-In, created by Dymaptic, is an open-source solution for ArcGIS Pro, fully compatible with version 3.x. It is released under the permissive MIT license, and its source code can be accessed on GitHub. Dymaptic is a leading woman-owned GIS software development company and an Esri Silver Partner that specializes in providing innovative and tailored GIS solutions including custom Add-In development. To learn more about dymaptic and explore our cutting-edge solutions, visit our homepage at dymaptic.com</Description>
+    <Description>The Zoom to Coordinates Add-In, created by dymaptic, is an open-source solution for ArcGIS Pro, fully compatible with version 3.x. It is released under the permissive MIT license, and its source code can be accessed on GitHub. Dymaptic is a leading woman-owned GIS software development company and an Esri Silver Partner that specializes in providing innovative and tailored GIS solutions including custom Add-In development. To learn more about dymaptic and explore our cutting-edge solutions, visit our homepage at dymaptic.com</Description>
     <Image>Images\dymaptic-logo---circle.png</Image>
     <Author>dymaptic</Author>
     <Company>dymaptic</Company>
-    <Date>5/24/2023</Date>
+    <Date>5/31/2023</Date>
     <Subject>Map Exploration</Subject>
     <!-- Note subject can be one or more of these topics:
                     Content, Framework, Editing, Geodatabase, Geometry, Geoprocessing, Layouts, Map Authoring, Map Exploration -->

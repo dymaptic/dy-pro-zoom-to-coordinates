@@ -11,14 +11,14 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Images\dymaptic-logo---circle.png" />
-    <None Remove="Images\dymaptic-logo-2048x585.png" />
+    <None Remove="Images\dymaptic-logo-300x86.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Config.daml" />
-    <Resource Include="Images\dymaptic-logo---circle.png">
+    <Content Include="Images\dymaptic-logo---circle.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\dymaptic-logo-2048x585.png">
+    </Content>
+    <Resource Include="Images\dymaptic-logo-300x86.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>

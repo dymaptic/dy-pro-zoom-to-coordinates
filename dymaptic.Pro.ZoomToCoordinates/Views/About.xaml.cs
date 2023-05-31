@@ -13,6 +13,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.Views
             InitializeComponent();
         }
 
+        // Opens hyperlink in user's default web browser
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             var psi = new ProcessStartInfo
