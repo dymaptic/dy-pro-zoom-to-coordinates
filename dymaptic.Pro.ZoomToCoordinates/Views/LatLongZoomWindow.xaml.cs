@@ -11,7 +11,7 @@ public partial class LatLongZoomWindow : ArcGIS.Desktop.Framework.Controls.ProWi
 	public LatLongZoomWindow()
 	{
 		InitializeComponent();
-		DataContext = new CoordinatesViewModel();
+		DataContext = new LatLongZoomViewModel();
 	}
 
 	private void CloseButton_Click(object sender, System.Windows.RoutedEventArgs e)

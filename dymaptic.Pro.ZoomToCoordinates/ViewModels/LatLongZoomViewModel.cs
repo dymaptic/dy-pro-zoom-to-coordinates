@@ -13,7 +13,7 @@ using System.Windows.Input;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
-public class CoordinatesViewModel : PropertyChangedBase
+public class LatLongZoomViewModel : PropertyChangedBase
 {
 	// Private backing-fields to the public properties
 	private double _latitude;
@@ -68,7 +68,7 @@ public class CoordinatesViewModel : PropertyChangedBase
 	public ICommand ZoomCommand { get; }
 		
 	// Constructor
-	public CoordinatesViewModel()
+	public LatLongZoomViewModel()
 	{
 		// On startup, set property values from settings
 		_longitude = _settings.Longitude;
