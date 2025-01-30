@@ -32,12 +32,12 @@
         <!-- Application and Company Description -->
         <StackPanel Grid.Row="1" Margin="15">
             <TextBlock TextWrapping="Wrap" >
-                The Zoom to Coordinates Add-In, created by dymaptic, is an open-source solution for ArcGIS Pro, fully compatible with version 3.x. It is 
+                The Zoom to Coordinates Add-In, created by dymaptic, is an open-source solution for ArcGIS Pro, fully compatible with version 3.3 and above. It is 
                 released under the permissive MIT license, and its source code can be accessed on
                 <Hyperlink NavigateUri="https://github.com/dymaptic/dy-pro-zoom-to-coordinates" RequestNavigate="Hyperlink_RequestNavigate">GitHub</Hyperlink>.
                 <LineBreak/>
                 <LineBreak/>
-                Dymaptic is a leading woman-owned GIS software development company and an Esri Silver Partner that specializes in providing innovative and 
+                Dymaptic is a leading woman-owned GIS software development company and an Esri Gold Partner that specializes in providing innovative and 
                 tailored GIS solutions including custom Add-In development. To learn more about dymaptic and explore our cutting-edge solutions, visit our 
                 homepage at
                 <Hyperlink  NavigateUri="https://www.dymaptic.com/" RequestNavigate="Hyperlink_RequestNavigate">dymaptic.com</Hyperlink>.
