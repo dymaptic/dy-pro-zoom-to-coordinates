@@ -2,9 +2,9 @@
 using ArcGIS.Desktop.Framework.Contracts;
 using System;
 
-namespace dymaptic.Pro.ZoomToCoordinates.Views
-{
-    internal class ShowSettingsView : Button
+namespace dymaptic.Pro.ZoomToCoordinates.Views;
+
+internal class ShowSettingsView : Button
 	{
 
 		private SettingsView? _settingsview = null;
@@ -17,18 +17,17 @@ namespace dymaptic.Pro.ZoomToCoordinates.Views
 			_settingsview = new SettingsView();
 			_settingsview.Owner = FrameworkApplication.Current.MainWindow;
 			_settingsview.Closed += OnSettingsClosed;
-            _settingsview.Show();
+        _settingsview.Show();
 			//uncomment for modal
 			//_settingsview.ShowDialog();
 		}
 
-        private void OnSettingsClosed(object? o, EventArgs e)
+    private void OnSettingsClosed(object? o, EventArgs e)
+    {
+        if (_settingsview != null)
         {
-            if (_settingsview != null)
-            {
-                _settingsview.Closed -= OnSettingsClosed;
-                _settingsview = null;
-            }
+            _settingsview.Closed -= OnSettingsClosed;
+            _settingsview = null;
         }
     }
 }

@@ -23,7 +23,8 @@
         <group id="ZoomToCoordinates_Group1" caption="Zoom To Coordinates" appearsOnAddInTab="true">
           <!-- host controls within groups -->
           <button refID="ZoomToCoordinates_Views_LatLongZoomWindow" size="large" />
-          <button refID="dymaptic_Pro_ZoomToCoordinates_Views_SettingsView" size="middle" />
+		  <tool refID="dymaptic_Pro_ZoomToCoordinates_GetCoordinates" size="large" />
+     	  <button refID="dymaptic_Pro_ZoomToCoordinates_Views_SettingsView" size="middle" />
           <button refID="dymaptic_Pro_ZoomToCoordinates_Views_About" size="middle" />
         </group>
       </groups>
@@ -32,7 +33,12 @@
         <button id="ZoomToCoordinates_Views_LatLongZoomWindow" caption="Zoom" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowLatLongZoomWindow" loadOnClick="true" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/ZoomIn16.png" largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/ZoomIn32.png" condition="esri_mapping_mapPane">
           <tooltip heading="Zoom">Zoom to coordinates.<disabledText /></tooltip>
         </button>
-        <button id="dymaptic_Pro_ZoomToCoordinates_Views_SettingsView" caption="Settings" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowSettingsView" loadOnClick="true" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/CogWheel16" largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/CogWheel32.png">
+		  <tool id="dymaptic_Pro_ZoomToCoordinates_GetCoordinates" caption="Get Coordinates" className="dymaptic.Pro.ZoomToCoordinates.MapTools.GetCoordinates" loadOnClick="true" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/GenericButtonRed16.png" largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/GenericButtonRed32.png" condition="esri_mapping_mapPane">
+			  <tooltip heading="Get Coordinates">
+				  Click the map to get coordinates in your chosen coordinate reference system.<disabledText />
+			  </tooltip>
+		  </tool>
+		  <button id="dymaptic_Pro_ZoomToCoordinates_Views_SettingsView" caption="Settings" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowSettingsView" loadOnClick="true" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/CogWheel16" largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/CogWheel32.png">
           <tooltip heading="Setting">Customize startup and graphic settings if graphic requested.<disabledText /></tooltip>
         </button>
         <button id="dymaptic_Pro_ZoomToCoordinates_Views_About" caption="About" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowAbout" loadOnClick="true" smallImage="Images/dymaptic-logo---circle.png" largeImage="Images/dymaptic-logo---circle.png">

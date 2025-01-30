@@ -2,8 +2,8 @@
 using ArcGIS.Desktop.Framework.Contracts;
 using System;
 
-namespace dymaptic.Pro.ZoomToCoordinates.Views
-{
+namespace dymaptic.Pro.ZoomToCoordinates.Views;
+
 	internal class ShowLatLongZoomWindow : Button
 	{
 
@@ -22,13 +22,12 @@ namespace dymaptic.Pro.ZoomToCoordinates.Views
 			//_latlongzoomwindow.ShowDialog();
 		}
 
-        private void OnZoomClosed(object? o, EventArgs e)
+    private void OnZoomClosed(object? o, EventArgs e)
+    {
+        if (_latlongzoomwindow != null)
         {
-            if (_latlongzoomwindow != null)
-            {
-                _latlongzoomwindow.Closed -= OnZoomClosed;
-                _latlongzoomwindow = null;
-            }
+            _latlongzoomwindow.Closed -= OnZoomClosed;
+            _latlongzoomwindow = null;
         }
     }
 }
