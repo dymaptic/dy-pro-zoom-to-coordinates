@@ -46,10 +46,23 @@ internal class GetCoordinatesMapTool : MapTool
         return base.OnToolActivateAsync(active);
     }
 
-    protected override Task<bool> OnSketchCompleteAsync(Geometry geometry)
+
+    protected override void OnToolMouseDown(MapViewMouseButtonEventArgs e)
     {
-        return base.OnSketchCompleteAsync(geometry);
+        if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
+            e.Handled = true; //Handle the event args to get the call to the corresponding async method
     }
+
+    protected async override Task HandleMouseDownAsync(MapViewMouseButtonEventArgs e)
+    {
+        await QueuedTask.Run(() =>
+        {
+            // When the map is clicked, pass the MapPoint to the GetCoordinatesViewModel
+            MapPoint mapPoint = MapView.Active.ClientToMap(e.ClientPoint);
+        });
+    }
+
+
 
     private void OnGetCoordinatesWindowClosed(object? o, EventArgs e)
     {

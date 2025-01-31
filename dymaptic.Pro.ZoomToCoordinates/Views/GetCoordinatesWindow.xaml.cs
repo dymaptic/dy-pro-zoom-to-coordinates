@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dymaptic.Pro.ZoomToCoordinates.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,5 +23,6 @@ public partial class GetCoordinatesWindow : ArcGIS.Desktop.Framework.Controls.Pr
     public GetCoordinatesWindow()
     {
         InitializeComponent();
+        DataContext = new GetCoordinatesViewModel();
     }
 }
