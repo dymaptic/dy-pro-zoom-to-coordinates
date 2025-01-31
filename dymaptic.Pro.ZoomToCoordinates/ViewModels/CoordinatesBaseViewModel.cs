@@ -30,47 +30,45 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         new CoordinateFormatItem { Format = CoordinateFormat.UTM, DisplayName = "UTM" }
     ];
 
-    /// <summary>
-    /// Returns latitude/longitude in decimal degrees as Degrees Decimal Minutes (e.g., 37° 29.1911' N  121° 42.8099' W)
-    /// </summary>
-    /// <param name="latitude"></param>
-    /// <param name="longitude"></param>
-    /// <param name="yDDM"></param>
-    /// <param name="xDDM"></param>
-    public static void FormatDegreesDecimalMinutes(double latitude, double longitude, out string yDDM, out string xDDM)
+    public static void ConvertToDegreesDecimalMinutes(double longitude, double latitude, out double xDDM, out double yDDM)
     {
-        // Latitude
-        int latDegrees = (int)Math.Abs(latitude);
-        double latMinutes = Math.Abs((Math.Abs(latitude) - latDegrees) * 60);
-        yDDM = $"{latDegrees}° {latMinutes:F4}' {(latitude >= 0 ? "N" : "S")}";
+        // Convert decimal degrees to degrees decimal minutes
+        double lonDegrees = (int)longitude;
+        double lonMinutes = Math.Abs((longitude - lonDegrees) * 60);
+        xDDM = lonDegrees + (lonMinutes / 100); // Store as decimal number where decimal part represents minutes
 
-        // Longitude
-        int lonDegrees = (int)Math.Abs(longitude);
-        double lonMinutes = Math.Abs((Math.Abs(longitude) - lonDegrees) * 60);
-        xDDM = $"{lonDegrees}° {lonMinutes:F4}' {(longitude >= 0 ? "E" : "W")}";
+        double latDegrees = (int)latitude;
+        double latMinutes = Math.Abs((latitude - latDegrees) * 60);
+        yDDM = latDegrees + (latMinutes / 100);
     }
 
-    /// <summary>
-    /// Returns latitude/longitude in decimal degrees as Degrees Minutes Seconds (e.g., 37° 29' 2.08" N  121° 42' 57.95" W)
-    /// </summary>
-    /// <param name="latitude"></param>
-    /// <param name="longitude"></param>
-    /// <param name="yDMS"></param>
-    /// <param name="xDMS"></param>
-    public static void FormatDegreesMinutesSeconds(double latitude, double longitude, out string yDMS, out string xDMS)
+    public static void ConvertToDegreesMinutesSeconds(double longitude, double latitude, out double xDMS, out double yDMS)
     {
-        // Latitude
-        int latDegrees = (int)Math.Abs(latitude);
-        double latTotalMinutes = Math.Abs((Math.Abs(latitude) - latDegrees) * 60);
-        int latMinutes = (int)latTotalMinutes;
-        double latSeconds = (latTotalMinutes - latMinutes) * 60;
-        yDMS = $"{latDegrees}° {latMinutes}' {latSeconds:F2}\" {(latitude >= 0 ? "N" : "S")}";
+        // Convert decimal degrees to degrees minutes seconds
+        double lonDegrees = (int)longitude;
+        double lonMinutes = (int)(Math.Abs(longitude - lonDegrees) * 60);
+        double lonSeconds = Math.Abs((Math.Abs(longitude - lonDegrees) * 60 - lonMinutes) * 60);
+        xDMS = lonDegrees + (lonMinutes / 100) + (lonSeconds / 10000); // Store as decimal where decimals represent minutes and seconds
 
-        // Longitude
-        int lonDegrees = (int)Math.Abs(longitude);
-        double lonTotalMinutes = Math.Abs((Math.Abs(longitude) - lonDegrees) * 60);
-        int lonMinutes = (int)lonTotalMinutes;
-        double lonSeconds = (lonTotalMinutes - lonMinutes) * 60;
-        xDMS = $"{lonDegrees}° {lonMinutes}' {lonSeconds:F2}\" {(longitude >= 0 ? "E" : "W")}";
+        double latDegrees = (int)latitude;
+        double latMinutes = (int)(Math.Abs(latitude - latDegrees) * 60);
+        double latSeconds = Math.Abs((Math.Abs(latitude - latDegrees) * 60 - latMinutes) * 60);
+        yDMS = latDegrees + (latMinutes / 100) + (latSeconds / 10000);
+    }
+
+    public static void ConvertToMGRS(double longitude, double latitude, out double xMGRS, out double yMGRS)
+    {
+        // TODO: Implement MGRS conversion using ArcGIS SDK
+        // For now, just pass through the values
+        xMGRS = longitude;
+        yMGRS = latitude;
+    }
+
+    public static void ConvertToUTM(double longitude, double latitude, out double xUTM, out double yUTM)
+    {
+        // TODO: Implement UTM conversion using ArcGIS SDK
+        // For now, just pass through the values
+        xUTM = longitude;
+        yUTM = latitude;
     }
 }

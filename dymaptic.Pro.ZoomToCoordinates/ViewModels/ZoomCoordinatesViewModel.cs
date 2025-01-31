@@ -24,6 +24,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 	private CoordinateFormat _selectedFormat;
 	private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
+    private MapPoint _mapPoint;
 
     private CoordinateFormatItem _selectedFormatItem;
     public CoordinateFormatItem SelectedFormatItem
@@ -37,6 +38,11 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 UpdateCoordinateLabels();
 
                 // TODO: Convert coordinates to selected format
+                // Update coordinates if we have a point
+                if (_mapPoint != null)
+                {
+                    UpdateCoordinates(_mapPoint);
+                }
             }
         }
     }
@@ -136,7 +142,55 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 		ZoomCommand = new RelayCommand(async () => { await ZoomToCoordinates(); }, () => MapView.Active != null);
 	}
 
-	internal async Task ZoomToCoordinates()
+    public async Task<MapPoint> CreateMapPointAsync(double x, double y, SpatialReference spatialReference)
+    {
+        return await QueuedTask.Run(() =>
+        {
+            // Create a MapPoint using the builder
+            return MapPointBuilderEx.CreateMapPoint(x, y, spatialReference);
+        });
+    }
+
+    public void UpdateCoordinates(MapPoint mapPoint)
+    {
+        _mapPoint = mapPoint;
+        if (mapPoint == null) return;
+
+        switch (_selectedFormat)
+        {
+            case CoordinateFormat.DecimalDegrees:
+                XCoordinate = mapPoint.X;
+                YCoordinate = mapPoint.Y;
+                break;
+
+            case CoordinateFormat.DegreesDecimalMinutes:
+                ConvertToDegreesDecimalMinutes(mapPoint.X, mapPoint.Y, out double xDDM, out double yDDM);
+                XCoordinate = xDDM;
+                YCoordinate = yDDM;
+                break;
+
+            case CoordinateFormat.DegreesMinutesSeconds:
+                ConvertToDegreesMinutesSeconds(mapPoint.X, mapPoint.Y, out double xDMS, out double yDMS);
+                XCoordinate = xDMS;
+                YCoordinate = yDMS;
+                break;
+
+            case CoordinateFormat.MGRS:
+                ConvertToMGRS(mapPoint.X, mapPoint.Y, out double xMGRS, out double yMGRS);
+                XCoordinate = xMGRS;
+                YCoordinate = yMGRS;
+                break;
+
+            case CoordinateFormat.UTM:
+                ConvertToUTM(mapPoint.X, mapPoint.Y, out double xUTM, out double yUTM);
+                XCoordinate = xUTM;
+                YCoordinate = yUTM;
+                break;
+        }
+    }
+
+
+    internal async Task ZoomToCoordinates()
 	{
 		await QueuedTask.Run(() =>
 		{
