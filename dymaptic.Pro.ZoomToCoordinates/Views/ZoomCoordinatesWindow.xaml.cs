@@ -4,14 +4,14 @@ using System.Windows.Controls;
 namespace dymaptic.Pro.ZoomToCoordinates.Views;
 
 /// <summary>
-/// Interaction logic for LatLongZoomWindow.xaml
+/// Interaction logic for ZoomCoordinatesWindow.xaml
 /// </summary>
-public partial class LatLongZoomWindow : ArcGIS.Desktop.Framework.Controls.ProWindow
+public partial class ZoomCoordinatesWindow : ArcGIS.Desktop.Framework.Controls.ProWindow
 {
-	public LatLongZoomWindow()
+	public ZoomCoordinatesWindow()
 	{
 		InitializeComponent();
-		DataContext = new LatLongZoomViewModel();
+		DataContext = new ZoomCoordinatesViewModel();
 	}
 
 	private void CloseButton_Click(object sender, System.Windows.RoutedEventArgs e)

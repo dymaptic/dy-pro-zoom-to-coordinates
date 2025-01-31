@@ -20,9 +20,9 @@
       </tabs>
       <groups>
         <!-- comment this out if you have no controls on the Addin tab to avoid an empty group-->
-        <group id="ZoomToCoordinates_Group1" caption="Zoom To Coordinates" appearsOnAddInTab="true">
+        <group id="ZoomToCoordinates_Group1" caption="Coordinates" appearsOnAddInTab="true">
           <!-- host controls within groups -->
-          <button refID="ZoomToCoordinates_Views_LatLongZoomWindow" size="large" />
+          <button refID="ZoomToCoordinates_Views_ZoomCoordinatesWindow" size="large" />
 		  <tool refID="dymaptic_Pro_ZoomToCoordinates_GetCoordinates" size="large" />
      	  <button refID="dymaptic_Pro_ZoomToCoordinates_Views_SettingsView" size="middle" />
           <button refID="dymaptic_Pro_ZoomToCoordinates_Views_About" size="middle" />
@@ -30,7 +30,7 @@
       </groups>
       <controls>
         <!-- add your controls here -->
-        <button id="ZoomToCoordinates_Views_LatLongZoomWindow" caption="Zoom" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowLatLongZoomWindow" loadOnClick="true" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/ZoomIn16.png" largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/ZoomIn32.png" condition="esri_mapping_mapPane">
+        <button id="ZoomToCoordinates_Views_ZoomCoordinatesWindow" caption="Zoom To" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowZoomCoordinatesWindow" loadOnClick="true" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/ZoomIn16.png" largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/ZoomIn32.png" condition="esri_mapping_mapPane">
           <tooltip heading="Zoom">Zoom to coordinates.<disabledText /></tooltip>
         </button>
 		  <tool id="dymaptic_Pro_ZoomToCoordinates_GetCoordinates" caption="Get Coordinates" className="dymaptic.Pro.ZoomToCoordinates.MapTools.GetCoordinates" loadOnClick="true" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/GenericButtonRed16.png" largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/GenericButtonRed32.png" condition="esri_mapping_mapPane">

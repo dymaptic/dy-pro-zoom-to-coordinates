@@ -14,7 +14,7 @@ using System.Collections.ObjectModel;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
-public class LatLongZoomViewModel : PropertyChangedBase
+public class ZoomCoordinatesViewModel : PropertyChangedBase
 {
 	// Private backing-fields to the public properties
 	private double _yCoordinate;
@@ -25,27 +25,41 @@ public class LatLongZoomViewModel : PropertyChangedBase
 	private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
 
-    // Properties
-    public ObservableCollection<CoordinateFormat> CoordinateFormats { get; } = new()
-	{
-		CoordinateFormat.DecimalDegrees,
-		CoordinateFormat.DegreesMinutesSeconds,
-		CoordinateFormat.MGRS,
-		CoordinateFormat.UTM
-	};
+    public class CoordinateFormatItem
+    {
+        public CoordinateFormat Format { get; set; }
+        public string DisplayName { get; set; }
 
-	public CoordinateFormat SelectedFormat
-	{
-		get => _selectedFormat;
-		set
-		{
-			if (SetProperty(ref _selectedFormat, value))
-			{
-				UpdateCoordinateLabels();
-				// TODO: Convert coordinates to selected format
-			}
-		}
-	}
+        public override string ToString()
+        {
+            return DisplayName;
+        }
+    }
+
+    // Properties
+    public ObservableCollection<CoordinateFormatItem> CoordinateFormats { get; } = new()
+    {
+        new CoordinateFormatItem { Format = CoordinateFormat.DecimalDegrees, DisplayName = "Decimal Degrees" },
+        new CoordinateFormatItem { Format = CoordinateFormat.DegreesDecimalMinutes, DisplayName = "Degrees Decimal Minutes" },
+        new CoordinateFormatItem { Format = CoordinateFormat.DegreesMinutesSeconds, DisplayName = "Degrees Minutes Seconds" },
+        new CoordinateFormatItem { Format = CoordinateFormat.MGRS, DisplayName = "MGRS" },
+        new CoordinateFormatItem { Format = CoordinateFormat.UTM, DisplayName = "UTM" }
+    };
+
+    private CoordinateFormatItem _selectedFormatItem;
+    public CoordinateFormatItem SelectedFormatItem
+    {
+        get => _selectedFormatItem;
+        set
+        {
+            if (value != null && SetProperty(ref _selectedFormatItem, value))
+            {
+                _selectedFormat = value.Format;
+                UpdateCoordinateLabels();
+                // TODO: Convert coordinates to selected format
+            }
+        }
+    }
 
     public string XCoordinateLabel
     {
@@ -79,7 +93,7 @@ public class LatLongZoomViewModel : PropertyChangedBase
 		get => _yCoordinate;
 		set
 		{
-			if (SelectedFormat == CoordinateFormat.DecimalDegrees)
+			if (SelectedFormatItem.Format == CoordinateFormat.DecimalDegrees)
 			{
                 if (value < -90 || value > 90)
                 {
@@ -127,7 +141,7 @@ public class LatLongZoomViewModel : PropertyChangedBase
 	public ICommand ZoomCommand { get; }
 		
 	// Constructor
-	public LatLongZoomViewModel()
+	public ZoomCoordinatesViewModel()
 	{
 		// On startup, set property values from settings
 		_xCoordinate = _settings.Longitude;
@@ -135,6 +149,7 @@ public class LatLongZoomViewModel : PropertyChangedBase
 		_scale = _settings.Scale;
 		_createGraphic = _settings.CreateGraphic;
 		_selectedFormat = _settings.CoordinateFormat;
+		_selectedFormatItem = CoordinateFormats.First(f => f.Format == _settings.CoordinateFormat);
 		UpdateCoordinateLabels();
 
 		// Command is grayed out if there isn't an active map view
