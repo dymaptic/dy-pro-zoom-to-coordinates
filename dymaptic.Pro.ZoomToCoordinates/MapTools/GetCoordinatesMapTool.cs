@@ -1,21 +1,10 @@
-﻿using ArcGIS.Core.CIM;
-using ArcGIS.Core.Data;
-using ArcGIS.Core.Geometry;
-using ArcGIS.Desktop.Catalog;
-using ArcGIS.Desktop.Core;
-using ArcGIS.Desktop.Editing;
-using ArcGIS.Desktop.Extensions;
+﻿using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Framework;
-using ArcGIS.Desktop.Framework.Contracts;
-using ArcGIS.Desktop.Framework.Dialogs;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
-using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
+using dymaptic.Pro.ZoomToCoordinates.ViewModels;
 using dymaptic.Pro.ZoomToCoordinates.Views;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace dymaptic.Pro.ZoomToCoordinates.MapTools;
@@ -55,14 +44,20 @@ internal class GetCoordinatesMapTool : MapTool
 
     protected async override Task HandleMouseDownAsync(MapViewMouseButtonEventArgs e)
     {
-        await QueuedTask.Run(() =>
+        if (_getCoordinatesWindow?.DataContext is GetCoordinatesViewModel viewModel)
         {
             // When the map is clicked, pass the MapPoint to the GetCoordinatesViewModel
-            MapPoint mapPoint = MapView.Active.ClientToMap(e.ClientPoint);
-        });
+            MapPoint mapPoint = await QueuedTask.Run(() =>
+            {
+                return MapView.Active.ClientToMap(e.ClientPoint);
+            });
+
+            if (mapPoint != null)
+            {
+                viewModel.UpdateCoordinates(mapPoint);
+            }
+        }
     }
-
-
 
     private void OnGetCoordinatesWindowClosed(object? o, EventArgs e)
     {

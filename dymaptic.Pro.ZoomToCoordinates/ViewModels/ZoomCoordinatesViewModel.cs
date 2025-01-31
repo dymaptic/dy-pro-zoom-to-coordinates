@@ -14,7 +14,7 @@ using System.Collections.ObjectModel;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
-public class ZoomCoordinatesViewModel : PropertyChangedBase
+public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 {
 	// Private backing-fields to the public properties
 	private double _yCoordinate;
@@ -24,27 +24,6 @@ public class ZoomCoordinatesViewModel : PropertyChangedBase
 	private CoordinateFormat _selectedFormat;
 	private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
-
-    public class CoordinateFormatItem
-    {
-        public CoordinateFormat Format { get; set; }
-        public string DisplayName { get; set; }
-
-        public override string ToString()
-        {
-            return DisplayName;
-        }
-    }
-
-    // Properties
-    public ObservableCollection<CoordinateFormatItem> CoordinateFormats { get; } = new()
-    {
-        new CoordinateFormatItem { Format = CoordinateFormat.DecimalDegrees, DisplayName = "Decimal Degrees" },
-        new CoordinateFormatItem { Format = CoordinateFormat.DegreesDecimalMinutes, DisplayName = "Degrees Decimal Minutes" },
-        new CoordinateFormatItem { Format = CoordinateFormat.DegreesMinutesSeconds, DisplayName = "Degrees Minutes Seconds" },
-        new CoordinateFormatItem { Format = CoordinateFormat.MGRS, DisplayName = "MGRS" },
-        new CoordinateFormatItem { Format = CoordinateFormat.UTM, DisplayName = "UTM" }
-    };
 
     private CoordinateFormatItem _selectedFormatItem;
     public CoordinateFormatItem SelectedFormatItem
@@ -56,6 +35,7 @@ public class ZoomCoordinatesViewModel : PropertyChangedBase
             {
                 _selectedFormat = value.Format;
                 UpdateCoordinateLabels();
+
                 // TODO: Convert coordinates to selected format
             }
         }
