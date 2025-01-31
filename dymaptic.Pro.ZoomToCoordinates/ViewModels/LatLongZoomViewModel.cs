@@ -10,36 +10,95 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Collections.ObjectModel;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
 public class LatLongZoomViewModel : PropertyChangedBase
 {
 	// Private backing-fields to the public properties
-	private double _latitude;
-	private double _longitude;
+	private double _yCoordinate;
+	private double _xCoordinate;
 	private double _scale;
 	private bool _createGraphic;
+	private CoordinateFormat _selectedFormat;
+	private string _xCoordinateLabel = "Longitude:";
+    private string _yCoordinateLabel = "Latitude:";
 
-	// Properties
-	public double Latitude
+    // Properties
+    public ObservableCollection<CoordinateFormat> CoordinateFormats { get; } = new()
 	{
-		get => _latitude;
+		CoordinateFormat.DecimalDegrees,
+		CoordinateFormat.DegreesMinutesSeconds,
+		CoordinateFormat.MGRS,
+		CoordinateFormat.UTM
+	};
+
+	public CoordinateFormat SelectedFormat
+	{
+		get => _selectedFormat;
 		set
 		{
-			if (value < -90 || value > 90)
+			if (SetProperty(ref _selectedFormat, value))
 			{
-				ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Latitude must be between -90 and 90.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-			}
-			else
-			{
-				SetProperty(ref _latitude, value);
+				UpdateCoordinateLabels();
+				// TODO: Convert coordinates to selected format
 			}
 		}
 	}
-	public double Longitude
+
+    public string XCoordinateLabel
+    {
+        get => _xCoordinateLabel;
+        set => SetProperty(ref _xCoordinateLabel, value);
+    }
+
+    public string YCoordinateLabel
 	{
-		get => _longitude;
+		get => _yCoordinateLabel;
+		set => SetProperty(ref _yCoordinateLabel, value);
+	}
+
+
+	private void UpdateCoordinateLabels()
+	{
+		if (_selectedFormat == CoordinateFormat.UTM || _selectedFormat == CoordinateFormat.MGRS)
+		{
+			YCoordinateLabel = "Northing:";
+			XCoordinateLabel = "Easting:";
+		}
+		else
+		{
+			YCoordinateLabel = "Latitude:";
+			XCoordinateLabel = "Longitude:";
+		}
+	}
+
+	public double YCoordinate
+	{
+		get => _yCoordinate;
+		set
+		{
+			if (SelectedFormat == CoordinateFormat.DecimalDegrees)
+			{
+                if (value < -90 || value > 90)
+                {
+                    ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Latitude must be between -90 and 90.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                else
+                {
+                    SetProperty(ref _yCoordinate, value);
+                }
+            }
+			else
+			{
+				SetProperty(ref _yCoordinate, value);
+			}
+		}
+	}
+	public double XCoordinate
+	{
+		get => _xCoordinate;
 		set
 		{
 			if (value < -180 || value > 180)
@@ -48,7 +107,7 @@ public class LatLongZoomViewModel : PropertyChangedBase
 			}
 			else
 			{
-				SetProperty(ref _longitude, value);
+				SetProperty(ref _xCoordinate, value);
 			}
 		}
 	}
@@ -71,10 +130,12 @@ public class LatLongZoomViewModel : PropertyChangedBase
 	public LatLongZoomViewModel()
 	{
 		// On startup, set property values from settings
-		_longitude = _settings.Longitude;
-		_latitude = _settings.Latitude;
+		_xCoordinate = _settings.Longitude;
+		_yCoordinate = _settings.Latitude;
 		_scale = _settings.Scale;
 		_createGraphic = _settings.CreateGraphic;
+		_selectedFormat = _settings.CoordinateFormat;
+		UpdateCoordinateLabels();
 
 		// Command is grayed out if there isn't an active map view
 		ZoomCommand = new RelayCommand(async () => { await ZoomToCoordinates(); }, () => MapView.Active != null);
@@ -92,15 +153,15 @@ public class LatLongZoomViewModel : PropertyChangedBase
 			if (sr.Wkid != 4326)
 			{
 				sr = SpatialReferenceBuilder.CreateSpatialReference(4326);
-				Camera newCamera = new(x: Longitude, y: Latitude, scale: Scale, heading: 0, spatialReference: sr);
+				Camera newCamera = new(x: XCoordinate, y: YCoordinate, scale: Scale, heading: 0, spatialReference: sr);
 				mapView.ZoomTo(newCamera, TimeSpan.Zero);
 			}
 
 			// Otherwise, just update the coordinates & scale of the existing camera
 			else
 			{
-				camera.X = Longitude;
-				camera.Y = Latitude;
+				camera.X = XCoordinate;
+				camera.Y = YCoordinate;
 				camera.Scale = Scale;
 				mapView.ZoomTo(camera, TimeSpan.Zero);
 			}
@@ -119,11 +180,11 @@ public class LatLongZoomViewModel : PropertyChangedBase
 					groupLyrContainer ??= LayerFactory.Instance.CreateGroupLayer(container: map, index: 0, layerName: groupLyrName);
 
 					// Create point at specified coordinates & graphic for the map
-					MapPoint point = MapPointBuilderEx.CreateMapPoint(new Coordinate2D(Longitude, Latitude), sr);
+					MapPoint point = MapPointBuilderEx.CreateMapPoint(new Coordinate2D(XCoordinate, YCoordinate), sr);
 					CIMGraphic graphic = GraphicFactory.Instance.CreateSimpleGraphic(geometry: point, symbol: symbol);
 
 					// Create the point container inside the group layer container and place graphic into it to create graphic element
-					GraphicsLayerCreationParams lyrParams = new() { Name = $"{Longitude} {Latitude}" };
+					GraphicsLayerCreationParams lyrParams = new() { Name = $"{XCoordinate} {YCoordinate}" };
 					GraphicsLayer pointGraphicContainer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(layerParams: lyrParams, container: groupLyrContainer);
 					ElementFactory.Instance.CreateGraphicElement(elementContainer: pointGraphicContainer, cimGraphic: graphic, select: false);
 
@@ -131,7 +192,7 @@ public class LatLongZoomViewModel : PropertyChangedBase
 					CIMTextGraphic label = new()
 					{
 						Symbol = SymbolFactory.Instance.ConstructTextSymbol(color: GetColor(_settings.FontColor), size:12, fontFamilyName:_settings.FontFamily, fontStyleName: _settings.FontStyle).MakeSymbolReference(),
-						Text = $"    <b>{Longitude} {Latitude}</b>",
+						Text = $"    <b>{XCoordinate} {YCoordinate}</b>",
 						Shape = point
 					};
 
@@ -141,7 +202,7 @@ public class LatLongZoomViewModel : PropertyChangedBase
 				// 3D Map (adds an overlay without a label, since CIMTextGraphic is a graphic & graphics are 2D only. Therefore, there isn't a graphics container in the ArcGIS Pro Table of Contents).
 				else if (map.IsScene)
 				{
-					MapPoint point = MapPointBuilderEx.CreateMapPoint(new Coordinate3D(x: Longitude, y: Latitude, z: 0), sr);
+					MapPoint point = MapPointBuilderEx.CreateMapPoint(new Coordinate3D(x: XCoordinate, y: YCoordinate, z: 0), sr);
 					mapView.AddOverlay(point, symbol.MakeSymbolReference());
 				}
 			}
