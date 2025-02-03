@@ -15,7 +15,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <extensions:DesignOnlyResourceDictionary Source="pack://application:,,,/ArcGIS.Desktop.Framework;component\Themes\Default.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         </ResourceDictionary>
     </controls:ProWindow.Resources>
     <Grid>
@@ -44,13 +43,10 @@
         <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
         <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding FormattedYCoordinate, Mode=OneWay}" IsReadOnly="True" />
 
-        <!-- Full Reference -->
-        <Label Grid.Row="3" Grid.Column="0" Margin="5" Content="Full Reference:"/>
-        <!--Visibility="{Binding IsGridReferenceFormat, Converter={StaticResource BooleanToVisibilityConverter}}"/-->
-        <TextBox x:Name="FullReference" Grid.Row="3" Grid.Column="1" Margin="5,5,10,5" 
-                 Text="{Binding GridReferenceDisplay, Mode=OneWay}"
+        <!-- Display -->
+        <Button Grid.Row="3" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}"/>
+        <TextBox Grid.Row="3" Grid.Column="1" Margin="5,5,10,5" Text="{Binding Display, Mode=OneWay}"
                  IsReadOnly="True"/>
-        <!--Visibility="{Binding IsGridReferenceFormat, Converter={StaticResource BooleanToVisibilityConverter}}"/>-->
 
         <!-- Instructions -->
         <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="5,10,5,5" 

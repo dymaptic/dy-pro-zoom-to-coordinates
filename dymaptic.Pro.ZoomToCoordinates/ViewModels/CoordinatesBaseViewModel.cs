@@ -25,10 +25,11 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
     public class UTMItem
     {
         public int Zone { get; set; }
+        public string GridID { get; set; } = "";  // stores latitude band, one of "CDEFGHJKLMNPQRSTUVWXX";  // Excludes 'I' and 'O'
+
         public int Easting { get; set; }
         public int Northing { get; set; }
-        public string Hemisphere { get; set; } = "";
-        public string Display => $"{Zone}{Hemisphere} {Easting} {Northing}";
+        public string Display => $"{Zone}{GridID} {Easting} {Northing}";
     }
 
     // Properties
@@ -80,7 +81,19 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(4326);
         MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, wgs84);
         int zone = (int)Math.Floor((longitude + 180) / 6) + 1;
+
+        // Step 2: Find the Latitude Band (Grid ID)
+        string latitudeBands = "CDEFGHJKLMNPQRSTUVWXX";  // Excludes 'I' and 'O'
+        int bandIndex = (int)Math.Floor((latitude + 80) / 8);
+        string gridID = latitudeBands[Math.Clamp(bandIndex, 0, latitudeBands.Length - 1)].ToString();
+
+        // Default for UTM North
         int epsg = 26900 + zone;
+        if (latitude < 0)
+        {
+            epsg = 32700 + zone; // UTM South (EPSG codes start from 32700 for southern hemisphere)
+        }
+
         SpatialReference utmSR = SpatialReferenceBuilder.CreateSpatialReference(epsg);
         MapPoint? utmPoint = GeometryEngine.Instance.Project(wgs84Point, utmSR) as MapPoint;
 
@@ -88,9 +101,9 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         utm = new UTMItem
         {
             Zone = zone,
-            Easting = (int)Math.Round(utmPoint.X),
-            Northing = (int)Math.Round(utmPoint.Y),
-            Hemisphere = latitude >= 0 ? "N" : "S"
+            GridID = gridID,
+            Easting = (int)Math.Round(utmPoint!.X),
+            Northing = (int)Math.Round(utmPoint!.Y)
         };
     }
 }
