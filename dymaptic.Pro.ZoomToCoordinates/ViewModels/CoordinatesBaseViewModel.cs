@@ -8,6 +8,7 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using static dymaptic.Pro.ZoomToCoordinates.ViewModels.CoordinatesBaseViewModel;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public class CoordinatesBaseViewModel : PropertyChangedBase
@@ -94,7 +95,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
     {
         SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(WGS84_EPSG);
         MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, wgs84);
-        
+
         int zone = CalculateUTMZone(longitude);
         string gridID = GetLatitudeBand(latitude);
         int epsg = GetUTMEpsgCode(latitude, zone);
