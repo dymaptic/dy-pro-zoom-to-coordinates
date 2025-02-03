@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Collections.ObjectModel;
+using Newtonsoft.Json.Linq;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
@@ -91,53 +92,45 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 	{
 		if (_selectedFormat == CoordinateFormat.UTM || _selectedFormat == CoordinateFormat.MGRS)
 		{
-			YCoordinateLabel = "Northing:";
-			XCoordinateLabel = "Easting:";
+            XCoordinateLabel = "Easting:";
+            YCoordinateLabel = "Northing:";
 		}
 		else
 		{
-			YCoordinateLabel = "Latitude:";
-			XCoordinateLabel = "Longitude:";
+            XCoordinateLabel = "Longitude:";
+            YCoordinateLabel = "Latitude:";
 		}
 	}
 
-	public double YCoordinate
+    public double XCoordinate
+    {
+        get => _xCoordinate;
+        set
+        {
+            XCoordinateValidated = ValidateCoordinate(value, "X");
+            if (XCoordinateValidated)
+            {
+                SetProperty(ref _xCoordinate, value);
+            }
+        }
+    }
+
+    public double YCoordinate
 	{
 		get => _yCoordinate;
 		set
 		{
-			if (SelectedFormatItem.Format == CoordinateFormat.DecimalDegrees)
+            YCoordinateValidated = ValidateCoordinate(value, "Y");
+			if (YCoordinateValidated)
 			{
-                if (value < -90 || value > 90)
-                {
-                    ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Latitude must be between -90 and 90.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-                else
-                {
-                    SetProperty(ref _yCoordinate, value);
-                }
+                SetProperty(ref _yCoordinate, value);
             }
-			else
-			{
-				SetProperty(ref _yCoordinate, value);
-			}
 		}
 	}
-	public double XCoordinate
-	{
-		get => _xCoordinate;
-		set
-		{
-			if (value < -180 || value > 180)
-			{
-				ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Longitude must be between -180 and 180.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-			}
-			else
-			{
-				SetProperty(ref _xCoordinate, value);
-			}
-		}
-	}
+
+
+	private bool XCoordinateValidated { get; set; } 
+	private bool YCoordinateValidated { get; set; }	
 
 	public double Scale
 	{
@@ -177,6 +170,135 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             return MapPointBuilderEx.CreateMapPoint(x, y, spatialReference);
         });
     }
+
+	private bool ValidateCoordinate(double coordinateValue, string XorY)
+	{
+		switch (_selectedFormat)
+		{
+            case CoordinateFormat.DecimalDegrees:
+				if (XorY == "X")
+				{
+					if (coordinateValue >= -180 && coordinateValue <= 180)
+					{
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+				else
+				{
+					if (coordinateValue >= -90 && coordinateValue <= 90)
+					{
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+            case CoordinateFormat.DegreesDecimalMinutes:
+                if (XorY == "X")
+                {
+                    if (coordinateValue >= -180 && coordinateValue <= 180)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (coordinateValue >= -90 && coordinateValue <= 90)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+            case CoordinateFormat.DegreesMinutesSeconds:
+                if (XorY == "X")
+                {
+                    if (coordinateValue >= -180 && coordinateValue <= 180)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (coordinateValue >= -90 && coordinateValue <= 90)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+            case CoordinateFormat.MGRS:
+                if (XorY == "X")
+                {
+                    if (coordinateValue >= 0 && coordinateValue <= 180)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (coordinateValue >= -90 && coordinateValue <= 90)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+            case CoordinateFormat.UTM:
+                if (XorY == "X")
+                {
+                    if (coordinateValue >= -180 && coordinateValue <= 180)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (coordinateValue >= -90 && coordinateValue <= 90)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+			default:
+				return false;
+        }
+    }
+
 
     public void UpdateCoordinates(MapPoint mapPoint)
     {
