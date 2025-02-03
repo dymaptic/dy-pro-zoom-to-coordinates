@@ -63,6 +63,13 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
 
     private string _formattedYCoordinate;
     private string _formattedXCoordinate;
+    private bool _isGridReferenceFormat;
+
+    public bool IsGridReferenceFormat
+    {
+        get => _isGridReferenceFormat;
+        private set => SetProperty(ref _isGridReferenceFormat, value);
+    }
 
     public string FormattedYCoordinate
     {
@@ -226,7 +233,8 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
 
     private void UpdateCoordinateLabels()
     {
-        if (_selectedFormat == CoordinateFormat.UTM || _selectedFormat == CoordinateFormat.MGRS)
+        IsGridReferenceFormat = _selectedFormat == CoordinateFormat.UTM || _selectedFormat == CoordinateFormat.MGRS;
+        if (IsGridReferenceFormat)
         {
             YCoordinateLabel = "Northing:";
             XCoordinateLabel = "Easting:";
@@ -269,10 +277,8 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.UTM:
-                ConvertToUTM(mapPoint.X, mapPoint.Y, out UTMItem utm); //out double xUTM, out double yUTM);
+                ConvertToUTM(mapPoint.X, mapPoint.Y, out UTMItem utm);
                 UTMPoint = utm;
-                //XCoordinate = xUTM;
-                //YCoordinate = yUTM;
                 XCoordinate = utm.Easting;
                 YCoordinate = utm.Northing;
                 break;

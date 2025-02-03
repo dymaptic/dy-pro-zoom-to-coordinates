@@ -15,10 +15,12 @@
             <ResourceDictionary.MergedDictionaries>
                 <extensions:DesignOnlyResourceDictionary Source="pack://application:,,,/ArcGIS.Desktop.Framework;component\Themes\Default.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         </ResourceDictionary>
     </controls:ProWindow.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
@@ -42,9 +44,15 @@
         <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
         <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding FormattedYCoordinate, Mode=OneWay}" IsReadOnly="True" />
 
+        <!-- Full Grid Reference -->
+        <TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="5,5,10,5" 
+                 Text="{Binding UTMPoint.Display, Mode=OneWay}"
+                 IsReadOnly="True"
+                 Visibility="{Binding IsGridReferenceFormat, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
         <!-- Instructions -->
-        <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="5,10,5,5" 
-                   Text="Click on the map to get coordinates" 
+        <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="5,10,5,5" 
+                   Text="Click on the map to get coordinates"
                    HorizontalAlignment="Center"/>
     </Grid>
 </controls:ProWindow>

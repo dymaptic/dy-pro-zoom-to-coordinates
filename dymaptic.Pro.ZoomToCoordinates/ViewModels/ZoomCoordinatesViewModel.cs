@@ -196,10 +196,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.UTM:
-                ConvertToUTM(mapPoint.X, mapPoint.Y, out UTMItem utm); //out double xUTM, out double yUTM);
+                ConvertToUTM(mapPoint.X, mapPoint.Y, out UTMItem utm);
                 UTMPoint = utm;
-                //XCoordinate = xUTM;
-                //YCoordinate = yUTM;
                 XCoordinate = utm.Easting;
                 YCoordinate = utm.Northing;
                 break;
