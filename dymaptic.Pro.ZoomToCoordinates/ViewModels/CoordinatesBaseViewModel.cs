@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public class CoordinatesBaseViewModel : PropertyChangedBase
@@ -22,14 +23,14 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         }
     }
 
-    public class UTMItem
+    public class GridSRItem
     {
         public int Zone { get; set; }
         public string GridID { get; set; } = "";  // stores latitude band, one of "CDEFGHJKLMNPQRSTUVWXX";  // Excludes 'I' and 'O'
 
         public int Easting { get; set; }
         public int Northing { get; set; }
-        public string Display => $"{Zone}{GridID} {Easting} {Northing}";
+        public string Display => $"{Zone}{GridID}{Easting}{Northing}";
     }
 
     // Properties
@@ -68,15 +69,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         yDMS = latDegrees + (latMinutes / 100) + (latSeconds / 10000);
     }
 
-    public static void ConvertToMGRS(double longitude, double latitude, out double xMGRS, out double yMGRS)
-    {
-        // TODO: Implement MGRS conversion using ArcGIS SDK
-        // For now, just pass through the values
-        xMGRS = longitude;
-        yMGRS = latitude;
-    }
-
-    public static void ConvertToUTM(double longitude, double latitude, out UTMItem utm)
+    public static void ConvertToMGRS(double longitude, double latitude, out GridSRItem mgrs)
     {
         SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(4326);
         MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, wgs84);
@@ -97,8 +90,39 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         SpatialReference utmSR = SpatialReferenceBuilder.CreateSpatialReference(epsg);
         MapPoint? utmPoint = GeometryEngine.Instance.Project(wgs84Point, utmSR) as MapPoint;
 
-        // Initialize UTMItem and assign values
-        utm = new UTMItem
+        // Initialize GridSRItem and assign values
+        mgrs = new GridSRItem
+        {
+            Zone = zone,
+            GridID = gridID,
+            Easting = (int)Math.Round(utmPoint!.X),
+            Northing = (int)Math.Round(utmPoint!.Y)
+        };
+    }
+
+    public static void ConvertToUTM(double longitude, double latitude, out GridSRItem utm)
+    {
+        SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(4326);
+        MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, wgs84);
+        int zone = (int)Math.Floor((longitude + 180) / 6) + 1;
+
+        // Step 2: Find the Latitude Band (Grid ID)
+        string latitudeBands = "CDEFGHJKLMNPQRSTUVWXX";  // Excludes 'I' and 'O'
+        int bandIndex = (int)Math.Floor((latitude + 80) / 8);
+        string gridID = latitudeBands[Math.Clamp(bandIndex, 0, latitudeBands.Length - 1)].ToString();
+
+        // Default for UTM North
+        int epsg = 26900 + zone;
+        if (latitude < 0)
+        {
+            epsg = 32700 + zone; // UTM South (EPSG codes start from 32700 for southern hemisphere)
+        }
+
+        SpatialReference utmSR = SpatialReferenceBuilder.CreateSpatialReference(epsg);
+        MapPoint? utmPoint = GeometryEngine.Instance.Project(wgs84Point, utmSR) as MapPoint;
+
+        // Initialize GridSRItem and assign values
+        utm = new GridSRItem
         {
             Zone = zone,
             GridID = gridID,

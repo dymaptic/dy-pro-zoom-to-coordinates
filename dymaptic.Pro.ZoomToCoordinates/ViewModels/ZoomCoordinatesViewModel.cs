@@ -25,7 +25,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 	private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
     private MapPoint _mapPoint;
-    private UTMItem _utm;
+    private GridSRItem _utm;
+    private GridSRItem _mgrs;
 
 
     private CoordinateFormatItem _selectedFormatItem;
@@ -49,7 +50,19 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         }
     }
 
-    public UTMItem UTMPoint
+    public GridSRItem MGRSPoint
+    {
+        get => _mgrs;
+        set
+        {
+            if (value != null && SetProperty(ref _mgrs, value))
+            {
+                _mgrs = value;
+            }
+        }
+    }
+
+    public GridSRItem UTMPoint
     {
         get => _utm;
         set
@@ -190,13 +203,14 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.MGRS:
-                ConvertToMGRS(mapPoint.X, mapPoint.Y, out double xMGRS, out double yMGRS);
-                XCoordinate = xMGRS;
-                YCoordinate = yMGRS;
+                ConvertToMGRS(mapPoint.X, mapPoint.Y, out GridSRItem mgrs);
+				MGRSPoint = mgrs;
+                XCoordinate = mgrs.Easting;
+                YCoordinate = mgrs.Northing;
                 break;
 
             case CoordinateFormat.UTM:
-                ConvertToUTM(mapPoint.X, mapPoint.Y, out UTMItem utm);
+                ConvertToUTM(mapPoint.X, mapPoint.Y, out GridSRItem utm);
                 UTMPoint = utm;
                 XCoordinate = utm.Easting;
                 YCoordinate = utm.Northing;

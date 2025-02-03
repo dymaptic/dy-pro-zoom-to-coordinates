@@ -1,11 +1,9 @@
 using ArcGIS.Core.Geometry;
-using ArcGIS.Desktop.Framework.Contracts;
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows.Input;
-using System.Windows;
 using ArcGIS.Desktop.Framework;
+using System;
+using System.Linq;
+using System.Windows;
+using System.Windows.Input;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
@@ -20,7 +18,8 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
     private string _formattedXCoordinate;
     private string _display;
     private MapPoint _mapPoint;
-    private UTMItem _utm;
+    private GridSRItem _utm;
+    private GridSRItem _mgrs;
 
     public ICommand CopyTextCommand { get; }
 
@@ -43,9 +42,20 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
             }
         }
     }
+   
+    public GridSRItem MGRSPoint
+    {
+        get => _mgrs;
+        set
+        {
+            if (value != null && SetProperty(ref _mgrs, value))
+            {
+                _mgrs = value;
+            }
+        }
+    }
 
-
-    public UTMItem UTMPoint
+    public GridSRItem UTMPoint
     {
         get => _utm;
         set
@@ -139,9 +149,8 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.MGRS:
-                FormatMGRS(YCoordinate, XCoordinate, out string northing, out string easting);
-                FormattedXCoordinate = easting;
-                FormattedYCoordinate = northing;
+                FormattedXCoordinate = MGRSPoint.Easting.ToString();
+                FormattedYCoordinate = MGRSPoint.Northing.ToString();
                 break;
 
             case CoordinateFormat.UTM:
@@ -195,24 +204,6 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         xDMS = $"{lonDegrees}° {lonMinutes}' {lonSeconds:F2}\" {(longitude >= 0 ? "E" : "W")}";
     }
 
-    private void FormatMGRS(double latitude, double longitude, out string northing, out string easting)
-    {
-        if (_mapPoint == null) 
-        {
-            northing = "";
-            easting = "";
-            Display = "";
-            return;
-        }
-
-        // Use CoordinateFormatter to convert to MGRS
-        string mgrsString = "";  // ArcGIS.Core.Geometry.CoordinateFormatter.ToMgrs(_mapPoint, ArcGIS.Core.Geometry.MgrsConversionMode.Automatic, 5, true);
-        
-        // MGRS format is a single string, so we'll split it for display
-        northing = mgrsString;
-        easting = ""; // In MGRS, it's all one string
-        Display = mgrsString;
-    }
 
     private void UpdateCoordinateLabels()
     {
@@ -257,13 +248,14 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.MGRS:
-                ConvertToMGRS(mapPoint.X, mapPoint.Y, out double xMGRS, out double yMGRS);
-                XCoordinate = xMGRS;
-                YCoordinate = yMGRS;
+                ConvertToMGRS(mapPoint.X, mapPoint.Y, out GridSRItem mgrs);
+                MGRSPoint = mgrs;
+                XCoordinate = mgrs.Easting;
+                YCoordinate = mgrs.Northing;
                 break;
 
             case CoordinateFormat.UTM:
-                ConvertToUTM(mapPoint.X, mapPoint.Y, out UTMItem utm);
+                ConvertToUTM(mapPoint.X, mapPoint.Y, out GridSRItem utm);
                 UTMPoint = utm;
                 XCoordinate = utm.Easting;
                 YCoordinate = utm.Northing;
