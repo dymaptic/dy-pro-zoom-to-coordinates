@@ -1,8 +1,10 @@
-﻿using ArcGIS.Desktop.Framework.Contracts;
+﻿using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Framework.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,6 +20,15 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         {
             return DisplayName!;
         }
+    }
+
+    public class UTMItem
+    {
+        public int Zone { get; set; }
+        public int Easting { get; set; }
+        public int Northing { get; set; }
+        public string Hemisphere { get; set; } = "";
+        public string Display => $"{Zone}{Hemisphere} {Easting} {Northing}";
     }
 
     // Properties
@@ -64,11 +75,25 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         yMGRS = latitude;
     }
 
-    public static void ConvertToUTM(double longitude, double latitude, out double xUTM, out double yUTM)
+    public static void ConvertToUTM(double longitude, double latitude, out UTMItem utm) //out double xUTM, out double yUTM)
     {
-        // TODO: Implement UTM conversion using ArcGIS SDK
-        // For now, just pass through the values
-        xUTM = longitude;
-        yUTM = latitude;
+        SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(4326);
+        MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, wgs84);
+        int zone = (int)Math.Floor((longitude + 180) / 6) + 1;
+        int epsg = 26900 + zone;
+        SpatialReference utmSR = SpatialReferenceBuilder.CreateSpatialReference(epsg);
+        MapPoint? utmPoint = GeometryEngine.Instance.Project(wgs84Point, utmSR) as MapPoint;
+
+        // Initialize UTMItem and assign values
+        utm = new UTMItem
+        {
+            Zone = zone,
+            Easting = (int)Math.Round(utmPoint.X),
+            Northing = (int)Math.Round(utmPoint.Y),
+            Hemisphere = latitude >= 0 ? "N" : "S"
+        };
+
+        //xUTM = utmPoint.X;
+        //yUTM = utmPoint.Y;
     }
 }

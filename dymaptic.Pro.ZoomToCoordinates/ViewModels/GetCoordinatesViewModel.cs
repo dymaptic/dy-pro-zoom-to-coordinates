@@ -14,6 +14,7 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
     private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
     private MapPoint _mapPoint;
+    private UTMItem _utm;
 
     private CoordinateFormatItem _selectedFormatItem;
     public CoordinateFormatItem SelectedFormatItem
@@ -31,6 +32,19 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 {
                     UpdateCoordinates(_mapPoint);
                 }
+            }
+        }
+    }
+
+
+    public UTMItem UTMPoint
+    {
+        get => _utm;
+        set
+        {
+            if (value != null && SetProperty(ref _utm, value))
+            {
+                _utm = value;
             }
         }
     }
@@ -115,13 +129,12 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.UTM:
-                FormatUTM(YCoordinate, XCoordinate, out string north, out string east);
-                FormattedYCoordinate = north;
-                FormattedXCoordinate = east;
+                // FormatUTM(YCoordinate, XCoordinate, out string north, out string east);
+                FormattedYCoordinate = Math.Round(YCoordinate).ToString();
+                FormattedXCoordinate = Math.Round(XCoordinate).ToString();
                 break;
         }
     }
-
 
     /// <summary>
     /// Returns latitude/longitude in decimal degrees as Degrees Decimal Minutes (e.g., 37° 29.1911' N  121° 42.8099' W)
@@ -256,9 +269,12 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.UTM:
-                ConvertToUTM(mapPoint.X, mapPoint.Y, out double xUTM, out double yUTM);
-                XCoordinate = xUTM;
-                YCoordinate = yUTM;
+                ConvertToUTM(mapPoint.X, mapPoint.Y, out UTMItem utm); //out double xUTM, out double yUTM);
+                UTMPoint = utm;
+                //XCoordinate = xUTM;
+                //YCoordinate = yUTM;
+                XCoordinate = utm.Easting;
+                YCoordinate = utm.Northing;
                 break;
         }
     }

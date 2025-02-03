@@ -37,10 +37,10 @@
                   SelectedItem="{Binding SelectedFormatItem}" />
 
         <!-- Coordinate text boxes -->
-        <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
-        <TextBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5" Text="{Binding FormattedYCoordinate, Mode=OneWay}" IsReadOnly="True" />
-        <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="{Binding XCoordinateLabel}" />
-        <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding FormattedXCoordinate, Mode=OneWay}" IsReadOnly="True"/>
+        <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="{Binding XCoordinateLabel}" />
+        <TextBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5" Text="{Binding FormattedXCoordinate, Mode=OneWay}" IsReadOnly="True"/>
+        <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
+        <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding FormattedYCoordinate, Mode=OneWay}" IsReadOnly="True" />
 
         <!-- Instructions -->
         <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="5,10,5,5" 

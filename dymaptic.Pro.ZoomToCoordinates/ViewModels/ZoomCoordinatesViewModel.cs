@@ -25,6 +25,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 	private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
     private MapPoint _mapPoint;
+    private UTMItem _utm;
+
 
     private CoordinateFormatItem _selectedFormatItem;
     public CoordinateFormatItem SelectedFormatItem
@@ -43,6 +45,18 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 {
                     UpdateCoordinates(_mapPoint);
                 }
+            }
+        }
+    }
+
+    public UTMItem UTMPoint
+    {
+        get => _utm;
+        set
+        {
+            if (value != null && SetProperty(ref _utm, value))
+            {
+                _utm = value;
             }
         }
     }
@@ -142,7 +156,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 		ZoomCommand = new RelayCommand(async () => { await ZoomToCoordinates(); }, () => MapView.Active != null);
 	}
 
-    public async Task<MapPoint> CreateMapPointAsync(double x, double y, SpatialReference spatialReference)
+    public async static Task<MapPoint> CreateMapPointAsync(double x, double y, SpatialReference spatialReference)
     {
         return await QueuedTask.Run(() =>
         {
@@ -182,13 +196,15 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.UTM:
-                ConvertToUTM(mapPoint.X, mapPoint.Y, out double xUTM, out double yUTM);
-                XCoordinate = xUTM;
-                YCoordinate = yUTM;
+                ConvertToUTM(mapPoint.X, mapPoint.Y, out UTMItem utm); //out double xUTM, out double yUTM);
+                UTMPoint = utm;
+                //XCoordinate = xUTM;
+                //YCoordinate = yUTM;
+                XCoordinate = utm.Easting;
+                YCoordinate = utm.Northing;
                 break;
         }
     }
-
 
     internal async Task ZoomToCoordinates()
 	{
