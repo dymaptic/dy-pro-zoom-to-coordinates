@@ -64,6 +64,13 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
     private string _formattedYCoordinate;
     private string _formattedXCoordinate;
     private bool _isGridReferenceFormat;
+    private string _gridReferenceDisplay;
+
+    public string GridReferenceDisplay
+    {
+        get => _gridReferenceDisplay;
+        private set => SetProperty(ref _gridReferenceDisplay, value);
+    }
 
     public bool IsGridReferenceFormat
     {
@@ -113,20 +120,23 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         switch (_selectedFormat)
         {
             case CoordinateFormat.DecimalDegrees:
-                FormattedYCoordinate = $"{Math.Abs(YCoordinate):F6}° {(YCoordinate >= 0 ? "N" : "S")}";
                 FormattedXCoordinate = $"{Math.Abs(XCoordinate):F6}° {(XCoordinate >= 0 ? "E" : "W")}";
+                FormattedYCoordinate = $"{Math.Abs(YCoordinate):F6}° {(YCoordinate >= 0 ? "N" : "S")}";
+                GridReferenceDisplay = $"{FormattedXCoordinate} {FormattedYCoordinate}";
                 break;
 
             case CoordinateFormat.DegreesDecimalMinutes:
                 FormatDegreesDecimalMinutes(YCoordinate, XCoordinate, out string yDDM, out string xDDM);
-                FormattedYCoordinate = yDDM;
                 FormattedXCoordinate = xDDM;
+                FormattedYCoordinate = yDDM;
+                GridReferenceDisplay = $"{FormattedXCoordinate} {FormattedYCoordinate}";
                 break;
 
             case CoordinateFormat.DegreesMinutesSeconds:
                 FormatDegreesMinutesSeconds(YCoordinate, XCoordinate, out string yDMS, out string xDMS);
-                FormattedYCoordinate = yDMS;
                 FormattedXCoordinate = xDMS;
+                FormattedYCoordinate = yDMS;
+                GridReferenceDisplay = $"{FormattedXCoordinate} {FormattedYCoordinate}";
                 break;
 
             case CoordinateFormat.MGRS:
@@ -136,7 +146,6 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.UTM:
-                // FormatUTM(YCoordinate, XCoordinate, out string north, out string east);
                 FormattedYCoordinate = Math.Round(YCoordinate).ToString();
                 FormattedXCoordinate = Math.Round(XCoordinate).ToString();
                 break;
@@ -193,42 +202,17 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         {
             northing = "";
             easting = "";
+            GridReferenceDisplay = "";
             return;
         }
 
         // Use CoordinateFormatter to convert to MGRS
-        string mgrsString = ""; // ArcGIS.Core.Geometry.CoordinateFormatter.ToMgrs(_mapPoint, ArcGIS.Core.Geometry.MgrsConversionMode.Automatic, 5, true);
+        string mgrsString = "";  // ArcGIS.Core.Geometry.CoordinateFormatter.ToMgrs(_mapPoint, ArcGIS.Core.Geometry.MgrsConversionMode.Automatic, 5, true);
         
         // MGRS format is a single string, so we'll split it for display
         northing = mgrsString;
         easting = ""; // In MGRS, it's all one string
-    }
-
-    private void FormatUTM(double latitude, double longitude, out string northing, out string easting)
-    {
-        if (_mapPoint == null)
-        {
-            northing = "";
-            easting = "";
-            return;
-        }
-
-        // Use CoordinateFormatter to convert to UTM
-        string utmString = "";  // ArcGIS.Core.Geometry.CoordinateFormatter.ToUtm(_mapPoint, ArcGIS.Core.Geometry.UtmConversionMode.NorthSouthIndicators, true);
-        
-        // Parse UTM string into northing and easting
-        // UTM format is typically "Zone Easting Northing"
-        var parts = utmString.Split(' ');
-        if (parts.Length >= 3)
-        {
-            easting = $"{parts[0]} {parts[1]}";
-            northing = parts[2];
-        }
-        else
-        {
-            easting = utmString;
-            northing = "";
-        }
+        GridReferenceDisplay = mgrsString;
     }
 
     private void UpdateCoordinateLabels()
@@ -249,7 +233,11 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
     public void UpdateCoordinates(MapPoint mapPoint)
     {
         _mapPoint = mapPoint;
-        if (mapPoint == null) return;
+        if (mapPoint == null)
+        {
+            GridReferenceDisplay = "";
+            return;
+        }
 
         switch (_selectedFormat)
         {
@@ -281,6 +269,7 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 UTMPoint = utm;
                 XCoordinate = utm.Easting;
                 YCoordinate = utm.Northing;
+                GridReferenceDisplay = utm.Display;
                 break;
         }
     }

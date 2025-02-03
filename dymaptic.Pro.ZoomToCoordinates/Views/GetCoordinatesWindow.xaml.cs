@@ -1,4 +1,5 @@
-﻿using dymaptic.Pro.ZoomToCoordinates.ViewModels;
+﻿using ActiproSoftware.Windows.Controls.Ribbon.Controls;
+using dymaptic.Pro.ZoomToCoordinates.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,5 +25,22 @@ public partial class GetCoordinatesWindow : ArcGIS.Desktop.Framework.Controls.Pr
     {
         InitializeComponent();
         DataContext = new GetCoordinatesViewModel();
+
+        // Attach KeyDown event
+        this.PreviewKeyDown += OnProWindowKeyDown;
+    }
+
+    private void OnProWindowKeyDown(object sender, KeyEventArgs e)
+    {
+        // Check if Ctrl + C is pressed
+        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.C)
+        {
+            // Find the target TextBox (replace 'myTextBox' with the actual name)
+            if (FullReference != null && !string.IsNullOrEmpty(FullReference.Text))
+            {
+                Clipboard.SetText(FullReference.Text);
+                MessageBox.Show("Text copied to clipboard!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
     }
 }

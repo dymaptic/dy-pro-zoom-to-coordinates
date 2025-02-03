@@ -75,7 +75,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         yMGRS = latitude;
     }
 
-    public static void ConvertToUTM(double longitude, double latitude, out UTMItem utm) //out double xUTM, out double yUTM)
+    public static void ConvertToUTM(double longitude, double latitude, out UTMItem utm)
     {
         SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(4326);
         MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, wgs84);
@@ -92,8 +92,5 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
             Northing = (int)Math.Round(utmPoint.Y),
             Hemisphere = latitude >= 0 ? "N" : "S"
         };
-
-        //xUTM = utmPoint.X;
-        //yUTM = utmPoint.Y;
     }
 }
