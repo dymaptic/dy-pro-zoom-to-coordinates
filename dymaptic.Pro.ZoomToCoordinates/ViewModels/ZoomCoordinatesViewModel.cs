@@ -204,7 +204,9 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 		switch (_selectedFormat)
 		{
             case CoordinateFormat.DecimalDegrees:
-                if (!double.TryParse(coordinateValue, out double parsedValue))
+                // Remove degree symbol if present
+                string ddValue = coordinateValue.Replace("°", "").Trim();
+                if (!double.TryParse(ddValue, out double parsedValue))
                 {
                     return false; // Invalid input (not a number)
                 }
@@ -218,9 +220,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 }
 				return isValidDD;
 
-
             case CoordinateFormat.DegreesDecimalMinutes:
-                string[] partsDDM = coordinateValue.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+                // Handle both space-separated and symbol formats
+                string ddmValue = coordinateValue.Replace("°", " ").Replace("'", "").Trim();
+                string[] partsDDM = ddmValue.Split(separator, StringSplitOptions.RemoveEmptyEntries);
 				if (partsDDM.Length != 2)
 				{
 					return false;
@@ -243,9 +246,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 }
                 return isValidDDM;
 
-
             case CoordinateFormat.DegreesMinutesSeconds:
-                string[] partsDMS = coordinateValue.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+                // Handle both space-separated and symbol formats
+                string dmsValue = coordinateValue.Replace("°", " ").Replace("'", " ").Replace("\"", "").Trim();
+                string[] partsDMS = dmsValue.Split(separator, StringSplitOptions.RemoveEmptyEntries);
                 if (partsDMS.Length != 3)
                 {
                     return false;
@@ -378,7 +382,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 					CIMGraphic graphic = GraphicFactory.Instance.CreateSimpleGraphic(geometry: point, symbol: symbol);
 
 					// Create the point container inside the group layer container and place graphic into it to create graphic element
-					GraphicsLayerCreationParams lyrParams = new() { Name = $"{XCoordinate} {YCoordinate}" };
+					GraphicsLayerCreationParams lyrParams = new() { Name = $"{XCoordinateString} {YCoordinateString}" };
 					GraphicsLayer pointGraphicContainer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(layerParams: lyrParams, container: groupLyrContainer);
 					ElementFactory.Instance.CreateGraphicElement(elementContainer: pointGraphicContainer, cimGraphic: graphic, select: false);
 
@@ -386,7 +390,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 					CIMTextGraphic label = new()
 					{
 						Symbol = SymbolFactory.Instance.ConstructTextSymbol(color: GetColor(_settings.FontColor), size:12, fontFamilyName:_settings.FontFamily, fontStyleName: _settings.FontStyle).MakeSymbolReference(),
-						Text = $"    <b>{XCoordinate} {YCoordinate}</b>",
+						Text = $"    <b>{XCoordinateString} {YCoordinateString}</b>",
 						Shape = point
 					};
 
