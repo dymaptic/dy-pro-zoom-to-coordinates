@@ -17,10 +17,12 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
 public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 {
-	// Private backing-fields to the public properties
-	private double _yCoordinate;
-	private double _xCoordinate;
-	private double _scale;
+    // Private backing-fields to the public properties
+    private string _xCoordinateString;
+    private string _yCoordinateString;
+    private double _xCoordinate;
+    private double _yCoordinate;
+    private double _scale;
 	private bool _createGraphic;
 	private CoordinateFormat _selectedFormat;
 	private string _xCoordinateLabel = "Longitude:";
@@ -102,34 +104,50 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 		}
 	}
 
-    public double XCoordinate
+    public string XCoordinateString
     {
-        get => _xCoordinate;
+        get => _xCoordinateString;
         set
         {
             XCoordinateValidated = ValidateCoordinate(value, "X");
             if (XCoordinateValidated)
             {
-                SetProperty(ref _xCoordinate, value);
+                SetProperty(ref _xCoordinateString, value);
             }
         }
     }
 
-    public double YCoordinate
+    public string YCoordinateString
 	{
-		get => _yCoordinate;
+		get => _yCoordinateString;
 		set
 		{
             YCoordinateValidated = ValidateCoordinate(value, "Y");
 			if (YCoordinateValidated)
 			{
-                SetProperty(ref _yCoordinate, value);
+                SetProperty(ref _yCoordinateString, value);
             }
 		}
 	}
 
+    public double XCoordinate
+    {
+        get => _xCoordinate;
+        set => SetProperty(ref _xCoordinate, value);
+    }
 
-	private bool XCoordinateValidated { get; set; } 
+    public double YCoordinate
+    {
+		get => _yCoordinate;
+        set => SetProperty(ref _yCoordinate, value);
+    }
+
+
+    private bool XCoordinateValidated 
+	{ 
+		get; 
+		set; 
+	} 
 	private bool YCoordinateValidated { get; set; }	
 
 	public double Scale
@@ -150,8 +168,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 	public ZoomCoordinatesViewModel()
 	{
 		// On startup, set property values from settings
-		_xCoordinate = _settings.Longitude;
-		_yCoordinate = _settings.Latitude;
+		_xCoordinateString = _settings.Longitude.ToString();
+		_yCoordinateString = _settings.Latitude.ToString();
 		_scale = _settings.Scale;
 		_createGraphic = _settings.CreateGraphic;
 		_selectedFormat = _settings.CoordinateFormat;
@@ -171,129 +189,106 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         });
     }
 
-	private bool ValidateCoordinate(double coordinateValue, string XorY)
+	public static bool IsValidDecimalDegree(double value, string axis)
+	{
+		// "X" is Longitude -180 to 180
+		// "Y" is Latitude -90 to 90
+		double min = axis == "X" ? -180 : -90;
+		double max = axis == "X" ? 180 : 90;
+
+		return value >= min && value <= max;
+	}
+
+    private bool ValidateCoordinate(string coordinateValue, string axis)
 	{
 		switch (_selectedFormat)
 		{
             case CoordinateFormat.DecimalDegrees:
-				if (XorY == "X")
+                if (!double.TryParse(coordinateValue, out double parsedValue))
+                {
+                    return false; // Invalid input (not a number)
+                }
+				bool isValidDD = IsValidDecimalDegree(parsedValue, axis);
+				if (isValidDD)
 				{
-					if (coordinateValue >= -180 && coordinateValue <= 180)
-					{
-						return true;
-					}
-					else
-					{
-						return false;
-					}
-				}
-				else
-				{
-					if (coordinateValue >= -90 && coordinateValue <= 90)
-					{
-						return true;
-					}
-					else
-					{
-						return false;
-					}
-				}
+                    if (axis == "X")
+                        XCoordinate = parsedValue;
+                    else
+                        YCoordinate = parsedValue;
+                }
+				return isValidDD;
+
 
             case CoordinateFormat.DegreesDecimalMinutes:
-                if (XorY == "X")
+                string[] partsDDM = coordinateValue.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+				if (partsDDM.Length != 2)
+				{
+					return false;
+				}
+
+				// Convert each to a number
+				if (!double.TryParse(partsDDM[0], out double degree) || !double.TryParse(partsDDM[1], out double decimalMinutes))
                 {
-                    if (coordinateValue >= -180 && coordinateValue <= 180)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return false; // Invalid input (not a number)
                 }
-                else
+
+				double decimalDegrees = degree + (decimalMinutes / 60);
+                bool isValidDDM = IsValidDecimalDegree(decimalDegrees, axis);
+                if (isValidDDM)
                 {
-                    if (coordinateValue >= -90 && coordinateValue <= 90)
-                    {
-                        return true;
-                    }
+                    if (axis == "X")
+                        XCoordinate = decimalDegrees;
                     else
-                    {
-                        return false;
-                    }
+                        YCoordinate = decimalDegrees;
                 }
+                return isValidDDM;
+
 
             case CoordinateFormat.DegreesMinutesSeconds:
-                if (XorY == "X")
+                string[] partsDMS = coordinateValue.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+                if (partsDMS.Length != 3)
                 {
-                    if (coordinateValue >= -180 && coordinateValue <= 180)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    if (coordinateValue >= -90 && coordinateValue <= 90)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return false;
                 }
 
-            case CoordinateFormat.MGRS:
-                if (XorY == "X")
+                // Convert each to a number
+                if (!double.TryParse(partsDMS[0], out double degrees) || !double.TryParse(partsDMS[1], out double minutes) || !double.TryParse(partsDMS[2], out double seconds))
                 {
-                    if (coordinateValue >= 0 && coordinateValue <= 180)
-                    {
-                        return true;
-                    }
+                    return false; // Invalid input (not a number)
+                }
+
+                double dd = degrees + (minutes / 60) + (seconds / 3600);
+                bool isValidDMS = IsValidDecimalDegree(dd, axis);
+                if (isValidDMS)
+                {
+                    if (axis == "X")
+                        XCoordinate = dd;
                     else
-                    {
-                        return false;
-                    }
+                        YCoordinate = dd;
+                }
+                return isValidDMS;
+
+            case CoordinateFormat.MGRS:
+                if (!double.TryParse(coordinateValue, out double parsedMGRs))
+                {
+                    return false; // Invalid input (not a number)
                 }
                 else
                 {
-                    if (coordinateValue >= -90 && coordinateValue <= 90)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return true;
                 }
 
             case CoordinateFormat.UTM:
-                if (XorY == "X")
+                if (!double.TryParse(coordinateValue, out double parsedUTM))
                 {
-                    if (coordinateValue >= -180 && coordinateValue <= 180)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return false; // Invalid input (not a number)
                 }
-                else
-                {
-                    if (coordinateValue >= -90 && coordinateValue <= 90)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
+				else
+				{
+					return true;
+				}
+
+                
 			default:
 				return false;
         }
@@ -523,4 +518,5 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 	}
 
 	private static readonly Settings _settings = ZoomToCoordinatesModule.GetSettings();
+    private static readonly char[] separator = [' '];
 }
