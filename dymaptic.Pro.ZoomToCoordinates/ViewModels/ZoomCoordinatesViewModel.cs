@@ -217,204 +217,141 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 	}
 
     private bool ValidateCoordinate(string coordinateValue, string axis)
-	{
-        bool makeXNegative = false;
-        bool makeYNegative = false;
+    {
+        if (string.IsNullOrWhiteSpace(coordinateValue))
+            return false;
 
-		switch (_selectedFormat)
-		{
+        bool isNegative = false;
+        string cleanedValue = CleanCoordinateString(coordinateValue, axis, ref isNegative);
+
+        switch (_selectedFormat)
+        {
             case CoordinateFormat.DecimalDegrees:
-				// Remove degree symbol if present
-				string ddValue = coordinateValue;
-                if (axis == "X")
-                {
-                    if (ddValue.Contains('W'))
-                    {
-                        ddValue = ddValue.Replace("W", "");
-                        makeYNegative = true;
-                    }
-                    if (ddValue.Contains('E'))
-                    {
-                        ddValue = ddValue.Replace("E", "");
-                    }
-                }
-                else
-                {
-                    if (ddValue.Contains('N'))
-                    {
-                        ddValue = ddValue.Replace("N", "");
-                    }
-
-                    if (ddValue.Contains('S'))
-                    {
-                        ddValue = ddValue.Replace("S", "");
-                        makeXNegative = true;
-                    }
-
-                }
-                ddValue = ddValue.Replace("°", "").Trim();
-
-                if (!double.TryParse(ddValue, out double parsedValue))
-                {
-                    return false; // Invalid input (not a number)
-                }
-
-                if (makeXNegative || makeYNegative)
-                {
-                    parsedValue *= -1;
-                }
-
-				bool isValidDD = IsValidDecimalDegree(parsedValue, axis);
-				if (isValidDD)
-				{
-                    if (axis == "X")
-                        XCoordinate = parsedValue;
-                    else
-                        YCoordinate = parsedValue;
-                }
-				return isValidDD;
+                return ValidateDecimalDegrees(cleanedValue, axis, isNegative);
 
             case CoordinateFormat.DegreesDecimalMinutes:
-				// Handle both space-separated and symbol formats
-				string ddmValue = coordinateValue;
-                if (axis == "X")
-                {
-                    if (ddmValue.Contains('W'))
-                    {
-                        ddmValue = ddmValue.Replace("W", "");
-                        makeYNegative = true;
-                    }
-                    if (ddmValue.Contains('E'))
-                    {
-                        ddmValue = ddmValue.Replace("E", "");
-                    }
-                }
-                else
-                {
-                    if (ddmValue.Contains('N'))
-                    {
-                        ddmValue = ddmValue.Replace("N", "");
-                    }
-
-                    if (ddmValue.Contains('S'))
-                    {
-                        ddmValue = ddmValue.Replace("S", "");
-                        makeXNegative = true;
-                    }
-                }
-				ddmValue = ddmValue.Replace("°", " ").Replace("'", "").Trim();
-
-                string[] partsDDM = ddmValue.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-				if (partsDDM.Length != 2)
-				{
-					return false;
-				}
-
-				// Convert each to a number
-				if (!double.TryParse(partsDDM[0], out double degree) || !double.TryParse(partsDDM[1], out double decimalMinutes))
-                {
-                    return false; // Invalid input (not a number)
-                }
-
-                double decimalDegrees = degree + (decimalMinutes / 60);
-                if (makeXNegative || makeYNegative)
-                {
-                    decimalDegrees *= -1;
-                }
-                bool isValidDDM = IsValidDecimalDegree(decimalDegrees, axis);
-                if (isValidDDM)
-                {
-                    if (axis == "X")
-                        XCoordinate = decimalDegrees;
-                    else
-                        YCoordinate = decimalDegrees;
-                }
-                return isValidDDM;
+                return ValidateDegreesDecimalMinutes(cleanedValue, axis, isNegative);
 
             case CoordinateFormat.DegreesMinutesSeconds:
-				// Handle both space-separated and symbol formats
-				string dmsValue = coordinateValue;
-                if (axis == "X")
-                {
-                    if (dmsValue.Contains('W'))
-                    {
-                        dmsValue = dmsValue.Replace("W", "");
-                        makeYNegative = true;
-                    }
-                    if (dmsValue.Contains('E'))
-                    {
-                        dmsValue = dmsValue.Replace("E", "");
-                    }
-                }
-                else
-                {
-                    if (dmsValue.Contains('N'))
-                    {
-                        dmsValue = dmsValue.Replace("N", "");
-                    }
-
-                    if (dmsValue.Contains('S'))
-                    {
-                        dmsValue = dmsValue.Replace("S", "");
-                        makeXNegative = true;
-                    }
-                }
-
-				dmsValue = dmsValue.Replace("°", " ").Replace("'", " ").Replace("\"", "").Trim();
-
-                string[] partsDMS = dmsValue.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-                if (partsDMS.Length != 3)
-                {
-                    return false;
-                }
-
-                // Convert each to a number
-                if (!double.TryParse(partsDMS[0], out double degrees) || !double.TryParse(partsDMS[1], out double minutes) || !double.TryParse(partsDMS[2], out double seconds))
-                {
-                    return false; // Invalid input (not a number)
-                }
-
-                double dd = degrees + (minutes / 60) + (seconds / 3600);
-                if (makeXNegative || makeYNegative)
-                {
-                    dd *= -1;
-                }
-                bool isValidDMS = IsValidDecimalDegree(dd, axis);
-                if (isValidDMS)
-                {
-                    if (axis == "X")
-                        XCoordinate = dd;
-                    else
-                        YCoordinate = dd;
-                }
-                return isValidDMS;
+                return ValidateDegreesMinutesSeconds(cleanedValue, axis, isNegative);
 
             case CoordinateFormat.MGRS:
-                if (!double.TryParse(coordinateValue, out double parsedMGRs))
-                {
-                    return false; // Invalid input (not a number)
-                }
-                else
-                {
-                    return true;
-                }
-
             case CoordinateFormat.UTM:
-                if (!double.TryParse(coordinateValue, out double parsedUTM))
-                {
-                    return false; // Invalid input (not a number)
-                }
-				else
-				{
-					return true;
-				}
+                return ValidateNumericValue(cleanedValue);
 
-                
-			default:
-				return false;
+            default:
+                return false;
         }
     }
 
+    private static string CleanCoordinateString(string value, string axis, ref bool isNegative)
+    {
+        string cleanedValue = value;
+
+        // Handle cardinal directions and set negative flag
+        if (axis == "X")
+        {
+            if (cleanedValue.Contains('W'))
+            {
+                cleanedValue = cleanedValue.Replace("W", "");
+                isNegative = true;
+            }
+            cleanedValue = cleanedValue.Replace("E", "");
+        }
+        else
+        {
+            if (cleanedValue.Contains('S'))
+            {
+                cleanedValue = cleanedValue.Replace("S", "");
+                isNegative = true;
+            }
+            cleanedValue = cleanedValue.Replace("N", "");
+        }
+
+        // Remove degree symbols and trim
+        return cleanedValue.Replace("°", " ").Replace("'", " ").Replace("\"", "").Trim();
+    }
+
+    private bool ValidateDecimalDegrees(string value, string axis, bool isNegative)
+    {
+        if (!double.TryParse(value, out double degrees))
+            return false;
+
+        if (isNegative)
+            degrees *= -1;
+
+        if (!IsValidDecimalDegree(degrees, axis))
+            return false;
+
+        if (axis == "X")
+            XCoordinate = degrees;
+        else
+            YCoordinate = degrees;
+
+        return true;
+    }
+
+    private bool ValidateDegreesDecimalMinutes(string value, string axis, bool isNegative)
+    {
+        string[] parts = value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 2)
+            return false;
+
+        if (!double.TryParse(parts[0], out double degrees) || 
+            !double.TryParse(parts[1], out double decimalMinutes))
+            return false;
+
+        if (decimalMinutes >= 60)
+            return false;
+
+        double decimalDegrees = degrees + (decimalMinutes / 60);
+        if (isNegative)
+            decimalDegrees *= -1;
+
+        if (!IsValidDecimalDegree(decimalDegrees, axis))
+            return false;
+
+        if (axis == "X")
+            XCoordinate = decimalDegrees;
+        else
+            YCoordinate = decimalDegrees;
+
+        return true;
+    }
+
+    private bool ValidateDegreesMinutesSeconds(string value, string axis, bool isNegative)
+    {
+        string[] parts = value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 3)
+            return false;
+
+        if (!double.TryParse(parts[0], out double degrees) || 
+            !double.TryParse(parts[1], out double minutes) || 
+            !double.TryParse(parts[2], out double seconds))
+            return false;
+
+        if (minutes >= 60 || seconds >= 60)
+            return false;
+
+        double decimalDegrees = degrees + (minutes / 60) + (seconds / 3600);
+        if (isNegative)
+            decimalDegrees *= -1;
+
+        if (!IsValidDecimalDegree(decimalDegrees, axis))
+            return false;
+
+        if (axis == "X")
+            XCoordinate = decimalDegrees;
+        else
+            YCoordinate = decimalDegrees;
+
+        return true;
+    }
+
+    private bool ValidateNumericValue(string value)
+    {
+        return double.TryParse(value, out _);
+    }
 
     public void UpdateCoordinates(MapPoint mapPoint)
     {
