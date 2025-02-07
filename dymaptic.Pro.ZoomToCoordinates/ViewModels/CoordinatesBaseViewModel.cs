@@ -8,6 +8,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
 {
     // Constants for UTM/MGRS calculations
     private const string LatitudeBands = "CDEFGHJKLMNPQRSTUVWX";  // 'C' to 'X' excluding 'I' and 'O'
+    private const string GridSquareLetters = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // Excluding 'I' and 'O'
     private const int NorthernHemisphereBase = 32600;  // EPSG base for northern hemisphere
     private const int SouthernHemisphereBase = 32700;  // EPSG base for southern hemisphere
     public const int WGS84_EPSG = 4326;
@@ -105,22 +106,48 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
 
     public static void ConvertToMGRS(double longitude, double latitude, out GridSRItem mgrs)
     {
+        // First convert to UTM since MGRS builds on UTM
         SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(WGS84_EPSG);
         MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, wgs84);
 
         int zone = CalculateUTMZone(longitude);
-        string gridID = GetLatitudeBand(latitude);
+        string latBand = GetLatitudeBand(latitude);
         int epsg = GetUTMEpsgCode(latitude, zone);
 
+        // Project to UTM
         SpatialReference utmSR = SpatialReferenceBuilder.CreateSpatialReference(epsg);
-        MapPoint? utmPoint = GeometryEngine.Instance.Project(wgs84Point, utmSR) as MapPoint ?? throw new InvalidOperationException("Failed to project point to UTM coordinates");
+        MapPoint? utmPoint = GeometryEngine.Instance.Project(wgs84Point, utmSR) as MapPoint 
+            ?? throw new InvalidOperationException("Failed to project point to UTM coordinates");
+
+        // Calculate 100km grid square letters
+        int easting = (int)Math.Floor(utmPoint.X);
+        int northing = (int)Math.Floor(utmPoint.Y);
+
+        // Get the column letter from the easting
+        int column = (easting / 100000) % GridSquareLetters.Length;
+        
+        // Get the row letter from the northing
+        int row = ((northing / 100000) % 20);
+        if (zone % 2 == 0)
+        {
+            // Even numbered zones offset the row letters
+            row = (row + 5) % 20;
+        }
+
+        // Create the grid square ID from the column and row
+        string gridSquare = $"{GridSquareLetters[column]}{GridSquareLetters[row]}";
+
+        // Get the truncated easting and northing (within the 100km grid square)
+        int truncatedEasting = easting % 100000;
+        int truncatedNorthing = northing % 100000;
+
         mgrs = new GridSRItem
         {
             EPSG = epsg,
             Zone = zone,
-            GridID = gridID,
-            Easting = (int)Math.Round(utmPoint.X),
-            Northing = (int)Math.Round(utmPoint.Y)
+            GridID = latBand + gridSquare,
+            Easting = truncatedEasting,
+            Northing = truncatedNorthing
         };
     }
 

@@ -153,11 +153,13 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
             case CoordinateFormat.MGRS:
                 FormattedXCoordinate = MGRSPoint.Easting.ToString();
                 FormattedYCoordinate = MGRSPoint.Northing.ToString();
+                Display = MGRSPoint.Display;
                 break;
 
             case CoordinateFormat.UTM:
                 FormattedXCoordinate = UTMPoint.Easting.ToString();
                 FormattedYCoordinate = UTMPoint.Northing.ToString();
+                Display = UTMPoint.Display;
                 break;
         }
     }
@@ -200,6 +202,7 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 MGRSPoint = mgrs;
                 XCoordinate = mgrs.Easting;
                 YCoordinate = mgrs.Northing;
+                Display = mgrs.Display;
                 break;
 
             case CoordinateFormat.UTM:
