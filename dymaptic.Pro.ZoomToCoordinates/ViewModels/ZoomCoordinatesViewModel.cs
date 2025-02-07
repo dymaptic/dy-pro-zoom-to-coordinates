@@ -198,7 +198,9 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 		set => SetProperty(ref _createGraphic, value);
 	}
 
-	public ICommand ZoomCommand { get; }
+    public ICommand CopyTextCommand { get; }
+
+    public ICommand ZoomCommand { get; }
 		
 	// Constructor
 	public ZoomCoordinatesViewModel()
@@ -212,8 +214,17 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 		UpdateFormattedCoordinates();
 
         // Command is grayed out if there isn't an active map view
-        ZoomCommand = new RelayCommand(async () => { await ZoomToCoordinates(); }, () => MapView.Active != null);
-	}
+        ZoomCommand = new RelayCommand(async () => 
+        { 
+            await ZoomToCoordinates(); 
+        }, () => MapView.Active != null);
+
+        // Bind the command
+        CopyTextCommand = new RelayCommand(() =>
+        {
+            CopyText();
+        });
+    }
 
 	public static bool IsValidDecimalDegree(double value, string axis)
 	{
@@ -233,7 +244,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         bool isNegative = false;
         string cleanedValue = CleanCoordinateString(coordinateValue, axis, ref isNegative);
 
-        switch (_selectedFormat)
+        return _selectedFormat switch
         {
             case CoordinateFormat.DecimalDegrees:
                 return ValidateDecimalDegrees(cleanedValue, axis, isNegative);
@@ -360,6 +371,14 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     private static bool ValidateNumericValue(string value)
     {
         return double.TryParse(value, out _);
+    }
+
+    private void CopyText()
+    {
+        if (!string.IsNullOrEmpty(Display))
+        {
+            Clipboard.SetText(Display);
+        }
     }
 
     private void UpdateCoordinateLabels()
