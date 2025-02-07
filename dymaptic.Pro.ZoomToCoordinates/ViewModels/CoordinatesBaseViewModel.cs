@@ -1,14 +1,7 @@
 ﻿using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Framework.Contracts;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using static dymaptic.Pro.ZoomToCoordinates.ViewModels.CoordinatesBaseViewModel;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public class CoordinatesBaseViewModel : PropertyChangedBase
@@ -103,7 +96,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         return LatitudeBands[Math.Clamp(bandIndex, 0, LatitudeBands.Length - 1)].ToString();
     }
 
-    private static int GetUTMEpsgCode(double latitude, int zone)
+    public static int GetUTMEpsgCode(double latitude, int zone)
     {
         // For Northern Hemisphere: EPSG = 32600 + zone (e.g., 32601-32660)
         // For Southern Hemisphere: EPSG = 32700 + zone (e.g., 32701-32760)

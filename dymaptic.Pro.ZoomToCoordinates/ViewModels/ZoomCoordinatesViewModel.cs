@@ -1,17 +1,15 @@
 ﻿using ArcGIS.Core.CIM;
 using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Framework;
-using ArcGIS.Desktop.Framework.Contracts;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
 using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Collections.ObjectModel;
-using Newtonsoft.Json.Linq;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
@@ -51,13 +49,27 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     public int SelectedZone
     {
         get => _selectedZone;
-        set => SetProperty(ref _selectedZone, value);
+        set
+        {
+            SetProperty(ref _selectedZone, value);
+            if (_xCoordinateValidated && _yCoordinateValidated)
+            {
+                UpdateMapPointFromCoordinates();
+            }
+        }
     }
 
     public string SelectedLatitudeBand
     {
         get => _selectedLatitudeBand;
-        set => SetProperty(ref _selectedLatitudeBand, value);
+        set
+        {
+            SetProperty(ref _selectedLatitudeBand, value);
+            if (_xCoordinateValidated && _yCoordinateValidated)
+            {
+                UpdateMapPointFromCoordinates();
+            }
+        }
     }
 
     public bool ShowUtmControls
@@ -135,17 +147,13 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 SetProperty(ref _xCoordinateString, value);
                 if (_yCoordinateValidated)
                 {
-                    if (_selectedFormat != CoordinateFormat.UTM || _selectedFormat != CoordinateFormat.MGRS)
-                    {
-                        SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(WGS84_EPSG);
-                        _mapPoint = MapPointBuilderEx.CreateMapPoint(XCoordinate, YCoordinate, wgs84);
-                    }
+                    UpdateMapPointFromCoordinates();
                 }
             }
-			else
-			{
-				_mapPoint = null;
-			}
+            else
+            {
+                _mapPoint = null;
+            }
         }
     }
 
@@ -160,11 +168,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 SetProperty(ref _yCoordinateString, value);
 				if (_xCoordinateValidated)
 				{
-					if (_selectedFormat != CoordinateFormat.UTM || _selectedFormat != CoordinateFormat.MGRS)
-					{
-						SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(WGS84_EPSG);
-                        _mapPoint = MapPointBuilderEx.CreateMapPoint(XCoordinate, YCoordinate, wgs84);
-					}
+					UpdateMapPointFromCoordinates();
 				}
             }
 			else
@@ -466,6 +470,30 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 XCoordinateString = UTMPoint.Easting.ToString();
                 YCoordinateString = UTMPoint.Northing.ToString();
                 break;
+        }
+    }
+
+    private void UpdateMapPointFromCoordinates()
+    {
+        if (_selectedFormat == CoordinateFormat.UTM)
+        {
+            // Get EPSG code for the UTM zone and hemisphere
+            // (Northern hemisphere if the selected Latitude band is NPQRSTUVW or X)
+            double latitude = SelectedLatitudeBand[0] >= 'N' ? 1 : -1;  // we don't care about precise latitude, just if it's positive or negative.
+            int epsg = GetUTMEpsgCode(latitude, SelectedZone);
+            
+            // Create point in UTM coordinates
+            SpatialReference utmSR = SpatialReferenceBuilder.CreateSpatialReference(epsg);
+            MapPoint utmPoint = MapPointBuilderEx.CreateMapPoint(XCoordinate, YCoordinate, utmSR);
+            
+            // Project to WGS84
+            SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(WGS84_EPSG);
+            _mapPoint = (MapPoint)GeometryEngine.Instance.Project(utmPoint, wgs84);
+        }
+        else if (_selectedFormat != CoordinateFormat.MGRS) // Handle decimal degrees formats
+        {
+            SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(WGS84_EPSG);
+            _mapPoint = MapPointBuilderEx.CreateMapPoint(XCoordinate, YCoordinate, wgs84);
         }
     }
 
