@@ -124,8 +124,10 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         int northing = (int)Math.Floor(utmPoint.Y);
 
         // Get the column letter from the easting
-        int column = (easting / 100000) % GridSquareLetters.Length;
-        
+        // Get the column letter correctly for MGRS repeating every 3 zones
+        int column = ((zone - 1) % 3) * 8 + (easting / 100000) % 8;
+        //int column = (easting / 100000) % GridSquareLetters.Length;
+
         // Get the row letter from the northing
         int row = ((northing / 100000) % 20);
         if (zone % 2 == 0)
