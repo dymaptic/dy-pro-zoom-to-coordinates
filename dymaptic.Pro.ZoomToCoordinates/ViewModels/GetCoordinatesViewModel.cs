@@ -160,50 +160,6 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         }
     }
 
-    /// <summary>
-    /// Returns latitude/longitude in decimal degrees as Degrees Decimal Minutes (e.g., 37° 29.1911' N  121° 42.8099' W)
-    /// </summary>
-    /// <param name="latitude"></param>
-    /// <param name="longitude"></param>
-    /// <param name="yDDM"></param>
-    /// <param name="xDDM"></param>
-    private static void FormatDegreesDecimalMinutes(double latitude, double longitude, out string yDDM, out string xDDM)
-    {
-        // Latitude
-        int latDegrees = (int)Math.Abs(latitude);
-        double latMinutes = Math.Abs((Math.Abs(latitude) - latDegrees) * 60);
-        yDDM = $"{latDegrees}° {latMinutes:F4}' {(latitude >= 0 ? "N" : "S")}";
-
-        // Longitude
-        int lonDegrees = (int)Math.Abs(longitude);
-        double lonMinutes = Math.Abs((Math.Abs(longitude) - lonDegrees) * 60);
-        xDDM = $"{lonDegrees}° {lonMinutes:F4}' {(longitude >= 0 ? "E" : "W")}";
-    }
-
-    /// <summary>
-    /// Returns latitude/longitude in decimal degrees as Degrees Minutes Seconds (e.g., 37° 29' 2.08" N  121° 42' 57.95" W)
-    /// </summary>
-    /// <param name="latitude"></param>
-    /// <param name="longitude"></param>
-    /// <param name="yDMS"></param>
-    /// <param name="xDMS"></param>
-    private static void FormatDegreesMinutesSeconds(double latitude, double longitude, out string yDMS, out string xDMS)
-    {
-        // Latitude
-        int latDegrees = (int)Math.Abs(latitude);
-        double latTotalMinutes = Math.Abs((Math.Abs(latitude) - latDegrees) * 60);
-        int latMinutes = (int)latTotalMinutes;
-        double latSeconds = (latTotalMinutes - latMinutes) * 60;
-        yDMS = $"{latDegrees}° {latMinutes}' {latSeconds:F2}\" {(latitude >= 0 ? "N" : "S")}";
-
-        // Longitude
-        int lonDegrees = (int)Math.Abs(longitude);
-        double lonTotalMinutes = Math.Abs((Math.Abs(longitude) - lonDegrees) * 60);
-        int lonMinutes = (int)lonTotalMinutes;
-        double lonSeconds = (lonTotalMinutes - lonMinutes) * 60;
-        xDMS = $"{lonDegrees}° {lonMinutes}' {lonSeconds:F2}\" {(longitude >= 0 ? "E" : "W")}";
-    }
-
 
     private void UpdateCoordinateLabels()
     {
