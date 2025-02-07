@@ -32,6 +32,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
 
     public class GridSRItem
     {
+        public int EPSG { get; set; }
         public int Zone { get; set; }
         public string GridID { get; set; } = "";  // stores latitude band, one of "CDEFGHJKLMNPQRSTUVWXX";  // Excludes 'I' and 'O'
 
@@ -122,6 +123,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         MapPoint? utmPoint = GeometryEngine.Instance.Project(wgs84Point, utmSR) as MapPoint ?? throw new InvalidOperationException("Failed to project point to UTM coordinates");
         mgrs = new GridSRItem
         {
+            EPSG = epsg,
             Zone = zone,
             GridID = gridID,
             Easting = (int)Math.Round(utmPoint.X),
@@ -142,6 +144,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         MapPoint? utmPoint = GeometryEngine.Instance.Project(wgs84Point, utmSR) as MapPoint ?? throw new InvalidOperationException("Failed to project point to UTM coordinates");
         utm = new GridSRItem
         {
+            EPSG = epsg,
             Zone = zone,
             GridID = gridID,
             Easting = (int)Math.Round(utmPoint.X),

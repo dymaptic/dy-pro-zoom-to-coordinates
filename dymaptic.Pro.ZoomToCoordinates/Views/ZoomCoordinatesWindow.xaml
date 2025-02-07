@@ -1,4 +1,4 @@
-﻿<controls:ProWindow x:Class="dymaptic.Pro.ZoomToCoordinates.Views.ZoomCoordinatesWindow"
+<controls:ProWindow x:Class="dymaptic.Pro.ZoomToCoordinates.Views.ZoomCoordinatesWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:controls="clr-namespace:ArcGIS.Desktop.Framework.Controls;assembly=ArcGIS.Desktop.Framework"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -38,6 +38,9 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
@@ -51,15 +54,44 @@
                   ItemsSource="{Binding CoordinateFormats}"
                   SelectedItem="{Binding SelectedFormatItem}" />
 
+        <!-- UTM Controls -->
+        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
+                    Visibility="{Binding ShowUtmControls, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="Zone:" />
+                <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5"
+                         ItemsSource="{Binding Zones}"
+                         SelectedItem="{Binding SelectedZone}" />
+
+                <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="Latitude Band:" />
+                <ComboBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5"
+                         ItemsSource="{Binding LatitudeBands}"
+                         SelectedItem="{Binding SelectedLatitudeBand}" />
+            </Grid>
+        </StackPanel>
+
         <!-- Coordinate text boxes -->
-        <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="{Binding XCoordinateLabel}" />
-        <TextBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5" Text="{Binding XCoordinateString}"/>
-        <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
-        <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding YCoordinateString}" />
+        <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="{Binding XCoordinateLabel}" />
+        <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding XCoordinateString}"/>
+        <Label Grid.Row="3" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
+        <TextBox Grid.Row="3" Grid.Column="1" Margin="5,5,10,5" Text="{Binding YCoordinateString}" />
+
+        <!-- Display -->
+        <Button Grid.Row="4" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}" Style="{DynamicResource Esri_Button}"/>
+        <TextBox Grid.Row="4" Grid.Column="1" Margin="5,5,10,5" Text="{Binding Display, Mode=OneWay}" IsReadOnly="True"/>
 
         <!-- Radio Button Group -->
-        <Label Grid.Row="3" Grid.Column="0" Content="Zoom Scale:" Margin="5"/>
-        <StackPanel Orientation="Vertical" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Margin="5,8,0,0">
+        <Label Grid.Row="5" Grid.Column="0" Content="Zoom Scale:" Margin="5"/>
+        <StackPanel Orientation="Vertical" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Margin="5,8,0,0">
             <RadioButton Content="5,000,000 - State" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=5000000}" Margin="0,0,0,5"/>
             <RadioButton Content="1,000,000 - County" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=1000000}" Margin="0,0,0,5"/>
             <RadioButton Content="100,000 - City" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=100000}" Margin="0,0,0,5"/>
@@ -68,11 +100,11 @@
         </StackPanel>
 
         <!-- Checkbox -->
-        <Label Grid.Row="4" Grid.Column="0" Content="Create Graphic?" Margin="5,0,0,0"/>
-        <CheckBox Grid.Row="4" Grid.Column="1" Margin="5,5,0,0" IsChecked="{Binding CreateGraphic}"/>
+        <Label Grid.Row="6" Grid.Column="0" Content="Create Graphic?" Margin="5,0,0,0"/>
+        <CheckBox Grid.Row="6" Grid.Column="1" Margin="5,5,0,0" IsChecked="{Binding CreateGraphic}"/>
 
         <!-- Buttons -->
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2">
             <Button Style="{DynamicResource Esri_Button}" Margin="5" Width="85" Content="Zoom" ToolTip="Zoom" Command="{Binding ZoomCommand}"/>
             <Button Style="{DynamicResource Esri_Button}" Margin="5" Width="85" Content="Close" ToolTip="Close" Click="CloseButton_Click"/>
         </StackPanel>
