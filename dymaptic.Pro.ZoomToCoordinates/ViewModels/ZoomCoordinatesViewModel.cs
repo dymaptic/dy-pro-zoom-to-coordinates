@@ -244,7 +244,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         bool isNegative = false;
         string cleanedValue = CleanCoordinateString(coordinateValue, axis, ref isNegative);
 
-        return _selectedFormat switch
+        switch (_selectedFormat)
         {
             case CoordinateFormat.DecimalDegrees:
                 return ValidateDecimalDegrees(cleanedValue, axis, isNegative);
