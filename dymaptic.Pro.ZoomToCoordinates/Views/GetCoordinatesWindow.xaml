@@ -44,7 +44,7 @@
         <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding FormattedYCoordinate, Mode=OneWay}" IsReadOnly="True" />
 
         <!-- Display -->
-        <Button Grid.Row="3" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}"/>
+        <Button Style="{DynamicResource Esri_Button}" Grid.Row="3" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}"/>
         <TextBox Grid.Row="3" Grid.Column="1" Margin="5,5,10,5" Text="{Binding Display, Mode=OneWay}"
                  IsReadOnly="True"/>
 

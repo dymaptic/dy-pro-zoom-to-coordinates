@@ -20,10 +20,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     // Private backing-fields to the public properties
     private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
-    private string _xCoordinateString = _settings.Longitude.ToString();
-    private string _yCoordinateString = _settings.Latitude.ToString();
-	private double _xCoordinate = _settings.Latitude;
-	private double _yCoordinate = _settings.Longitude;
+    private string _xCoordinateString;
+    private string _yCoordinateString;
+	private double _xCoordinate = _settings.Longitude;
+    private double _yCoordinate = _settings.Latitude;
     private bool _xCoordinateValidated = true;  // when tool loads, valid coordinates are put into the text boxes
 	private bool _yCoordinateValidated = true;
     private double _scale = _settings.Scale;
@@ -218,15 +218,52 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 
     private bool ValidateCoordinate(string coordinateValue, string axis)
 	{
+        bool makeXNegative = false;
+        bool makeYNegative = false;
+
 		switch (_selectedFormat)
 		{
             case CoordinateFormat.DecimalDegrees:
-                // Remove degree symbol if present
-                string ddValue = coordinateValue.Replace("°", "").Trim();
+				// Remove degree symbol if present
+				string ddValue = coordinateValue;
+                if (axis == "X")
+                {
+                    if (ddValue.Contains('W'))
+                    {
+                        ddValue = ddValue.Replace("W", "");
+                        makeYNegative = true;
+                    }
+                    if (ddValue.Contains('E'))
+                    {
+                        ddValue = ddValue.Replace("E", "");
+                    }
+                }
+                else
+                {
+                    if (ddValue.Contains('N'))
+                    {
+                        ddValue = ddValue.Replace("N", "");
+                    }
+
+                    if (ddValue.Contains('S'))
+                    {
+                        ddValue = ddValue.Replace("S", "");
+                        makeXNegative = true;
+                    }
+
+                }
+                ddValue = ddValue.Replace("°", "").Trim();
+
                 if (!double.TryParse(ddValue, out double parsedValue))
                 {
                     return false; // Invalid input (not a number)
                 }
+
+                if (makeXNegative || makeYNegative)
+                {
+                    parsedValue *= -1;
+                }
+
 				bool isValidDD = IsValidDecimalDegree(parsedValue, axis);
 				if (isValidDD)
 				{
@@ -238,8 +275,35 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 				return isValidDD;
 
             case CoordinateFormat.DegreesDecimalMinutes:
-                // Handle both space-separated and symbol formats
-                string ddmValue = coordinateValue.Replace("°", " ").Replace("'", "").Trim();
+				// Handle both space-separated and symbol formats
+				string ddmValue = coordinateValue;
+                if (axis == "X")
+                {
+                    if (ddmValue.Contains('W'))
+                    {
+                        ddmValue = ddmValue.Replace("W", "");
+                        makeYNegative = true;
+                    }
+                    if (ddmValue.Contains('E'))
+                    {
+                        ddmValue = ddmValue.Replace("E", "");
+                    }
+                }
+                else
+                {
+                    if (ddmValue.Contains('N'))
+                    {
+                        ddmValue = ddmValue.Replace("N", "");
+                    }
+
+                    if (ddmValue.Contains('S'))
+                    {
+                        ddmValue = ddmValue.Replace("S", "");
+                        makeXNegative = true;
+                    }
+                }
+				ddmValue = ddmValue.Replace("°", " ").Replace("'", "").Trim();
+
                 string[] partsDDM = ddmValue.Split(separator, StringSplitOptions.RemoveEmptyEntries);
 				if (partsDDM.Length != 2)
 				{
@@ -252,7 +316,11 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     return false; // Invalid input (not a number)
                 }
 
-				double decimalDegrees = degree + (decimalMinutes / 60);
+                double decimalDegrees = degree + (decimalMinutes / 60);
+                if (makeXNegative || makeYNegative)
+                {
+                    decimalDegrees *= -1;
+                }
                 bool isValidDDM = IsValidDecimalDegree(decimalDegrees, axis);
                 if (isValidDDM)
                 {
@@ -264,8 +332,36 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 return isValidDDM;
 
             case CoordinateFormat.DegreesMinutesSeconds:
-                // Handle both space-separated and symbol formats
-                string dmsValue = coordinateValue.Replace("°", " ").Replace("'", " ").Replace("\"", "").Trim();
+				// Handle both space-separated and symbol formats
+				string dmsValue = coordinateValue;
+                if (axis == "X")
+                {
+                    if (dmsValue.Contains('W'))
+                    {
+                        dmsValue = dmsValue.Replace("W", "");
+                        makeYNegative = true;
+                    }
+                    if (dmsValue.Contains('E'))
+                    {
+                        dmsValue = dmsValue.Replace("E", "");
+                    }
+                }
+                else
+                {
+                    if (dmsValue.Contains('N'))
+                    {
+                        dmsValue = dmsValue.Replace("N", "");
+                    }
+
+                    if (dmsValue.Contains('S'))
+                    {
+                        dmsValue = dmsValue.Replace("S", "");
+                        makeXNegative = true;
+                    }
+                }
+
+				dmsValue = dmsValue.Replace("°", " ").Replace("'", " ").Replace("\"", "").Trim();
+
                 string[] partsDMS = dmsValue.Split(separator, StringSplitOptions.RemoveEmptyEntries);
                 if (partsDMS.Length != 3)
                 {
@@ -279,6 +375,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 }
 
                 double dd = degrees + (minutes / 60) + (seconds / 3600);
+                if (makeXNegative || makeYNegative)
+                {
+                    dd *= -1;
+                }
                 bool isValidDMS = IsValidDecimalDegree(dd, axis);
                 if (isValidDMS)
                 {
@@ -324,20 +424,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         switch (_selectedFormat)
         {
             case CoordinateFormat.DecimalDegrees:
+            case CoordinateFormat.DegreesDecimalMinutes:
+            case CoordinateFormat.DegreesMinutesSeconds:
                 XCoordinate = mapPoint.X;
                 YCoordinate = mapPoint.Y;
-                break;
-
-            case CoordinateFormat.DegreesDecimalMinutes:
-                ConvertToDegreesDecimalMinutes(mapPoint.X, mapPoint.Y, out double xDDM, out double yDDM);
-                XCoordinate = xDDM;
-                YCoordinate = yDDM;
-                break;
-
-            case CoordinateFormat.DegreesMinutesSeconds:
-                ConvertToDegreesMinutesSeconds(mapPoint.X, mapPoint.Y, out double xDMS, out double yDMS);
-                XCoordinate = xDMS;
-                YCoordinate = yDMS;
                 break;
 
             case CoordinateFormat.MGRS:

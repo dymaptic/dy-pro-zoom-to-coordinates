@@ -50,32 +50,6 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         new CoordinateFormatItem { Format = CoordinateFormat.UTM, DisplayName = "UTM" }
     ];
 
-    public static void ConvertToDegreesDecimalMinutes(double longitude, double latitude, out double xDDM, out double yDDM)
-    {
-        // Convert decimal degrees to degrees decimal minutes
-        double lonDegrees = (int)longitude;
-        double lonMinutes = Math.Abs((longitude - lonDegrees) * 60);
-        xDDM = lonDegrees + (lonMinutes / 100); // Store as decimal number where decimal part represents minutes
-
-        double latDegrees = (int)latitude;
-        double latMinutes = Math.Abs((latitude - latDegrees) * 60);
-        yDDM = latDegrees + (latMinutes / 100);
-    }
-
-    public static void ConvertToDegreesMinutesSeconds(double longitude, double latitude, out double xDMS, out double yDMS)
-    {
-        // Convert decimal degrees to degrees minutes seconds
-        double lonDegrees = (int)longitude;
-        double lonMinutes = (int)(Math.Abs(longitude - lonDegrees) * 60);
-        double lonSeconds = Math.Abs((Math.Abs(longitude - lonDegrees) * 60 - lonMinutes) * 60);
-        xDMS = lonDegrees + (lonMinutes / 100) + (lonSeconds / 10000); // Store as decimal where decimals represent minutes and seconds
-
-        double latDegrees = (int)latitude;
-        double latMinutes = (int)(Math.Abs(latitude - latDegrees) * 60);
-        double latSeconds = Math.Abs((Math.Abs(latitude - latDegrees) * 60 - latMinutes) * 60);
-        yDMS = latDegrees + (latMinutes / 100) + (latSeconds / 10000);
-    }
-
     private static int CalculateUTMZone(double longitude) => (int)Math.Floor((longitude + 180) / 6) + 1;
 
     /// <summary>

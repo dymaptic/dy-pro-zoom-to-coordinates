@@ -17,6 +17,8 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
     private string _formattedYCoordinate;
     private string _formattedXCoordinate;
     private string _display;
+
+    // MapPoint will always be WGS84 (we ensure it is in the MapTool)
     private MapPoint _mapPoint;
     private GridSRItem _utm;
     private GridSRItem _mgrs;
@@ -187,20 +189,10 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         switch (_selectedFormat)
         {
             case CoordinateFormat.DecimalDegrees:
+            case CoordinateFormat.DegreesDecimalMinutes:
+            case CoordinateFormat.DegreesMinutesSeconds:
                 XCoordinate = mapPoint.X;
                 YCoordinate = mapPoint.Y;
-                break;
-
-            case CoordinateFormat.DegreesDecimalMinutes:
-                ConvertToDegreesDecimalMinutes(mapPoint.X, mapPoint.Y, out double xDDM, out double yDDM);
-                XCoordinate = xDDM;
-                YCoordinate = yDDM;
-                break;
-
-            case CoordinateFormat.DegreesMinutesSeconds:
-                ConvertToDegreesMinutesSeconds(mapPoint.X, mapPoint.Y, out double xDMS, out double yDMS);
-                XCoordinate = xDMS;
-                YCoordinate = yDMS;
                 break;
 
             case CoordinateFormat.MGRS:

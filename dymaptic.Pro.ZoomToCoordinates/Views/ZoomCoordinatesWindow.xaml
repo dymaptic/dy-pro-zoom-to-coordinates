@@ -52,10 +52,10 @@
                   SelectedItem="{Binding SelectedFormatItem}" />
 
         <!-- Coordinate text boxes -->
-        <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
-        <TextBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5" Text="{Binding YCoordinateString}" />
-        <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="{Binding XCoordinateLabel}" />
-        <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding XCoordinateString}"/>
+        <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="{Binding XCoordinateLabel}" />
+        <TextBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5" Text="{Binding XCoordinateString}"/>
+        <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
+        <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding YCoordinateString}" />
 
         <!-- Radio Button Group -->
         <Label Grid.Row="3" Grid.Column="0" Content="Zoom Scale:" Margin="5"/>
