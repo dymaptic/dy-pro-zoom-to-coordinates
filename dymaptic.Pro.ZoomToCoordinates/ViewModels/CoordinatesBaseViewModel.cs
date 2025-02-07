@@ -7,7 +7,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public class CoordinatesBaseViewModel : PropertyChangedBase
 {
     // Constants for UTM/MGRS calculations
-    private const string LatitudeBands = "CDEFGHJKLMNPQRSTUVWXX";  // 'C' to 'X' excluding 'I' and 'O'
+    private const string LatitudeBands = "CDEFGHJKLMNPQRSTUVWX";  // 'C' to 'X' excluding 'I' and 'O'
     private const int NorthernHemisphereBase = 32600;  // EPSG base for northern hemisphere
     private const int SouthernHemisphereBase = 32700;  // EPSG base for southern hemisphere
     public const int WGS84_EPSG = 4326;
