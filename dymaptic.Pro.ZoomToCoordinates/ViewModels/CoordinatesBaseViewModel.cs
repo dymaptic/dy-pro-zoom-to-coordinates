@@ -25,7 +25,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
 
     public class GridSRItem
     {
-        //public int EPSG { get; set; }
+        public int EPSG { get; set; }
         public int Zone { get; set; }
         public string GridID { get; set; } = "";  // stores latitude band, one of "CDEFGHJKLMNPQRSTUVWXX";  // Excludes 'I' and 'O'
 
@@ -111,13 +111,14 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         ToGeoCoordinateParameter mgrsParam = new(GeoCoordinateType.MGRS);
         string geoCoordString = wgs84Point.ToGeoCoordinateString(mgrsParam);
 
+        int zone = int.Parse(geoCoordString[..2]);
         string latBand = geoCoordString[2..3];
         string gridSquare = geoCoordString[3..5];
         
         mgrs = new GridSRItem
         {
-            //EPSG = epsg,
-            Zone = int.Parse(geoCoordString[..2]),
+            EPSG = GetUTMEpsgCode(latitude, zone),
+            Zone = zone,
             GridID = latBand + gridSquare,
             Easting = int.Parse(geoCoordString[5..10]),
             Northing = int.Parse(geoCoordString[10..])
@@ -137,7 +138,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         MapPoint? utmPoint = GeometryEngine.Instance.Project(wgs84Point, utmSR) as MapPoint ?? throw new InvalidOperationException("Failed to project point to UTM coordinates");
         utm = new GridSRItem
         {
-            //EPSG = epsg,
+            EPSG = epsg,
             Zone = zone,
             GridID = gridID,
             Easting = (int)Math.Round(utmPoint.X),

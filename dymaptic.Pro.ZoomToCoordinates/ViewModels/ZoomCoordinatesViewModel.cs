@@ -15,6 +15,11 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
 public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 {
+    private static readonly Settings _settings = ZoomToCoordinatesModule.GetSettings();
+    private static readonly char[] separator = [' '];
+    private int _epsg = 4326;
+    private MapPoint? _mapPoint;
+
     // Private backing-fields to the public properties
     private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
@@ -24,18 +29,44 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     private double _yCoordinate = _settings.Latitude;
     private bool _xCoordinateValidated = true;  // when tool loads, valid coordinates are put into the text boxes
 	private bool _yCoordinateValidated = true;
-    private double _scale = _settings.Scale;
-	private bool _createGraphic = _settings.CreateGraphic;
+    private string _display;
+
     private CoordinateFormat _selectedFormat = _settings.CoordinateFormat;
-    private MapPoint? _mapPoint;
+    private CoordinateFormatItem _selectedFormatItem;
     private GridSRItem _utm;
     private GridSRItem _mgrs;
-	private CoordinateFormatItem _selectedFormatItem;
     private int _selectedZone = 1;
     private string _selectedLatitudeBand = "C";
     private bool _showUtmControls;
-    private string _display;
+    private double _scale = _settings.Scale;
+	private bool _createGraphic = _settings.CreateGraphic;
+    private readonly SpatialReference _wgs84 = SpatialReferenceBuilder.CreateSpatialReference(WGS84_EPSG);
 
+    public ICommand CopyTextCommand { get; }
+    public ICommand ZoomCommand { get; }
+
+    // Constructor
+    public ZoomCoordinatesViewModel()
+    {
+        // On startup, set property values from settings
+        _selectedFormatItem = CoordinateFormats.First(f => f.Format == _settings.CoordinateFormat);
+        UpdateCoordinateLabels();
+
+        _mapPoint = MapPointBuilderEx.CreateMapPoint(XCoordinate, YCoordinate, _wgs84);
+        UpdateFormattedCoordinates();
+
+        // Command is grayed out if there isn't an active map view
+        ZoomCommand = new RelayCommand(async () =>
+        {
+            await ZoomToCoordinates();
+        }, () => MapView.Active != null);
+
+        // Bind the command
+        CopyTextCommand = new RelayCommand(() =>
+        {
+            CopyText();
+        });
+    }
 
     public ObservableCollection<int> Zones { get; } = new(Enumerable.Range(1, 60));
     public ObservableCollection<string> LatitudeBands { get; } = new ObservableCollection<string>("CDEFGHJKLMNPQRSTUVWX".Select(c => c.ToString()));
@@ -54,7 +85,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             SetProperty(ref _selectedZone, value);
             if (_xCoordinateValidated && _yCoordinateValidated)
             {
-                UpdateMapPointFromCoordinates();
+                CreateWGS84MapPointFromCoordinates();
             }
         }
     }
@@ -67,7 +98,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             SetProperty(ref _selectedLatitudeBand, value);
             if (_xCoordinateValidated && _yCoordinateValidated)
             {
-                UpdateMapPointFromCoordinates();
+                CreateWGS84MapPointFromCoordinates();
             }
         }
     }
@@ -147,7 +178,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 SetProperty(ref _xCoordinateString, value);
                 if (_yCoordinateValidated)
                 {
-                    UpdateMapPointFromCoordinates();
+                    CreateWGS84MapPointFromCoordinates();
                 }
             }
             else
@@ -168,7 +199,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 SetProperty(ref _yCoordinateString, value);
 				if (_xCoordinateValidated)
 				{
-					UpdateMapPointFromCoordinates();
+					CreateWGS84MapPointFromCoordinates();
 				}
             }
 			else
@@ -201,34 +232,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 		get => _createGraphic;
 		set => SetProperty(ref _createGraphic, value);
 	}
-
-    public ICommand CopyTextCommand { get; }
-
-    public ICommand ZoomCommand { get; }
-		
-	// Constructor
-	public ZoomCoordinatesViewModel()
-	{
-		// On startup, set property values from settings
-		_selectedFormatItem = CoordinateFormats.First(f => f.Format == _settings.CoordinateFormat);
-		UpdateCoordinateLabels();
-
-        SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(WGS84_EPSG);
-        _mapPoint = MapPointBuilderEx.CreateMapPoint(XCoordinate, YCoordinate, wgs84);
-		UpdateFormattedCoordinates();
-
-        // Command is grayed out if there isn't an active map view
-        ZoomCommand = new RelayCommand(async () => 
-        { 
-            await ZoomToCoordinates(); 
-        }, () => MapView.Active != null);
-
-        // Bind the command
-        CopyTextCommand = new RelayCommand(() =>
-        {
-            CopyText();
-        });
-    }
 
 	public static bool IsValidDecimalDegree(double value, string axis)
 	{
@@ -377,28 +380,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         return double.TryParse(value, out _);
     }
 
-    private void CopyText()
-    {
-        if (!string.IsNullOrEmpty(Display))
-        {
-            Clipboard.SetText(Display);
-        }
-    }
-
-    private void UpdateCoordinateLabels()
-    {
-        if (_selectedFormat == CoordinateFormat.UTM || _selectedFormat == CoordinateFormat.MGRS)
-        {
-            XCoordinateLabel = "Easting:";
-            YCoordinateLabel = "Northing:";
-        }
-        else
-        {
-            XCoordinateLabel = "Longitude:";
-            YCoordinateLabel = "Latitude:";
-        }
-    }
-
     public void UpdateCoordinates()
     {
         switch (_selectedFormat)
@@ -408,7 +389,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             case CoordinateFormat.DegreesMinutesSeconds:
 
                 // Check if the point is already in WGS84 (SpatialReference WKID 4326)
-                if (_mapPoint.SpatialReference.Wkid != 4326)
+                if (_mapPoint!.SpatialReference.Wkid != 4326)
                 {
                     // Reproject to WGS84 if necessary
                     _mapPoint = (MapPoint)GeometryEngine.Instance.Project(_mapPoint, SpatialReferences.WGS84);
@@ -416,23 +397,29 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 
                 XCoordinate = _mapPoint.X;
                 YCoordinate = _mapPoint.Y;
+                _epsg = 4326;
                 break;
 
             case CoordinateFormat.MGRS:
-                ConvertToMGRS(_mapPoint.X, _mapPoint.Y, out GridSRItem mgrs);
+                ConvertToMGRS(_mapPoint!.X, _mapPoint.Y, out GridSRItem mgrs);
 				MGRSPoint = mgrs;
-                XCoordinate = mgrs.Easting;
-                YCoordinate = mgrs.Northing;
+                SelectedZone = mgrs.Zone;
+                SelectedLatitudeBand = mgrs.GridID;
+                XCoordinate = _mapPoint.X; //mgrs.Easting;
+                YCoordinate = _mapPoint.Y; // mgrs.Northing;
+                Display = mgrs.Display;
+                _epsg = mgrs.EPSG;
                 break;
 
             case CoordinateFormat.UTM:
-                ConvertToUTM(_mapPoint.X, _mapPoint.Y, out GridSRItem utm);
+                ConvertToUTM(_mapPoint!.X, _mapPoint.Y, out GridSRItem utm);
                 UTMPoint = utm;
                 SelectedZone = utm.Zone;
                 SelectedLatitudeBand = utm.GridID;
-                XCoordinate = utm.Easting;
-                YCoordinate = utm.Northing;
+                XCoordinate = _mapPoint.X; //utm.Easting;
+                YCoordinate = _mapPoint.Y; //utm.Northing;
                 Display = utm.Display;
+                _epsg = utm.EPSG;
                 break;
         }
     }
@@ -473,9 +460,13 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         }
     }
 
-    private void UpdateMapPointFromCoordinates()
+    private void CreateWGS84MapPointFromCoordinates()
     {
-        if (_selectedFormat == CoordinateFormat.UTM)
+        if (_selectedFormat == CoordinateFormat.MGRS)
+        {
+            _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(Display, _wgs84, GeoCoordinateType.MGRS);
+        }
+        else if (_selectedFormat == CoordinateFormat.UTM)
         {
             // Get EPSG code for the UTM zone and hemisphere
             // (Northern hemisphere if the selected Latitude band is NPQRSTUVW or X)
@@ -487,13 +478,11 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             MapPoint utmPoint = MapPointBuilderEx.CreateMapPoint(XCoordinate, YCoordinate, utmSR);
             
             // Project to WGS84
-            SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(WGS84_EPSG);
-            _mapPoint = (MapPoint)GeometryEngine.Instance.Project(utmPoint, wgs84);
+            _mapPoint = (MapPoint)GeometryEngine.Instance.Project(utmPoint, _wgs84);
         }
-        else if (_selectedFormat != CoordinateFormat.MGRS) // Handle decimal degrees formats
+        else  // Handle decimal degrees formats
         {
-            SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(WGS84_EPSG);
-            _mapPoint = MapPointBuilderEx.CreateMapPoint(XCoordinate, YCoordinate, wgs84);
+            _mapPoint = MapPointBuilderEx.CreateMapPoint(XCoordinate, YCoordinate, _wgs84);
         }
     }
 
@@ -508,8 +497,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 			// Create new camera & spatial reference objects, if active map isn't WGS84
 			if (sr.Wkid != 4326)
 			{
-				sr = SpatialReferenceBuilder.CreateSpatialReference(4326);
-				Camera newCamera = new(x: XCoordinate, y: YCoordinate, scale: Scale, heading: 0, spatialReference: sr);
+				Camera newCamera = new(x: XCoordinate, y: YCoordinate, scale: Scale, heading: 0, spatialReference: _wgs84);
 				mapView.ZoomTo(newCamera, TimeSpan.Zero);
 			}
 
@@ -679,6 +667,25 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 		return marker;
 	}
 
-	private static readonly Settings _settings = ZoomToCoordinatesModule.GetSettings();
-    private static readonly char[] separator = [' '];
+    private void CopyText()
+    {
+        if (!string.IsNullOrEmpty(Display))
+        {
+            Clipboard.SetText(Display);
+        }
+    }
+
+    private void UpdateCoordinateLabels()
+    {
+        if (_selectedFormat == CoordinateFormat.UTM || _selectedFormat == CoordinateFormat.MGRS)
+        {
+            XCoordinateLabel = "Easting:";
+            YCoordinateLabel = "Northing:";
+        }
+        else
+        {
+            XCoordinateLabel = "Longitude:";
+            YCoordinateLabel = "Latitude:";
+        }
+    }
 }
