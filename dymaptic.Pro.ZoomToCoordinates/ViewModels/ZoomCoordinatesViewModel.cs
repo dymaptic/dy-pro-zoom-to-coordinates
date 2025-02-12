@@ -177,6 +177,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 if (_yCoordinateValidated)
                 {
                     UpdateWGS84MapPointFromCoordinates();
+                    NotifyPropertyChanged(nameof(Display));
                 }
             }
             else
@@ -198,7 +199,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 				if (_xCoordinateValidated)
 				{
 					UpdateWGS84MapPointFromCoordinates();
-				}
+                    NotifyPropertyChanged(nameof(Display));
+                }
             }
 			else
 			{
@@ -446,11 +448,13 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             case CoordinateFormat.MGRS:
                 XCoordinateString = MGRSPoint.Easting.ToString();
                 YCoordinateString = MGRSPoint.Northing.ToString();
+                Display = MGRSPoint.Display;
                 break;
 
             case CoordinateFormat.UTM:
                 XCoordinateString = UTMPoint.Easting.ToString();
                 YCoordinateString = UTMPoint.Northing.ToString();
+                Display = UTMPoint.Display;
                 break;
         }
     }
