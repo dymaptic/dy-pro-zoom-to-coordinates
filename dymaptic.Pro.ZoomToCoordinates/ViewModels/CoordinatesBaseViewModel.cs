@@ -6,9 +6,8 @@ using System.Collections.ObjectModel;
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public class CoordinatesBaseViewModel : PropertyChangedBase
 {
-    // Constants for UTM/MGRS calculations
+    // Constants for UTM calculations
     private const string LatitudeBands = "CDEFGHJKLMNPQRSTUVWX";  // 'C' to 'X' excluding 'I' and 'O'
-    private const string GridSquareLetters = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // Excluding 'I' and 'O'
     private const int NorthernHemisphereBase = 32600;  // EPSG base for northern hemisphere
     private const int SouthernHemisphereBase = 32700;  // EPSG base for southern hemisphere
     public const int WGS84_EPSG = 4326;
@@ -26,7 +25,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
 
     public class GridSRItem
     {
-        public int EPSG { get; set; }
+        //public int EPSG { get; set; }
         public int Zone { get; set; }
         public string GridID { get; set; } = "";  // stores latitude band, one of "CDEFGHJKLMNPQRSTUVWXX";  // Excludes 'I' and 'O'
 
@@ -106,50 +105,22 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
 
     public static void ConvertToMGRS(double longitude, double latitude, out GridSRItem mgrs)
     {
-        // First convert to UTM since MGRS builds on UTM
         SpatialReference wgs84 = SpatialReferenceBuilder.CreateSpatialReference(WGS84_EPSG);
         MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, wgs84);
 
-        int zone = CalculateUTMZone(longitude);
-        string latBand = GetLatitudeBand(latitude);
-        int epsg = GetUTMEpsgCode(latitude, zone);
+        ToGeoCoordinateParameter mgrsParam = new(GeoCoordinateType.MGRS);
+        string geoCoordString = wgs84Point.ToGeoCoordinateString(mgrsParam);
 
-        // Project to UTM
-        SpatialReference utmSR = SpatialReferenceBuilder.CreateSpatialReference(epsg);
-        MapPoint? utmPoint = GeometryEngine.Instance.Project(wgs84Point, utmSR) as MapPoint 
-            ?? throw new InvalidOperationException("Failed to project point to UTM coordinates");
-
-        // Calculate 100km grid square letters
-        int easting = (int)Math.Floor(utmPoint.X);
-        int northing = (int)Math.Floor(utmPoint.Y);
-
-        // Get the column letter from the easting
-        // Get the column letter correctly for MGRS repeating every 3 zones
-        int column = ((zone - 1) % 3) * 8 + (easting / 100000) % 8;
-        //int column = (easting / 100000) % GridSquareLetters.Length;
-
-        // Get the row letter from the northing
-        int row = ((northing / 100000) % 20);
-        if (zone % 2 == 0)
-        {
-            // Even numbered zones offset the row letters
-            row = (row + 5) % 20;
-        }
-
-        // Create the grid square ID from the column and row
-        string gridSquare = $"{GridSquareLetters[column]}{GridSquareLetters[row]}";
-
-        // Get the truncated easting and northing (within the 100km grid square)
-        int truncatedEasting = easting % 100000;
-        int truncatedNorthing = northing % 100000;
-
+        string latBand = geoCoordString[2..3];
+        string gridSquare = geoCoordString[3..5];
+        
         mgrs = new GridSRItem
         {
-            EPSG = epsg,
-            Zone = zone,
+            //EPSG = epsg,
+            Zone = int.Parse(geoCoordString[..2]),
             GridID = latBand + gridSquare,
-            Easting = truncatedEasting,
-            Northing = truncatedNorthing
+            Easting = int.Parse(geoCoordString[5..10]),
+            Northing = int.Parse(geoCoordString[10..])
         };
     }
 
@@ -166,7 +137,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         MapPoint? utmPoint = GeometryEngine.Instance.Project(wgs84Point, utmSR) as MapPoint ?? throw new InvalidOperationException("Failed to project point to UTM coordinates");
         utm = new GridSRItem
         {
-            EPSG = epsg,
+            //EPSG = epsg,
             Zone = zone,
             GridID = gridID,
             Easting = (int)Math.Round(utmPoint.X),
