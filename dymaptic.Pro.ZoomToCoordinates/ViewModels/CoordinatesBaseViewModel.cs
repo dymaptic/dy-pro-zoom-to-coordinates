@@ -21,13 +21,15 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
     {
         public int Zone { get; set; }
 
-        // If UTM stores latitude band, one of "CDEFGHJKLMNPQRSTUVWXX" Excludes 'I' and 'O' (1 character total) 
-        // If MGRS stores latitude band AND 100km Square ID (3 characters total)
-        public string GridID { get; set; } = "";
+        // UTM and MGRS stores latitude band, one of "CDEFGHJKLMNPQRSTUVWXX" Excludes 'I' and 'O' (1 character total) 
+        public string LatitudeBand { get; set; } = "";
+
+        // MGRS only stores 100km Square ID (2 characters total)
+        public string MGRSquareID { get; set; } = "";
 
         public int Easting { get; set; }
         public int Northing { get; set; }
-        public string Display => $"{Zone}{GridID} {Easting} {Northing}";
+        public string Display => $"{Zone}{LatitudeBand}{MGRSquareID} {Easting} {Northing}";
 
         public string GeoCoordinateString { get; set; } = "";
     }
@@ -104,7 +106,8 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         mgrs = new GridSRItem
         {
             Zone = zone,
-            GridID = latBand + gridSquare,
+            LatitudeBand = latBand,
+            MGRSquareID = gridSquare,
             Easting = int.Parse(geoCoordString[5..10]),
             Northing = int.Parse(geoCoordString[10..]),
             GeoCoordinateString = geoCoordString
@@ -124,7 +127,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         utm = new GridSRItem
         {
             Zone = zone,
-            GridID = latBand,
+            LatitudeBand = latBand,
             Easting = int.Parse(parts[1]),
             Northing = int.Parse(parts[2]),
             GeoCoordinateString = geoCoordString

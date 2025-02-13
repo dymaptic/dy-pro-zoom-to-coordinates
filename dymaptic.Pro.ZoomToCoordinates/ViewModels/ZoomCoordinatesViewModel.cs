@@ -36,7 +36,9 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     private GridSRItem _mgrs;
     private int _selectedZone = 1;
     private string _selectedLatitudeBand = "C";
+    private string _oneHundredKMGridID = "AB";
     private bool _showUtmControls;
+    private bool _showMgrsControl;
     private double _scale = _settings.Scale;
 	private bool _createGraphic = _settings.CreateGraphic;
 
@@ -69,12 +71,18 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     public ObservableCollection<int> Zones { get; } = new(Enumerable.Range(1, 60));
     public ObservableCollection<string> LatitudeBands { get; } = new ObservableCollection<string>("CDEFGHJKLMNPQRSTUVWX".Select(c => c.ToString()));
 
+    /// <summary>
+    ///     Shows the formatted X Coordinate followed by the formatted Y Coordinate.
+    /// </summary>
     public string Display
     {
         get => _display;
         private set => SetProperty(ref _display, value);
     }
 
+    /// <summary>
+    ///     Selected UTM Zone
+    /// </summary>
     public int SelectedZone
     {
         get => _selectedZone;
@@ -88,6 +96,9 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         }
     }
 
+    /// <summary>
+    ///     Selected Latitude band (UTM and MGRS only)
+    /// </summary>
     public string SelectedLatitudeBand
     {
         get => _selectedLatitudeBand;
@@ -101,22 +112,55 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         }
     }
 
+    /// <summary>
+    ///     100 KM Grid ID (MGRS only)
+    /// </summary>
+    public string OneHundredKMGridID
+    {
+        get => _oneHundredKMGridID;
+        set
+        {
+            SetProperty(ref _oneHundredKMGridID, value);
+            if (_xCoordinateValidated && _yCoordinateValidated)
+            {
+                UpdateWGS84MapPointFromCoordinates();
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Control whether UTM and several MGRS controls get shown in the view (MGRS is an extension of UTM).
+    /// </summary>
     public bool ShowUtmControls
     {
         get => _showUtmControls;
         set => SetProperty(ref _showUtmControls, value);
     }
 
+    /// <summary>
+    ///     Control whether the 100 KM Grid ID gets shown in the view (MGRS only).
+    /// </summary>
+    public bool ShowMgrsControl
+    {
+        get => _showMgrsControl;
+        set => SetProperty(ref _showMgrsControl, value);
+    }
+
+    /// <summary>
+    ///     The selected coordinate reference system.
+    /// </summary>
     public CoordinateFormatItem SelectedFormatItem
     {
         get => _selectedFormatItem;
         set
         {
-            if (value != null && SetProperty(ref _selectedFormatItem, value))
+            // When selected format changes, do automatic coordinate conversions
+            if (SetProperty(ref _selectedFormatItem, value))
             {
-                _selectedFormat = value.Format;
                 UpdateCoordinateLabels();
-                ShowUtmControls = _selectedFormat == CoordinateFormat.UTM;
+                _selectedFormat = value.Format;
+                ShowUtmControls = _selectedFormat == CoordinateFormat.UTM || _selectedFormat == CoordinateFormat.MGRS;
+                ShowMgrsControl = _selectedFormat == CoordinateFormat.MGRS;
 
                 // Update coordinates if we have a point
                 // (allows us to convert from one coordinate system to another)
@@ -129,6 +173,9 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         }
     }
 
+    /// <summary>
+    ///     Holds MGRS Point information once a conversion has occurred.
+    /// </summary>
     public GridSRItem MGRSPoint
     {
         get => _mgrs;
@@ -141,6 +188,9 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         }
     }
 
+    /// <summary>
+    ///     Holds UTM Point information once a conversion has occurred.
+    /// </summary>
     public GridSRItem UTMPoint
     {
         get => _utm;
@@ -153,18 +203,27 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         }
     }
 
+    /// <summary>
+    ///     Either Longitude or Easting depending on selected coordinate format.
+    /// </summary>
     public string XCoordinateLabel
     {
         get => _xCoordinateLabel;
         set => SetProperty(ref _xCoordinateLabel, value);
     }
 
+    /// <summary>
+    ///     Either Latitude or Northing depending on selected coordinate format.
+    /// </summary>
     public string YCoordinateLabel
 	{
 		get => _yCoordinateLabel;
 		set => SetProperty(ref _yCoordinateLabel, value);
 	}
 
+    /// <summary>
+    ///     The Longitude value for DD/DDM/DMS or Easting value for UTM/MGRS.
+    /// </summary>
     public string XCoordinateString
     {
         get => _xCoordinateString;
@@ -177,16 +236,14 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 if (_yCoordinateValidated)
                 {
                     UpdateWGS84MapPointFromCoordinates();
-                    NotifyPropertyChanged(nameof(Display));
                 }
-            }
-            else
-            {
-                _mapPoint = null;
             }
         }
     }
 
+    /// <summary>
+    ///     The Latitude value for DD/DDM/DMS or Northing value for UTM/MGRS.
+    /// </summary>
     public string YCoordinateString
 	{
 		get => _yCoordinateString;
@@ -199,41 +256,54 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 				if (_xCoordinateValidated)
 				{
 					UpdateWGS84MapPointFromCoordinates();
-                    NotifyPropertyChanged(nameof(Display));
                 }
             }
-			else
-			{
-				_mapPoint = null;
-			}
 		}
 	}
 
-    public double Longitude
+    /// <summary>
+    ///     Regardless of selected coordinate format, we ALWAYS store a longitude value in decimal degrees.
+    /// </summary>
+    private double Longitude
     {
         get => _longitude;
         set => SetProperty(ref _longitude, value);
     }
 
-    public double Latitude
+    /// <summary>
+    ///     Regardless of selected coordinate format, we ALWAYS store a latitude value in decimal degrees.
+    /// </summary>
+    private double Latitude
     {
 		get => _latitude;
         set => SetProperty(ref _latitude, value);
     }
 
+    /// <summary>
+    ///     The scale controls how far in the zoom occurs.
+    /// </summary>
 	public double Scale
 	{
 		get => _scale;
 		set => SetProperty(ref _scale, value);
 	}
 
+    /// <summary>
+    ///     Indicates if user wants to create a graphic after the zoom.
+    /// </summary>
 	public bool CreateGraphic
 	{
 		get => _createGraphic;
 		set => SetProperty(ref _createGraphic, value);
 	}
 
-	public static bool IsValidDecimalDegree(double value, string axis)
+    /// <summary>
+    ///     Validates that the decimal degrees entered are valid.
+    /// </summary>
+    /// <param name="value">The latitude or longitude value as a double.</param>
+    /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
+    /// <returns></returns>
+	private static bool IsValidDecimalDegree(double value, string axis)
 	{
 		// "X" is Longitude -180 to 180
 		// "Y" is Latitude -90 to 90
@@ -243,35 +313,60 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 		return value >= min && value <= max;
 	}
 
+    /// <summary>
+    ///     Validates coordinate according to which coordinate system format is selected.
+    /// </summary>
+    /// <param name="coordinateValue">The coordinate string (it can be in one of five formats: DD, DDM, DMS, MGRS, or UTM).</param>
+    /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
+    /// <returns></returns>
     private bool ValidateCoordinate(string coordinateValue, string axis)
     {
         if (string.IsNullOrWhiteSpace(coordinateValue))
             return false;
 
+        // Only DD/DDM/DDS allow non-numeric characters
         bool isNegative = false;
-        string cleanedValue = CleanCoordinateString(coordinateValue, axis, ref isNegative);
+        string cleanedLatLongValue = CleanLatLongCoordinateString(coordinateValue, axis, ref isNegative);
 
         switch (_selectedFormat)
         {
             case CoordinateFormat.DecimalDegrees:
-                return ValidateDecimalDegrees(cleanedValue, axis, isNegative);
+                return ValidateDecimalDegrees(cleanedLatLongValue, axis, isNegative);
 
             case CoordinateFormat.DegreesDecimalMinutes:
-                return ValidateDegreesDecimalMinutes(cleanedValue, axis, isNegative);
+                return ValidateDegreesDecimalMinutes(cleanedLatLongValue, axis, isNegative);
 
             case CoordinateFormat.DegreesMinutesSeconds:
-                return ValidateDegreesMinutesSeconds(cleanedValue, axis, isNegative);
+                return ValidateDegreesMinutesSeconds(cleanedLatLongValue, axis, isNegative);
 
             case CoordinateFormat.MGRS:
+                if (double.TryParse(coordinateValue, out double x))
+                {
+                    return x >= 0 && x <= 99999;  // 5 digits max
+                }
+                return false;
+
             case CoordinateFormat.UTM:
-                return ValidateNumericValue(cleanedValue);
+                if (double.TryParse(coordinateValue, out double y))
+                {
+                    return y >= 0 && y <= 999999;  // 6 digits max
+                }
+                return false;
 
             default:
                 return false;
         }
     }
 
-    private static string CleanCoordinateString(string value, string axis, ref bool isNegative)
+    /// <summary>
+    ///     Removes expected (allowed) non-numeric characters for latitude/longitude values. 
+    /// </summary>
+    /// <param name="value">The latitude or longitude value as a string which may have degree symbols, minute and seconds symbols as well as notation for hemisphere.</param>
+    /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
+    /// <param name="isNegative">A reference parameter that is set to <c>true</c> if the coordinate is in the western or southern hemisphere; 
+    /// otherwise, remains <c>false</c>.</param>
+    /// <returns></returns>
+    private static string CleanLatLongCoordinateString(string value, string axis, ref bool isNegative)
     {
         string cleanedValue = value;
 
@@ -299,6 +394,13 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         return cleanedValue.Replace("°", " ").Replace("'", " ").Replace("\"", "").Trim();
     }
 
+    /// <summary>
+    ///     Validates a decimal degrees coordinate string.
+    /// </summary>
+    /// <param name="value">The latitude or longitude value as a string.</param>
+    /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
+    /// <param name="isNegative">If <c>true</c>, the value is converted to a negative number.</param>
+    /// <returns></returns>
     private bool ValidateDecimalDegrees(string value, string axis, bool isNegative)
     {
         if (!double.TryParse(value, out double degrees))
@@ -318,6 +420,13 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         return true;
     }
 
+    /// <summary>
+    ///     Validates a degrees decimal minutes coordinate string.
+    /// </summary>
+    /// <param name="value">The latitude or longitude value as a string.</param>
+    /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
+    /// <param name="isNegative">If <c>true</c>, the value is converted to a negative number.</param>
+    /// <returns></returns>
     private bool ValidateDegreesDecimalMinutes(string value, string axis, bool isNegative)
     {
         string[] parts = value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
@@ -346,6 +455,12 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         return true;
     }
 
+    /// <summary>
+    ///     Validates a degrees minutes seconds coordinate string.
+    /// </summary>
+    /// <param name="value">The latitude or longitude value as a string.</param>
+    /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
+    /// <param name="isNegative">If <c>true</c>, the value is converted to a negative number.</param>
     private bool ValidateDegreesMinutesSeconds(string value, string axis, bool isNegative)
     {
         string[] parts = value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
@@ -375,11 +490,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         return true;
     }
 
-    private static bool ValidateNumericValue(string value)
-    {
-        return double.TryParse(value, out _);
-    }
-
     public void UpdateCoordinates()
     {
         switch (_selectedFormat)
@@ -403,7 +513,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 ConvertToMGRS(_mapPoint!.X, _mapPoint.Y, out GridSRItem mgrs);
 				MGRSPoint = mgrs;
                 SelectedZone = mgrs.Zone;
-                SelectedLatitudeBand = mgrs.GridID;
+                SelectedLatitudeBand = mgrs.LatitudeBand;
+                OneHundredKMGridID = mgrs.MGRSquareID;
                 Longitude = _mapPoint.X;
                 Latitude = _mapPoint.Y;
                 Display = mgrs.Display;
@@ -413,7 +524,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 ConvertToUTM(_mapPoint!.X, _mapPoint.Y, out GridSRItem utm);
                 UTMPoint = utm;
                 SelectedZone = utm.Zone;
-                SelectedLatitudeBand = utm.GridID;
+                SelectedLatitudeBand = utm.LatitudeBand;
                 Longitude = _mapPoint.X;
                 Latitude = _mapPoint.Y;
                 Display = utm.Display;
