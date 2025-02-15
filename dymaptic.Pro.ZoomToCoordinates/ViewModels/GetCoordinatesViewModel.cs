@@ -2,8 +2,6 @@ using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Framework;
 using System;
 using System.Linq;
-using System.Windows;
-using System.Windows.Input;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
@@ -11,19 +9,11 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
 {
     private double _yCoordinate;
     private double _xCoordinate;
-    private CoordinateFormat _selectedFormat;
-    private string _xCoordinateLabel = "Longitude:";
-    private string _yCoordinateLabel = "Latitude:";
-    private string _formattedYCoordinate;
-    private string _formattedXCoordinate;
-    private string _display;
+    private string _formattedYCoordinate = "";
+    private string _formattedXCoordinate = "";
 
     // MapPoint will always be WGS84 (we ensure it is in the MapTool)
-    private MapPoint _mapPoint;
-    private GridSRItem _utm;
-    private GridSRItem _mgrs;
-
-    public ICommand CopyTextCommand { get; }
+    private MapPoint _mapPoint = MapPointBuilderEx.CreateMapPoint();
 
     private CoordinateFormatItem _selectedFormatItem;
     public CoordinateFormatItem SelectedFormatItem
@@ -33,7 +23,7 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         {
             if (value != null && SetProperty(ref _selectedFormatItem, value))
             {
-                _selectedFormat = value.Format;
+                SelectedFormat = value.Format;
                 UpdateCoordinateLabels();
 
                 // Update coordinates if we have a point
@@ -45,50 +35,6 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         }
     }
    
-    public GridSRItem MGRSPoint
-    {
-        get => _mgrs;
-        set
-        {
-            if (value != null && SetProperty(ref _mgrs, value))
-            {
-                _mgrs = value;
-            }
-        }
-    }
-
-    public GridSRItem UTMPoint
-    {
-        get => _utm;
-        set
-        {
-            if (value != null && SetProperty(ref _utm, value))
-            {
-                _utm = value;
-            }
-        }
-    }
-
-    public string XCoordinateLabel
-    {
-        get => _xCoordinateLabel;
-        set => SetProperty(ref _xCoordinateLabel, value);
-    }
-
-    public string YCoordinateLabel
-    {
-        get => _yCoordinateLabel;
-        set => SetProperty(ref _yCoordinateLabel, value);
-    }
-
-
-    public string Display
-    {
-        get => _display;
-        private set => SetProperty(ref _display, value);
-    }
-
-
     public string FormattedYCoordinate
     {
         get => _formattedYCoordinate;
@@ -126,9 +72,9 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         }
     }
 
-    private void UpdateFormattedCoordinates()
+    public void UpdateFormattedCoordinates()
     {
-        switch (_selectedFormat)
+        switch (SelectedFormat)
         {
             case CoordinateFormat.DecimalDegrees:
                 FormattedXCoordinate = $"{Math.Abs(XCoordinate):F6}° {(XCoordinate >= 0 ? "E" : "W")}";
@@ -164,21 +110,6 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         }
     }
 
-
-    private void UpdateCoordinateLabels()
-    {
-        if (_selectedFormat == CoordinateFormat.UTM || _selectedFormat == CoordinateFormat.MGRS)
-        {
-            YCoordinateLabel = "Northing:";
-            XCoordinateLabel = "Easting:";
-        }
-        else
-        {
-            YCoordinateLabel = "Latitude:";
-            XCoordinateLabel = "Longitude:";
-        }
-    }
-
     public void UpdateCoordinates(MapPoint mapPoint)
     {
         _mapPoint = mapPoint;
@@ -188,7 +119,7 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
             return;
         }
 
-        switch (_selectedFormat)
+        switch (SelectedFormat)    
         {
             case CoordinateFormat.DecimalDegrees:
             case CoordinateFormat.DegreesDecimalMinutes:
@@ -218,7 +149,7 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
     public GetCoordinatesViewModel()
     {
         Settings settings = ZoomToCoordinatesModule.GetSettings();
-        _selectedFormat = settings.CoordinateFormat;
+        SelectedFormat = settings.CoordinateFormat;
         _selectedFormatItem = CoordinateFormats.First(f => f.Format == settings.CoordinateFormat);
         UpdateCoordinateLabels();
 
@@ -227,13 +158,5 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         {
             CopyText();
         });
-    }
-
-    private void CopyText()
-    {
-        if (!string.IsNullOrEmpty(Display))
-        {
-            Clipboard.SetText(Display);
-        }
     }
 }
