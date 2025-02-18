@@ -16,7 +16,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 {
     private static readonly char[] separator = [' '];
-    private MapPoint? _mapPoint; // = MapPointBuilderEx.CreateMapPoint(0, 0, SpatialReferences.WGS84);
+    private MapPoint? _mapPoint;
 
     // Private backing-fields to the public properties
     private string _xCoordinateString = "";
@@ -602,7 +602,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 					groupLyrContainer ??= LayerFactory.Instance.CreateGroupLayer(container: map, index: 0, layerName: groupLyrName);
 
 					// Create point at specified coordinates & graphic for the map
-					MapPoint point = MapPointBuilderEx.CreateMapPoint(new Coordinate2D(Longitude, Latitude), sr);
+					MapPoint point = MapPointBuilderEx.CreateMapPoint(new Coordinate2D(Longitude, Latitude), SpatialReferences.WGS84);
 					CIMGraphic graphic = GraphicFactory.Instance.CreateSimpleGraphic(geometry: point, symbol: symbol);
 
 					// Create the point container inside the group layer container and place graphic into it to create graphic element
