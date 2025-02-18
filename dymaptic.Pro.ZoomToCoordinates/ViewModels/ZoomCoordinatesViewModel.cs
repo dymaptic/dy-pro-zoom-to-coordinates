@@ -44,7 +44,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         UpdateCoordinateLabels();
 
         _mapPoint = MapPointBuilderEx.CreateMapPoint(Longitude, Latitude, SpatialReferences.WGS84);
-        UpdateFormattedCoordinates();
+        UpdateDisplay();
 
         // Command is grayed out if there isn't an active map view
         ZoomCommand = new RelayCommand(async () =>
@@ -61,54 +61,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 
     public ObservableCollection<int> Zones { get; } = new(Enumerable.Range(1, 60));
     public ObservableCollection<string> LatitudeBands { get; } = new ObservableCollection<string>("CDEFGHJKLMNPQRSTUVWX".Select(c => c.ToString()));
-
-    /// <summary>
-    ///     Selected UTM Zone
-    /// </summary>
-    public int SelectedZone
-    {
-        get => _selectedZone;
-        set
-        {
-            SetProperty(ref _selectedZone, value);
-            if (_xCoordinateValidated && _yCoordinateValidated)
-            {
-                UpdateWGS84MapPointFromCoordinates();
-            }
-        }
-    }
-
-    /// <summary>
-    ///     Selected Latitude band (UTM and MGRS only)
-    /// </summary>
-    public string SelectedLatitudeBand
-    {
-        get => _selectedLatitudeBand;
-        set
-        {
-            SetProperty(ref _selectedLatitudeBand, value);
-            if (_xCoordinateValidated && _yCoordinateValidated)
-            {
-                UpdateWGS84MapPointFromCoordinates();
-            }
-        }
-    }
-
-    /// <summary>
-    ///     100 KM Grid ID (MGRS only)
-    /// </summary>
-    public string OneHundredKMGridID
-    {
-        get => _oneHundredKMGridID;
-        set
-        {
-            SetProperty(ref _oneHundredKMGridID, value);
-            if (_xCoordinateValidated && _yCoordinateValidated)
-            {
-                UpdateWGS84MapPointFromCoordinates();
-            }
-        }
-    }
 
     /// <summary>
     ///     Control whether UTM and several MGRS controls get shown in the view (MGRS is an extension of UTM).
@@ -141,16 +93,101 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             {
                 UpdateCoordinateLabels();
                 SelectedFormat = value.Format;
+
+                // MGRS is a superset of UTM
                 ShowUtmControls = SelectedFormat == CoordinateFormat.UTM || SelectedFormat == CoordinateFormat.MGRS;
+                
+                // MGRS builds upon UTM by also including 100 km grid zone designations 
                 ShowMgrsControl = SelectedFormat == CoordinateFormat.MGRS;
 
-                // Update coordinates if we have a point
-                // (allows us to convert from one coordinate system to another)
-                if (_mapPoint != null)
+                UpdateCoordinates();
+                UpdateDisplay();
+
+
+                //// Update coordinates if we have a point
+                //// (allows us to convert from one coordinate system to another)
+                //if (_mapPoint != null)
+                //{
+                    
+                //}
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Selected UTM Zone (visible for UTM and MGRS only)
+    /// </summary>
+    public int SelectedZone
+    {
+        get => _selectedZone;
+        set
+        {
+            SetProperty(ref _selectedZone, value);
+            if (_xCoordinateValidated && _yCoordinateValidated)
+            {
+                //UpdateCoordinates();
+
+                if (SelectedFormat == CoordinateFormat.MGRS)
                 {
-                    UpdateCoordinates();
-                    UpdateFormattedCoordinates();
+                    MGRSPoint.Zone = SelectedZone;
+                    MGRSPoint.GeoCoordinateString = MGRSPoint.Zone + MGRSPoint.GeoCoordinateString[2..];
                 }
+                else if (SelectedFormat == CoordinateFormat.UTM)
+                {
+                    UTMPoint.Zone = SelectedZone;
+                    UTMPoint.GeoCoordinateString = UTMPoint.Zone + UTMPoint.GeoCoordinateString[2..];
+                }
+
+                //UpdateWGS84MapPointFromCoordinates();
+                UpdateDisplay();
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Selected Latitude band (visible for UTM and MGRS only)
+    /// </summary>
+    public string SelectedLatitudeBand
+    {
+        get => _selectedLatitudeBand;
+        set
+        {
+            SetProperty(ref _selectedLatitudeBand, value);
+            if (_xCoordinateValidated && _yCoordinateValidated)
+            {
+                //UpdateCoordinates();
+
+
+                if (SelectedFormat == CoordinateFormat.MGRS)
+                {
+                    MGRSPoint.LatitudeBand = SelectedLatitudeBand;
+                    MGRSPoint.GeoCoordinateString = MGRSPoint.GeoCoordinateString[..2] + MGRSPoint.LatitudeBand + MGRSPoint.GeoCoordinateString[3..];
+                }
+                else if (SelectedFormat == CoordinateFormat.UTM)
+                {
+                    UTMPoint.LatitudeBand = SelectedLatitudeBand;
+                    UTMPoint.GeoCoordinateString = UTMPoint.GeoCoordinateString[..2] + UTMPoint.LatitudeBand + UTMPoint.GeoCoordinateString[3..];
+                }
+
+                //UpdateWGS84MapPointFromCoordinates();
+                UpdateDisplay();
+            }
+        }
+    }
+
+    /// <summary>
+    ///     100 KM Grid ID (visible for MGRS only)
+    /// </summary>
+    public string OneHundredKMGridID
+    {
+        get => _oneHundredKMGridID;
+        set
+        {
+            SetProperty(ref _oneHundredKMGridID, value);
+            if (_xCoordinateValidated && _yCoordinateValidated)
+            {
+                //UpdateWGS84MapPointFromCoordinates();
+                UpdateDisplay();
             }
         }
     }
@@ -451,7 +488,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 OneHundredKMGridID = mgrs.MGRSquareID;
                 Longitude = _mapPoint.X;
                 Latitude = _mapPoint.Y;
-                Display = mgrs.Display;
+                //Display = mgrs.Display;
                 break;
 
             case CoordinateFormat.UTM:
@@ -461,12 +498,15 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 SelectedLatitudeBand = utm.LatitudeBand;
                 Longitude = _mapPoint.X;
                 Latitude = _mapPoint.Y;
-                Display = utm.Display;
+                //Display = utm.Display;
                 break;
         }
     }
 
-    private void UpdateFormattedCoordinates()
+    /// <summary>
+    ///     Updates the Display property and also updates XCoordinateString and YCoordinateString (since the latter two are shared amongst the 5 coordinate formats)
+    /// </summary>
+    private void UpdateDisplay()
     {
         switch (SelectedFormat)
         {

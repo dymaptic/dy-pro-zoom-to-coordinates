@@ -21,16 +21,15 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         get => _selectedFormatItem;
         set
         {
-            if (value != null && SetProperty(ref _selectedFormatItem, value))
-            {
-                SelectedFormat = value.Format;
-                UpdateCoordinateLabels();
+            SetProperty(ref _selectedFormatItem, value);
+            SelectedFormat = value.Format;
+            UpdateCoordinateLabels();
 
-                // Update coordinates if we have a point
-                if (_mapPoint != null)
-                {
-                    UpdateCoordinates(_mapPoint);
-                }
+            // Update coordinates if we have a point
+            if (_mapPoint != null)
+            {
+                UpdateCoordinates(_mapPoint);
+                UpdateFormattedCoordinates();
             }
         }
     }
