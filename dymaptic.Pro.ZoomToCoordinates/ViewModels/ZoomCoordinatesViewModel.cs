@@ -488,46 +488,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         return true;
     }
 
-    public void UpdateCoordinates()
-    {
-        switch (SelectedFormat)
-        {
-            case CoordinateFormat.DecimalDegrees:
-            case CoordinateFormat.DegreesDecimalMinutes:
-            case CoordinateFormat.DegreesMinutesSeconds:
-
-                // Check if the point is already in WGS84 (SpatialReference WKID 4326)
-                if (_mapPoint!.SpatialReference.Wkid != 4326)
-                {
-                    // Reproject to WGS84 if necessary
-                    _mapPoint = (MapPoint)GeometryEngine.Instance.Project(_mapPoint, SpatialReferences.WGS84);
-                }
-
-                Longitude = _mapPoint.X;
-                Latitude = _mapPoint.Y;
-                break;
-
-            case CoordinateFormat.MGRS:
-                FormatAsMGRS(_mapPoint!.X, _mapPoint.Y, out GridSRItem mgrs);
-				MGRSPoint = mgrs;
-                SelectedZone = mgrs.Zone;
-                SelectedLatitudeBand = mgrs.LatitudeBand;
-                OneHundredKMGridID = mgrs.MGRSquareID;
-                Longitude = _mapPoint.X;
-                Latitude = _mapPoint.Y;
-                break;
-
-            case CoordinateFormat.UTM:
-                FormatAsUTM(_mapPoint!.X, _mapPoint.Y, out GridSRItem utm);
-                UTMPoint = utm;
-                SelectedZone = utm.Zone;
-                SelectedLatitudeBand = utm.LatitudeBand;
-                Longitude = _mapPoint.X;
-                Latitude = _mapPoint.Y;
-                break;
-        }
-    }
-
     /// <summary>
     ///     Updates the Display property and also updates XCoordinateString and YCoordinateString (since the latter two are shared amongst the 5 coordinate formats)
     /// </summary>
