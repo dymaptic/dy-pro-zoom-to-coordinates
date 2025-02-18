@@ -1,5 +1,6 @@
 ﻿using ArcGIS.Core.CIM;
 using ArcGIS.Core.Geometry;
+using ArcGIS.Core.Internal.Geometry;
 using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Layouts;
@@ -15,7 +16,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 {
     private static readonly char[] separator = [' '];
-    private MapPoint? _mapPoint;
+    private MapPoint? _mapPoint; // = MapPointBuilderEx.CreateMapPoint(0, 0, SpatialReferences.WGS84);
 
     // Private backing-fields to the public properties
     private string _xCoordinateString = "";
@@ -25,7 +26,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     private bool _xCoordinateValidated = true;  // when tool loads, valid coordinates are put into the text boxes
 	private bool _yCoordinateValidated = true;
 
-    private CoordinateFormatItem _selectedFormatItem;
+    private CoordinateFormatItem _selectedFormatItem = CoordinateFormats.First(f => f.Format == _settings.CoordinateFormat);
     private int _selectedZone = 1;
     private string _selectedLatitudeBand = "C";
     private string _oneHundredKMGridID = "AB";
@@ -39,12 +40,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     // Constructor
     public ZoomCoordinatesViewModel()
     {
-        // On startup, set property values from settings
-        _selectedFormatItem = CoordinateFormats.First(f => f.Format == _settings.CoordinateFormat);
-        UpdateCoordinateLabels();
-
         _mapPoint = MapPointBuilderEx.CreateMapPoint(Longitude, Latitude, SpatialReferences.WGS84);
-        UpdateDisplay();
+
+        UpdateCoordinateLabels();
+        UpdateDisplay(updateXYCoordinateStrings: true);
 
         // Command is grayed out if there isn't an active map view
         ZoomCommand = new RelayCommand(async () =>
@@ -52,7 +51,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             await ZoomToCoordinates();
         }, () => MapView.Active != null);
 
-        // Bind the command
         CopyTextCommand = new RelayCommand(() =>
         {
             CopyText();
@@ -88,29 +86,60 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         get => _selectedFormatItem;
         set
         {
-            // When selected format changes, do automatic coordinate conversions
-            if (SetProperty(ref _selectedFormatItem, value))
+            SetProperty(ref _selectedFormatItem, value);
+            SelectedFormat = value.Format;
+            UpdateCoordinateLabels();
+
+            // MGRS is a superset of UTM
+            ShowUtmControls = SelectedFormat == CoordinateFormat.UTM || SelectedFormat == CoordinateFormat.MGRS;
+
+            // MGRS builds upon UTM by also including 100 km grid zone designations 
+            ShowMgrsControl = SelectedFormat == CoordinateFormat.MGRS;
+
+            // Automatic formatting conversions!
+            switch (SelectedFormat)
             {
-                UpdateCoordinateLabels();
-                SelectedFormat = value.Format;
+                case CoordinateFormat.DecimalDegrees:
+                    XCoordinateString = $"{Math.Abs(_mapPoint!.X):F6}° {(_mapPoint.X >= 0 ? "E" : "W")}";
+                    YCoordinateString = $"{Math.Abs(_mapPoint.Y):F6}° {(_mapPoint.Y >= 0 ? "N" : "S")}";
+                    break;
 
-                // MGRS is a superset of UTM
-                ShowUtmControls = SelectedFormat == CoordinateFormat.UTM || SelectedFormat == CoordinateFormat.MGRS;
-                
-                // MGRS builds upon UTM by also including 100 km grid zone designations 
-                ShowMgrsControl = SelectedFormat == CoordinateFormat.MGRS;
+                case CoordinateFormat.DegreesDecimalMinutes:
+                    FormatAsDegreesDecimalMinutes(_mapPoint!.X, _mapPoint.Y, out string xDDM, out string yDDM);
+                    XCoordinateString = xDDM;
+                    YCoordinateString = yDDM;
+                    break;
 
-                UpdateCoordinates();
-                UpdateDisplay();
+                case CoordinateFormat.DegreesMinutesSeconds:
+                    FormatAsDegreesMinutesSeconds(_mapPoint!.X, _mapPoint.Y, out string xDMS, out string yDMS);
+                    XCoordinateString = xDMS;
+                    YCoordinateString = yDMS;
+                    break;
 
+                case CoordinateFormat.MGRS:
+                    FormatAsMGRS(_mapPoint!.X, _mapPoint.Y, out GridSRItem mgrs);
+                    MGRSPoint = mgrs;
+                    SelectedZone = mgrs.Zone;
+                    SelectedLatitudeBand = mgrs.LatitudeBand;
+                    OneHundredKMGridID = mgrs.MGRSquareID;
+                    XCoordinateString = mgrs.Easting.ToString();
+                    YCoordinateString = mgrs.Northing.ToString();
+                    break;
 
-                //// Update coordinates if we have a point
-                //// (allows us to convert from one coordinate system to another)
-                //if (_mapPoint != null)
-                //{
-                    
-                //}
+                case CoordinateFormat.UTM:
+                    FormatAsUTM(_mapPoint!.X, _mapPoint.Y, out GridSRItem utm);
+                    UTMPoint = utm;
+                    SelectedZone = utm.Zone;
+                    SelectedLatitudeBand = utm.LatitudeBand;
+                    XCoordinateString = utm.Easting.ToString();
+                    YCoordinateString = utm.Northing.ToString();
+                    break;
+
+                default:
+                    break;
             }
+
+            UpdateDisplay();
         }
     }
 
@@ -125,8 +154,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             SetProperty(ref _selectedZone, value);
             if (_xCoordinateValidated && _yCoordinateValidated)
             {
-                //UpdateCoordinates();
-
                 if (SelectedFormat == CoordinateFormat.MGRS)
                 {
                     MGRSPoint.Zone = SelectedZone;
@@ -138,7 +165,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     UTMPoint.GeoCoordinateString = UTMPoint.Zone + UTMPoint.GeoCoordinateString[2..];
                 }
 
-                //UpdateWGS84MapPointFromCoordinates();
+                UpdateWGS84MapPoint();
                 UpdateDisplay();
             }
         }
@@ -155,9 +182,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             SetProperty(ref _selectedLatitudeBand, value);
             if (_xCoordinateValidated && _yCoordinateValidated)
             {
-                //UpdateCoordinates();
-
-
                 if (SelectedFormat == CoordinateFormat.MGRS)
                 {
                     MGRSPoint.LatitudeBand = SelectedLatitudeBand;
@@ -169,7 +193,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     UTMPoint.GeoCoordinateString = UTMPoint.GeoCoordinateString[..2] + UTMPoint.LatitudeBand + UTMPoint.GeoCoordinateString[3..];
                 }
 
-                //UpdateWGS84MapPointFromCoordinates();
+                UpdateWGS84MapPoint();
                 UpdateDisplay();
             }
         }
@@ -186,7 +210,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             SetProperty(ref _oneHundredKMGridID, value);
             if (_xCoordinateValidated && _yCoordinateValidated)
             {
-                //UpdateWGS84MapPointFromCoordinates();
+                MGRSPoint.MGRSquareID = OneHundredKMGridID;
+                UpdateWGS84MapPoint();
                 UpdateDisplay();
             }
         }
@@ -206,7 +231,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 SetProperty(ref _xCoordinateString, value);
                 if (_yCoordinateValidated)
                 {
-                    UpdateWGS84MapPointFromCoordinates();
+                    UpdateWGS84MapPoint();
+                    UpdateDisplay();
                 }
             }
         }
@@ -226,7 +252,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 SetProperty(ref _yCoordinateString, value);
 				if (_xCoordinateValidated)
 				{
-					UpdateWGS84MapPointFromCoordinates();
+					UpdateWGS84MapPoint();
+                    UpdateDisplay();
                 }
             }
 		}
@@ -481,24 +508,22 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.MGRS:
-                ConvertToMGRS(_mapPoint!.X, _mapPoint.Y, out GridSRItem mgrs);
+                FormatAsMGRS(_mapPoint!.X, _mapPoint.Y, out GridSRItem mgrs);
 				MGRSPoint = mgrs;
                 SelectedZone = mgrs.Zone;
                 SelectedLatitudeBand = mgrs.LatitudeBand;
                 OneHundredKMGridID = mgrs.MGRSquareID;
                 Longitude = _mapPoint.X;
                 Latitude = _mapPoint.Y;
-                //Display = mgrs.Display;
                 break;
 
             case CoordinateFormat.UTM:
-                ConvertToUTM(_mapPoint!.X, _mapPoint.Y, out GridSRItem utm);
+                FormatAsUTM(_mapPoint!.X, _mapPoint.Y, out GridSRItem utm);
                 UTMPoint = utm;
                 SelectedZone = utm.Zone;
                 SelectedLatitudeBand = utm.LatitudeBand;
                 Longitude = _mapPoint.X;
                 Latitude = _mapPoint.Y;
-                //Display = utm.Display;
                 break;
         }
     }
@@ -506,53 +531,72 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     /// <summary>
     ///     Updates the Display property and also updates XCoordinateString and YCoordinateString (since the latter two are shared amongst the 5 coordinate formats)
     /// </summary>
-    private void UpdateDisplay()
+    private void UpdateDisplay(bool updateXYCoordinateStrings=false)
     {
         switch (SelectedFormat)
         {
             case CoordinateFormat.DecimalDegrees:
-                XCoordinateString = $"{Math.Abs(Longitude):F6}° {(Longitude >= 0 ? "E" : "W")}";
-                YCoordinateString = $"{Math.Abs(Latitude):F6}° {(Latitude >= 0 ? "N" : "S")}";
+                if (updateXYCoordinateStrings)
+                {
+                    XCoordinateString = $"{Math.Abs(Longitude):F6}° {(Longitude >= 0 ? "E" : "W")}";
+                    YCoordinateString = $"{Math.Abs(Latitude):F6}° {(Latitude >= 0 ? "N" : "S")}";
+                }
                 Display = $"{XCoordinateString} {YCoordinateString}";
                 break;
 
             case CoordinateFormat.DegreesDecimalMinutes:
-                FormatDegreesDecimalMinutes(Latitude, Longitude, out string yDDM, out string xDDM);
-                XCoordinateString = xDDM;
-                YCoordinateString = yDDM;
+                FormatAsDegreesDecimalMinutes(Latitude, Longitude, out string yDDM, out string xDDM);
+                if (updateXYCoordinateStrings)
+                {
+                    XCoordinateString = xDDM;
+                    YCoordinateString = yDDM;
+                }
                 Display = $"{XCoordinateString} {YCoordinateString}";
                 break;
 
             case CoordinateFormat.DegreesMinutesSeconds:
-                FormatDegreesMinutesSeconds(Latitude, Longitude, out string yDMS, out string xDMS);
-                XCoordinateString = xDMS;
-                YCoordinateString = yDMS;
+                FormatAsDegreesMinutesSeconds(Latitude, Longitude, out string yDMS, out string xDMS);
+                if (updateXYCoordinateStrings)
+                {
+                    XCoordinateString = xDMS;
+                    YCoordinateString = yDMS;
+                }
                 Display = $"{XCoordinateString} {YCoordinateString}";
                 break;
 
             case CoordinateFormat.MGRS:
-                XCoordinateString = MGRSPoint.Easting.ToString();
-                YCoordinateString = MGRSPoint.Northing.ToString();
+                if (updateXYCoordinateStrings)
+                {
+                    XCoordinateString = MGRSPoint.Easting.ToString();
+                    YCoordinateString = MGRSPoint.Northing.ToString();
+                }
                 Display = MGRSPoint.Display;
                 break;
 
             case CoordinateFormat.UTM:
-                XCoordinateString = UTMPoint.Easting.ToString();
-                YCoordinateString = UTMPoint.Northing.ToString();
+                if (updateXYCoordinateStrings)
+                {
+                    XCoordinateString = UTMPoint.Easting.ToString();
+                    YCoordinateString = UTMPoint.Northing.ToString();
+                }
                 Display = UTMPoint.Display;
                 break;
         }
     }
 
-    private void UpdateWGS84MapPointFromCoordinates()
+    private void UpdateWGS84MapPoint()
     {
         if (SelectedFormat == CoordinateFormat.MGRS)
         {
             _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(MGRSPoint.GeoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.MGRS);
+            Longitude = _mapPoint.X;
+            Latitude = _mapPoint.Y;
         }
         else if (SelectedFormat == CoordinateFormat.UTM)
         {
             _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(UTMPoint.GeoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.UTM);
+            Longitude = _mapPoint.X;
+            Latitude = _mapPoint.Y;
         }
         else  // Handle decimal degrees formats
         {

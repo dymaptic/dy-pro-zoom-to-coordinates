@@ -77,14 +77,14 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.DegreesDecimalMinutes:
-                FormatDegreesDecimalMinutes(YCoordinate, XCoordinate, out string yDDM, out string xDDM);
+                FormatAsDegreesDecimalMinutes(YCoordinate, XCoordinate, out string yDDM, out string xDDM);
                 FormattedXCoordinate = xDDM;
                 FormattedYCoordinate = yDDM;
                 Display = $"{FormattedXCoordinate} {FormattedYCoordinate}";
                 break;
 
             case CoordinateFormat.DegreesMinutesSeconds:
-                FormatDegreesMinutesSeconds(YCoordinate, XCoordinate, out string yDMS, out string xDMS);
+                FormatAsDegreesMinutesSeconds(YCoordinate, XCoordinate, out string yDMS, out string xDMS);
                 FormattedXCoordinate = xDMS;
                 FormattedYCoordinate = yDMS;
                 Display = $"{FormattedXCoordinate} {FormattedYCoordinate}";
@@ -123,7 +123,7 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.MGRS:
-                ConvertToMGRS(mapPoint.X, mapPoint.Y, out GridSRItem mgrs);
+                FormatAsMGRS(mapPoint.X, mapPoint.Y, out GridSRItem mgrs);
                 MGRSPoint = mgrs;
                 XCoordinate = mgrs.Easting;
                 YCoordinate = mgrs.Northing;
@@ -131,7 +131,7 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.UTM:
-                ConvertToUTM(mapPoint.X, mapPoint.Y, out GridSRItem utm);
+                FormatAsUTM(mapPoint.X, mapPoint.Y, out GridSRItem utm);
                 UTMPoint = utm;
                 XCoordinate = utm.Easting;
                 YCoordinate = utm.Northing;

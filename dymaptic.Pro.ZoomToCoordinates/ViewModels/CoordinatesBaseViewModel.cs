@@ -18,7 +18,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
     public ICommand? CopyTextCommand { get; set; }
 
 
-    public ObservableCollection<CoordinateFormatItem> CoordinateFormats { get; } =
+    public static ObservableCollection<CoordinateFormatItem> CoordinateFormats { get; } =
     [
         new CoordinateFormatItem { Format = CoordinateFormat.DecimalDegrees, DisplayName = "Decimal Degrees" },
         new CoordinateFormatItem { Format = CoordinateFormat.DegreesDecimalMinutes, DisplayName = "Degrees Decimal Minutes" },
@@ -81,14 +81,26 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         set => SetProperty(ref _yCoordinateLabel, value);
     }
 
-    public static void ConvertToMGRS(double longitude, double latitude, out GridSRItem mgrs)
+    public static void ConvertFormatToDegreesMinutesSeconds(double longitude, double latitude, out LatLongItem dms)
+    {
+        MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, SpatialReferences.WGS84);
+        ToGeoCoordinateParameter dmsParam = new(GeoCoordinateType.DMS);
+        string geoCoordStringDMS = wgs84Point.ToGeoCoordinateString(dmsParam);
+
+        dms = new LatLongItem
+        {
+            Lat = latitude,
+            Long = longitude,
+            GeoCoordinateString = geoCoordStringDMS
+        };
+    }
+
+
+    public static void FormatAsMGRS(double longitude, double latitude, out GridSRItem mgrs)
     {
         MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, SpatialReferences.WGS84);
         ToGeoCoordinateParameter mgrsParam = new(GeoCoordinateType.MGRS);
         string geoCoordString = wgs84Point.ToGeoCoordinateString(mgrsParam);
-
-        //ToGeoCoordinateParameter dmsParam = new(GeoCoordinateType.DMS);
-        //string geoCoordStringDMS = wgs84Point.ToGeoCoordinateString(dmsParam);
 
         //ToGeoCoordinateParameter ddmParam = new(GeoCoordinateType.DDM);
         //string geoCoordStringDDM = wgs84Point.ToGeoCoordinateString(ddmParam);
@@ -107,7 +119,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         };
     }
 
-    public static void ConvertToUTM(double longitude, double latitude, out GridSRItem utm)
+    public static void FormatAsUTM(double longitude, double latitude, out GridSRItem utm)
     {
         MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, SpatialReferences.WGS84);
         ToGeoCoordinateParameter utmParam = new(GeoCoordinateType.UTM);
@@ -138,11 +150,11 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
     /// <summary>
     /// Returns latitude/longitude in decimal degrees as Degrees Decimal Minutes (e.g., 37° 29.1911' N  121° 42.8099' W)
     /// </summary>
-    /// <param name="latitude"></param>
     /// <param name="longitude"></param>
-    /// <param name="yDDM"></param>
+    /// <param name="latitude"></param>
     /// <param name="xDDM"></param>
-    public static void FormatDegreesDecimalMinutes(double latitude, double longitude, out string yDDM, out string xDDM)
+    /// <param name="yDDM"></param>
+    public static void FormatAsDegreesDecimalMinutes(double longitude, double latitude, out string xDDM, out string yDDM)
     {
         // Latitude
         int latDegrees = (int)Math.Abs(latitude);
@@ -158,11 +170,11 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
     /// <summary>
     /// Returns latitude/longitude in decimal degrees as Degrees Minutes Seconds (e.g., 37° 29' 2.08" N  121° 42' 57.95" W)
     /// </summary>
-    /// <param name="latitude"></param>
     /// <param name="longitude"></param>
-    /// <param name="yDMS"></param>
+    /// <param name="latitude"></param>
     /// <param name="xDMS"></param>
-    public static void FormatDegreesMinutesSeconds(double latitude, double longitude, out string yDMS, out string xDMS)
+    /// <param name="yDMS"></param>
+    public static void FormatAsDegreesMinutesSeconds(double longitude, double latitude, out string xDMS, out string yDMS)
     {
         // Latitude
         int latDegrees = (int)Math.Abs(latitude);
@@ -196,7 +208,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
     public class CoordinateFormatItem
     {
         public CoordinateFormat Format { get; set; }
-        public string DisplayName { get; set; }
+        public string DisplayName { get; set; } = "";
 
         public override string ToString()
         {
@@ -217,6 +229,19 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         public int Easting { get; set; }
         public int Northing { get; set; }
         public string Display => $"{Zone}{LatitudeBand}{MGRSquareID} {Easting} {Northing}";
+
+        public string GeoCoordinateString { get; set; } = "";
+    }
+
+    public class LatLongItem
+    {
+        public double Lat { get; set; }
+        public double Long { get; set; }
+
+        public string LatString { get; set; } = "";
+        public string LongString { get; set; } = "";
+
+        public string Display => $"{LatString}, {LongString}";
 
         public string GeoCoordinateString { get; set; } = "";
     }
