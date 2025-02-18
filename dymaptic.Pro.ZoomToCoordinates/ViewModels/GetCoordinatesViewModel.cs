@@ -23,14 +23,9 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         {
             SetProperty(ref _selectedFormatItem, value);
             SelectedFormat = value.Format;
+            UpdateCoordinates(_mapPoint);
             UpdateCoordinateLabels();
-
-            // Update coordinates if we have a point
-            if (_mapPoint != null)
-            {
-                UpdateCoordinates(_mapPoint);
-                UpdateFormattedCoordinates();
-            }
+            UpdateFormattedCoordinates();
         }
     }
 
