@@ -33,7 +33,7 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
             }
         }
     }
-   
+
     public string FormattedYCoordinate
     {
         get => _formattedYCoordinate;
