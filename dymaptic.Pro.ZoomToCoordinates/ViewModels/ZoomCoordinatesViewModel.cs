@@ -20,6 +20,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     // Private backing-fields to the public properties
     private string _xCoordinateString = "";
     private string _yCoordinateString = "";
+    private string _errorMessage = "";
 	private double _longitude = _settings.Longitude;
     private double _latitude = _settings.Latitude;
     private bool _xCoordinateValidated = true;  // when tool loads, valid coordinates are put into the text boxes
@@ -164,8 +165,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     UTMPoint.GeoCoordinateString = UTMPoint.Zone + UTMPoint.GeoCoordinateString[2..];
                 }
 
-                UpdateWGS84MapPoint();
-                UpdateDisplay();
+                bool success = UpdateWGS84MapPoint();
+                if (success) { UpdateDisplay(); }
             }
         }
     }
@@ -192,8 +193,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     UTMPoint.GeoCoordinateString = UTMPoint.GeoCoordinateString[..2] + UTMPoint.LatitudeBand + UTMPoint.GeoCoordinateString[3..];
                 }
 
-                UpdateWGS84MapPoint();
-                UpdateDisplay();
+                bool success = UpdateWGS84MapPoint();
+                if (success) { UpdateDisplay(); }
             }
         }
     }
@@ -210,8 +211,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             if (_xCoordinateValidated && _yCoordinateValidated)
             {
                 MGRSPoint.MGRSquareID = OneHundredKMGridID;
-                UpdateWGS84MapPoint();
-                UpdateDisplay();
+                bool success = UpdateWGS84MapPoint();
+                if (success) { UpdateDisplay(); }
             }
         }
     }
@@ -230,8 +231,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 SetProperty(ref _xCoordinateString, value);
                 if (_yCoordinateValidated)
                 {
-                    UpdateWGS84MapPoint();
-                    UpdateDisplay();
+                    bool success = UpdateWGS84MapPoint();
+                    if (success) { UpdateDisplay(); }
                 }
             }
         }
@@ -251,12 +252,21 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 SetProperty(ref _yCoordinateString, value);
 				if (_xCoordinateValidated)
 				{
-					UpdateWGS84MapPoint();
-                    UpdateDisplay();
+                    bool success = UpdateWGS84MapPoint();
+                    if (success) { UpdateDisplay(); }
                 }
             }
 		}
 	}
+
+    /// <summary>
+    ///     Provide an informative error message for invalid input.
+    /// </summary>
+    public string ErrorMessage
+    {
+        get => _errorMessage;
+        set => SetProperty(ref _errorMessage, value);
+    }
 
     /// <summary>
     ///     Regardless of selected coordinate format, we ALWAYS store a longitude value in decimal degrees.
@@ -504,7 +514,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.DegreesDecimalMinutes:
-                FormatAsDegreesDecimalMinutes(Latitude, Longitude, out string yDDM, out string xDDM);
+                FormatAsDegreesDecimalMinutes(Longitude, Latitude, out string xDDM, out string yDDM);
                 if (updateXYCoordinateStrings)
                 {
                     XCoordinateString = xDDM;
@@ -514,7 +524,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.DegreesMinutesSeconds:
-                FormatAsDegreesMinutesSeconds(Latitude, Longitude, out string yDMS, out string xDMS);
+                FormatAsDegreesMinutesSeconds(Longitude, Latitude, out string xDMS, out string yDMS);
                 if (updateXYCoordinateStrings)
                 {
                     XCoordinateString = xDMS;
@@ -543,23 +553,31 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         }
     }
 
-    private void UpdateWGS84MapPoint()
+    private bool UpdateWGS84MapPoint()
     {
-        if (SelectedFormat == CoordinateFormat.MGRS)
+        try
         {
-            _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(MGRSPoint.GeoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.MGRS);
-            Longitude = _mapPoint.X;
-            Latitude = _mapPoint.Y;
+            if (SelectedFormat == CoordinateFormat.MGRS)
+            {
+                _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(MGRSPoint.GeoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.MGRS);
+                Longitude = _mapPoint.X;
+                Latitude = _mapPoint.Y;
+            }
+            else if (SelectedFormat == CoordinateFormat.UTM)
+            {
+                _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(UTMPoint.GeoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.UTM);
+                Longitude = _mapPoint.X;
+                Latitude = _mapPoint.Y;
+            }
+            else  // Handle decimal degrees formats
+            {
+                _mapPoint = MapPointBuilderEx.CreateMapPoint(Longitude, Latitude, SpatialReferences.WGS84);
+            }
+            return true;
         }
-        else if (SelectedFormat == CoordinateFormat.UTM)
+        catch
         {
-            _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(UTMPoint.GeoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.UTM);
-            Longitude = _mapPoint.X;
-            Latitude = _mapPoint.Y;
-        }
-        else  // Handle decimal degrees formats
-        {
-            _mapPoint = MapPointBuilderEx.CreateMapPoint(Longitude, Latitude, SpatialReferences.WGS84);
+            return false;
         }
     }
 
