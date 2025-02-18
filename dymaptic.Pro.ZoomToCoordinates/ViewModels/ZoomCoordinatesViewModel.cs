@@ -1,6 +1,5 @@
 ﻿using ArcGIS.Core.CIM;
 using ArcGIS.Core.Geometry;
-using ArcGIS.Core.Internal.Geometry;
 using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Layouts;

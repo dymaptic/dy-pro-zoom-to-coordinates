@@ -81,29 +81,17 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         set => SetProperty(ref _yCoordinateLabel, value);
     }
 
-    public static void ConvertFormatToDegreesMinutesSeconds(double longitude, double latitude, out LatLongItem dms)
-    {
-        MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, SpatialReferences.WGS84);
-        ToGeoCoordinateParameter dmsParam = new(GeoCoordinateType.DMS);
-        string geoCoordStringDMS = wgs84Point.ToGeoCoordinateString(dmsParam);
-
-        dms = new LatLongItem
-        {
-            Lat = latitude,
-            Long = longitude,
-            GeoCoordinateString = geoCoordStringDMS
-        };
-    }
-
-
+    /// <summary>
+    ///     Format the coordinates as Military Grid Reference System (MGRS).
+    /// </summary>
+    /// <param name="longitude"></param>
+    /// <param name="latitude"></param>
+    /// <param name="mgrs"></param>
     public static void FormatAsMGRS(double longitude, double latitude, out GridSRItem mgrs)
     {
         MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, SpatialReferences.WGS84);
         ToGeoCoordinateParameter mgrsParam = new(GeoCoordinateType.MGRS);
         string geoCoordString = wgs84Point.ToGeoCoordinateString(mgrsParam);
-
-        //ToGeoCoordinateParameter ddmParam = new(GeoCoordinateType.DDM);
-        //string geoCoordStringDDM = wgs84Point.ToGeoCoordinateString(ddmParam);
 
         int zone = int.Parse(geoCoordString[..2]);
         string latBand = geoCoordString[2..3];
@@ -119,6 +107,12 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         };
     }
 
+    /// <summary>
+    ///     Format the coordinates as Universal Transverse Mercator (UTM).
+    /// </summary>
+    /// <param name="longitude"></param>
+    /// <param name="latitude"></param>
+    /// <param name="utm"></param>
     public static void FormatAsUTM(double longitude, double latitude, out GridSRItem utm)
     {
         MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, SpatialReferences.WGS84);
@@ -229,19 +223,6 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         public int Easting { get; set; }
         public int Northing { get; set; }
         public string Display => $"{Zone}{LatitudeBand}{MGRSquareID} {Easting} {Northing}";
-
-        public string GeoCoordinateString { get; set; } = "";
-    }
-
-    public class LatLongItem
-    {
-        public double Lat { get; set; }
-        public double Long { get; set; }
-
-        public string LatString { get; set; } = "";
-        public string LongString { get; set; } = "";
-
-        public string Display => $"{LatString}, {LongString}";
 
         public string GeoCoordinateString { get; set; } = "";
     }
