@@ -43,6 +43,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     {
         _mapPoint = MapPointBuilderEx.CreateMapPoint(Longitude, Latitude, SpatialReferences.WGS84);
         _selectedLatitudeBandItem = LatitudeBands.First();
+        UpdateMgrsGridIds();
+
         UpdateCoordinateLabels();
         UpdateDisplay(updateXYCoordinateStrings: true);
 
@@ -89,6 +91,58 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             new LatitudeBand { Key = "W", Value = "64° to 72°" },
             new LatitudeBand { Key = "X", Value = "72° to 84°" } // X spans 12 degrees
         ];
+
+    private ObservableCollection<string> _mgrsGridIds = [];
+    public ObservableCollection<string> MgrsGridIds
+    {
+        get => _mgrsGridIds;
+        set => SetProperty(ref _mgrsGridIds, value);
+    }
+
+    private void UpdateMgrsGridIds()
+    {
+        MgrsGridIds.Clear();
+        foreach (var gridId in GetValidMgrsGridIds(SelectedZone, SelectedLatitudeBand))
+        {
+            MgrsGridIds.Add(gridId);
+        }
+    }
+
+    private static string[] GetValidMgrsGridIds(int utmZone, string latitudeBand)
+    {
+        // Mapping of UTM zones to their respective 100km grid column letters
+        var utmTo100KmColumns = new[]
+        {
+            "ABCDEFGHJKLMNPQRSTUVWXYZ", // Zone 1
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 2
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 3
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 4
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 5
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 6
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 7
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 8
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 9
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 10
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 11
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 12
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 13
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 14
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 15
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 16
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 17
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 18
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 19
+            "ABCDEFGHJKLMNPQRSTUVWX",   // Zone 20
+        };
+
+        // Latitude Band Rows (skipping I and O)
+        string northingLetters = "ABCDEFGHJKLMNPQRSTUVWX";
+
+        // Get the UTM Zone Index (subtract 1 to match 0-based index)
+        string validColumns = utmTo100KmColumns[(utmZone - 1) % utmTo100KmColumns.Length];
+
+        return validColumns.SelectMany(col => northingLetters.Select(row => $"{col}{row}")).ToArray();
+    }
 
     /// <summary>
     ///     Control whether UTM and several MGRS controls get shown in the view (MGRS is an extension of UTM).
@@ -184,12 +238,16 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         set
         {
             SetProperty(ref _selectedZone, value);
+
             if (_xCoordinateValidated && _yCoordinateValidated)
             {
                 if (SelectedFormat == CoordinateFormat.MGRS)
                 {
+                    string mgrsGridId = MGRSPoint.MGRSquareID;
                     MGRSPoint.Zone = SelectedZone;
                     MGRSPoint.GeoCoordinateString = MGRSPoint.Zone + MGRSPoint.GeoCoordinateString[2..];
+                    UpdateMgrsGridIds();
+                    OneHundredKMGridID = mgrsGridId;
                 }
                 else if (SelectedFormat == CoordinateFormat.UTM)
                 {
@@ -198,7 +256,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 }
 
                 bool success = UpdateWGS84MapPoint();
-                if (success) { UpdateDisplay(); }
+                if (success) 
+                { 
+                    UpdateDisplay(); 
+                }
             }
         }
     }
@@ -222,21 +283,31 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         set
         {
             SetProperty(ref _selectedLatitudeBand, value);
+
             if (_xCoordinateValidated && _yCoordinateValidated)
             {
                 if (SelectedFormat == CoordinateFormat.MGRS)
                 {
+                    string mgrsGridId = MGRSPoint.MGRSquareID;
+
+                    // Update the GeoCoordinateString b/c that's how we update the WGS84MapPoint!
                     MGRSPoint.LatitudeBand = SelectedLatitudeBand;
                     MGRSPoint.GeoCoordinateString = MGRSPoint.GeoCoordinateString[..2] + MGRSPoint.LatitudeBand + MGRSPoint.GeoCoordinateString[3..];
+                    UpdateMgrsGridIds();  // clears all the values before updating
+                    OneHundredKMGridID = mgrsGridId;  // reassign the original value
                 }
                 else if (SelectedFormat == CoordinateFormat.UTM)
                 {
+                    // Update the GeoCoordinateString b/c that's how we update the WGS84MapPoint!
                     UTMPoint.LatitudeBand = SelectedLatitudeBand;
                     UTMPoint.GeoCoordinateString = UTMPoint.GeoCoordinateString[..2] + UTMPoint.LatitudeBand + UTMPoint.GeoCoordinateString[3..];
                 }
 
                 bool success = UpdateWGS84MapPoint();
-                if (success) { UpdateDisplay(); }
+                if (success) 
+                { 
+                    UpdateDisplay(); 
+                }
             }
         }
     }
@@ -252,9 +323,14 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             SetProperty(ref _oneHundredKMGridID, value);
             if (_xCoordinateValidated && _yCoordinateValidated)
             {
+                // Update the GeoCoordinateString b/c that's how we update the WGS84MapPoint!
                 MGRSPoint.MGRSquareID = OneHundredKMGridID;
+                MGRSPoint.GeoCoordinateString = MGRSPoint.GeoCoordinateString[..3] + MGRSPoint.MGRSquareID + MGRSPoint.GeoCoordinateString[5..];
                 bool success = UpdateWGS84MapPoint();
-                if (success) { UpdateDisplay(); }
+                if (success) 
+                { 
+                    UpdateDisplay(); 
+                }
             }
         }
     }

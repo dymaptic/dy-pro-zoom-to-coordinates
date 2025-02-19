@@ -92,7 +92,11 @@
                 </Grid.RowDefinitions>
 
                 <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="100 KM Grid ID" />
-                <TextBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5" Text="{Binding OneHundredKMGridID}"/>
+                <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5" 
+                          ItemsSource="{Binding MgrsGridIds}" 
+                          SelectedItem="{Binding OneHundredKMGridID}" />
+
+                <!--<TextBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5" Text="{Binding OneHundredKMGridID}"/>-->
             </Grid>
         </StackPanel>
 
