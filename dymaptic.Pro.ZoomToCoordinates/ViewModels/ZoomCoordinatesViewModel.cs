@@ -28,6 +28,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 
     private CoordinateFormatItem _selectedFormatItem = CoordinateFormats.First(f => f.Format == _settings.CoordinateFormat);
     private int _selectedZone = 1;
+    private LatitudeBand _selectedLatitudeBandItem;
     private string _selectedLatitudeBand = "C";
     private string _oneHundredKMGridID = "AB";
     private bool _showUtmControls;
@@ -41,7 +42,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     public ZoomCoordinatesViewModel()
     {
         _mapPoint = MapPointBuilderEx.CreateMapPoint(Longitude, Latitude, SpatialReferences.WGS84);
-
+        _selectedLatitudeBandItem = LatitudeBands.First();
         UpdateCoordinateLabels();
         UpdateDisplay(updateXYCoordinateStrings: true);
 
@@ -57,8 +58,37 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         });
     }
 
+    /// <summary>
+    ///     UTM Zones 1-60.
+    /// </summary>
     public ObservableCollection<int> Zones { get; } = new(Enumerable.Range(1, 60));
-    public ObservableCollection<string> LatitudeBands { get; } = new ObservableCollection<string>("CDEFGHJKLMNPQRSTUVWX".Select(c => c.ToString()));
+
+    /// <summary>
+    ///     A collection of all the latitude bands which span 8° latitude except for X, which spans 12° (UTM/MGRS omit the letters O and I).
+    /// </summary>
+    public ObservableCollection<LatitudeBand> LatitudeBands { get; } =
+        [
+            new LatitudeBand { Key = "C", Value = "-80° to -72°" },
+            new LatitudeBand { Key = "D", Value = "-72° to -64°" },
+            new LatitudeBand { Key = "E", Value = "-64° to -56°" },
+            new LatitudeBand { Key = "F", Value = "-56° to -48°" },
+            new LatitudeBand { Key = "G", Value = "-48° to -40°" },
+            new LatitudeBand { Key = "H", Value = "-40° to -32°" },
+            new LatitudeBand { Key = "J", Value = "-32° to -24°" },
+            new LatitudeBand { Key = "K", Value = "-24° to -16°" },
+            new LatitudeBand { Key = "L", Value = "-16° to -8°" },
+            new LatitudeBand { Key = "M", Value = "-8° to 0°" },
+            new LatitudeBand { Key = "N", Value = "0° to 8°" },
+            new LatitudeBand { Key = "P", Value = "8° to 16°" },
+            new LatitudeBand { Key = "Q", Value = "16° to 24°" },
+            new LatitudeBand { Key = "R", Value = "24° to 32°" },
+            new LatitudeBand { Key = "S", Value = "32° to 40°" },
+            new LatitudeBand { Key = "T", Value = "40° to 48°" },
+            new LatitudeBand { Key = "U", Value = "48° to 56°" },
+            new LatitudeBand { Key = "V", Value = "56° to 64°" },
+            new LatitudeBand { Key = "W", Value = "64° to 72°" },
+            new LatitudeBand { Key = "X", Value = "72° to 84°" } // X spans 12 degrees
+        ];
 
     /// <summary>
     ///     Control whether UTM and several MGRS controls get shown in the view (MGRS is an extension of UTM).
@@ -121,6 +151,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     MGRSPoint = mgrs;
                     SelectedZone = mgrs.Zone;
                     SelectedLatitudeBand = mgrs.LatitudeBand;
+                    SelectedLatitudeBandItem = LatitudeBands.First(band => band.Key == SelectedLatitudeBand);
                     OneHundredKMGridID = mgrs.MGRSquareID;
                     XCoordinateString = mgrs.Easting.ToString();
                     YCoordinateString = mgrs.Northing.ToString();
@@ -131,6 +162,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     UTMPoint = utm;
                     SelectedZone = utm.Zone;
                     SelectedLatitudeBand = utm.LatitudeBand;
+                    SelectedLatitudeBandItem = LatitudeBands.First(band => band.Key == SelectedLatitudeBand);
                     XCoordinateString = utm.Easting.ToString();
                     YCoordinateString = utm.Northing.ToString();
                     break;
@@ -168,6 +200,16 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 bool success = UpdateWGS84MapPoint();
                 if (success) { UpdateDisplay(); }
             }
+        }
+    }
+
+    public LatitudeBand SelectedLatitudeBandItem
+    {
+        get => _selectedLatitudeBandItem;
+        set
+        {
+            SetProperty(ref _selectedLatitudeBandItem, value);
+            SelectedLatitudeBand = value.Key;
         }
     }
 
@@ -349,14 +391,21 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             case CoordinateFormat.MGRS:
                 if (double.TryParse(coordinateValue, out double x))
                 {
-                    return x >= 0 && x <= 99999;  // 5 digits max
+                    return x >= 0 && x <= 99_999;  // 5 digits max
                 }
                 return false;
 
             case CoordinateFormat.UTM:
                 if (double.TryParse(coordinateValue, out double y))
                 {
-                    return y >= 0 && y <= 999999;  // 6 digits max
+                    if (axis == "X")
+                    {
+                        return y >= 0 && y <= 999_999;  // 6 digits max for Easting
+                    }
+                    else
+                    {
+                        return y >= 0 && y <= 9_999_999;  // 7 digits max for Northing
+                    }
                 }
                 return false;
 
@@ -761,4 +810,15 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 		}
 		return marker;
 	}
+
+    /// <summary>
+    ///     Class to support a friendly description of latitude bands in the View's combobox; e.g., "C: -80° to -72°"
+    /// </summary>
+    public class LatitudeBand
+    {
+        public string Key { get; set; } = "";
+        public string Value { get; set; } = "";
+
+        public string DisplayText => $"{Key}: {Value}";  // Format for ComboBox
+    }
 }

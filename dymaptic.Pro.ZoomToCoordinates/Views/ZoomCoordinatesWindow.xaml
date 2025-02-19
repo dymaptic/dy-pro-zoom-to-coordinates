@@ -74,8 +74,8 @@
 
                 <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="Latitude Band:" />
                 <ComboBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5"
-                         ItemsSource="{Binding LatitudeBands}"
-                         SelectedItem="{Binding SelectedLatitudeBand}" />
+                         ItemsSource="{Binding LatitudeBands}" DisplayMemberPath="DisplayText"
+                         SelectedItem="{Binding SelectedLatitudeBandItem}" />
             </Grid>
         </StackPanel>
 
