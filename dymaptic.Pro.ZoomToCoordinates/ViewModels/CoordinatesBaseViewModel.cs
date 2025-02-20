@@ -10,8 +10,16 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
 {
     public static readonly Settings _settings = ZoomToCoordinatesModule.GetSettings();
     private string _display = "";
-    private GridSRItem _utm = new();
-    private GridSRItem _mgrs = new();
+
+    /// <summary>
+    ///     Holds UTM Point information once a conversion has occurred.
+    /// </summary>
+    protected GridSRItem _utm = new();
+
+    /// <summary>
+    ///     Holds MGRS Point information once a conversion has occurred.
+    /// </summary>
+    protected GridSRItem _mgrs = new();
     private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
     private CoordinateFormat _selectedFormat = _settings.CoordinateFormat;
@@ -34,24 +42,6 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
     {
         get => _display;
         set => SetProperty(ref _display, value);
-    }
-
-    /// <summary>
-    ///     Holds MGRS Point information once a conversion has occurred.
-    /// </summary>
-    public GridSRItem MGRSPoint
-    {
-        get => _mgrs;
-        set => SetProperty(ref _mgrs, value);
-    }
-
-    /// <summary>
-    ///     Holds UTM Point information once a conversion has occurred.
-    /// </summary>
-    public GridSRItem UTMPoint
-    {
-        get => _utm;
-        set => SetProperty(ref _utm, value);
     }
 
     /// <summary>
@@ -90,8 +80,16 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
     public static void FormatAsMGRS(double longitude, double latitude, out GridSRItem mgrs)
     {
         MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, SpatialReferences.WGS84);
-        ToGeoCoordinateParameter mgrsParam = new(GeoCoordinateType.MGRS);
+        
+        // Create MGRS coordinate using truncation, rather than rounding
+        ToGeoCoordinateParameter mgrsParam = new(geoCoordType: GeoCoordinateType.MGRS, geoCoordMode: ToGeoCoordinateMode.MgrsNewStyle, numDigits:5, rounding:false, addSpaces:false);
         string geoCoordString = wgs84Point.ToGeoCoordinateString(mgrsParam);
+
+        //ToGeoCoordinateParameter mgrsParam2 = new(geoCoordType: GeoCoordinateType.MGRS, geoCoordMode: ToGeoCoordinateMode.MgrsNewStyle, numDigits: 5, rounding: true, addSpaces: false);
+        //string geoCoordString2 = wgs84Point.ToGeoCoordinateString(mgrsParam2);
+
+        //ToGeoCoordinateParameter mgrsParam3 = new(geoCoordType: GeoCoordinateType.MGRS);
+        //string geoCoordString3 = wgs84Point.ToGeoCoordinateString(mgrsParam3);
 
         int zone = int.Parse(geoCoordString[..2]);
         string latBand = geoCoordString[2..3];
@@ -222,7 +220,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
 
         public int Easting { get; set; }
         public int Northing { get; set; }
-        public string Display => $"{Zone}{LatitudeBand}{MGRSquareID} {Easting} {Northing}";
+        public string Display => $"{Zone}{LatitudeBand}{MGRSquareID}{Easting}{Northing}";
 
         public string GeoCoordinateString { get; set; } = "";
     }

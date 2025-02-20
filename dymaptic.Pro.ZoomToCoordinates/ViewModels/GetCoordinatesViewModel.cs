@@ -91,15 +91,15 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.MGRS:
-                FormattedXCoordinate = MGRSPoint.Easting.ToString();
-                FormattedYCoordinate = MGRSPoint.Northing.ToString();
-                Display = MGRSPoint.Display;
+                FormattedXCoordinate = _mgrs.Easting.ToString();
+                FormattedYCoordinate = _mgrs.Northing.ToString();
+                Display = _mgrs.Display;
                 break;
 
             case CoordinateFormat.UTM:
-                FormattedXCoordinate = UTMPoint.Easting.ToString();
-                FormattedYCoordinate = UTMPoint.Northing.ToString();
-                Display = UTMPoint.Display;
+                FormattedXCoordinate = _utm.Easting.ToString();
+                FormattedYCoordinate = _utm.Northing.ToString();
+                Display = _utm.Display;
                 break;
         }
     }
@@ -123,19 +123,17 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 break;
 
             case CoordinateFormat.MGRS:
-                FormatAsMGRS(mapPoint.X, mapPoint.Y, out GridSRItem mgrs);
-                MGRSPoint = mgrs;
-                XCoordinate = mgrs.Easting;
-                YCoordinate = mgrs.Northing;
-                Display = mgrs.Display;
+                FormatAsMGRS(mapPoint.X, mapPoint.Y, out _mgrs);
+                XCoordinate = _mgrs.Easting;
+                YCoordinate = _mgrs.Northing;
+                Display = _mgrs.Display;
                 break;
 
             case CoordinateFormat.UTM:
-                FormatAsUTM(mapPoint.X, mapPoint.Y, out GridSRItem utm);
-                UTMPoint = utm;
-                XCoordinate = utm.Easting;
-                YCoordinate = utm.Northing;
-                Display = utm.Display;
+                FormatAsUTM(mapPoint.X, mapPoint.Y, out _utm);
+                XCoordinate = _utm.Easting;
+                YCoordinate = _utm.Northing;
+                Display = _utm.Display;
                 break;
         }
     }
