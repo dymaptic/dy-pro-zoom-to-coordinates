@@ -8,8 +8,8 @@ using System.Windows.Input;
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public class CoordinatesBaseViewModel : PropertyChangedBase
 {
-    public static readonly Settings _settings = ZoomToCoordinatesModule.GetSettings();
-    private string _display = "";
+    protected static readonly Settings _settings = ZoomToCoordinatesModule.GetSettings();
+    protected string _display = "";
 
     /// <summary>
     ///     Holds UTM Point information once a conversion has occurred.
@@ -114,7 +114,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
     public static void FormatAsUTM(double longitude, double latitude, out GridSRItem utm)
     {
         MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, SpatialReferences.WGS84);
-        ToGeoCoordinateParameter utmParam = new(GeoCoordinateType.UTM);
+        ToGeoCoordinateParameter utmParam = new(geoCoordType: GeoCoordinateType.UTM);
         string geoCoordString = wgs84Point.ToGeoCoordinateString(utmParam);
 
         string[] parts = geoCoordString.Split(" ");
@@ -127,7 +127,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
             LatitudeBand = latBand,
             Easting = int.Parse(parts[1]),
             Northing = int.Parse(parts[2]),
-            GeoCoordinateString = geoCoordString
+            GeoCoordinateString = geoCoordString.Replace(" ", "")
         };
     }
 
@@ -217,9 +217,9 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
 
         // MGRS only stores 100km Square ID (2 characters total)
         public string MGRSquareID { get; set; } = "";
-
         public int Easting { get; set; }
         public int Northing { get; set; }
+
         public string Display => $"{Zone}{LatitudeBand}{MGRSquareID}{Easting}{Northing}";
 
         public string GeoCoordinateString { get; set; } = "";
