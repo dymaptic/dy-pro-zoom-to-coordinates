@@ -10,7 +10,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using static dymaptic.Pro.ZoomToCoordinates.ViewModels.CoordinatesBaseViewModel;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
@@ -362,8 +361,9 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                             break;
 
                         case CoordinateFormat.UTM:
-                            _utm.Northing = int.Parse(_yCoordinateString);
-                            _utm.GeoCoordinateString = _utm.GeoCoordinateString[..9] + _utm.Northing.ToString("D7");
+
+                            // Check if the change in Northing was large enough to place it in a new Latitude Band
+                            UpdateLatitudeBandForNorthingChange(_utm, _yCoordinateString);
                             break;
                         default:
                             break;
@@ -494,7 +494,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     ///     When the Latitude Band changes, adjust the Northing value to follow a better UI experience where all other UTM parametes 
     ///     remaining the same, the new point would be placed in the correct Latitude Band.
     /// </summary>
-    /// <param name="gridItem">Either the UTM or MGRS objects which have a Northing property.</param>
+    /// <param name="gridItem">Either the UTM or MGRS objects.</param>
     /// <param name="newBand">The potentially new latitude band value.</param>
     private void AdjustNorthingForLatitudeBandChange(GridSRItem gridItem, string newBand)
     {
@@ -531,6 +531,53 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         // Lastly, trigger a UI refresh
         YCoordinateString = gridItem.Northing.ToString();
     }
+
+    /// <summary>
+    ///     When the Northing value changes enough to put it into a new Latitude Band, update the Latitude Band. 
+    /// </summary>
+    /// <param name="gridItem">Either the UTM or MGRS objects.</param>
+    /// <param name="yCoord">The Northing value.</param>
+    private void UpdateLatitudeBandForNorthingChange(GridSRItem gridItem, string yCoord)
+    {
+        _utm.Northing = int.Parse(yCoord);
+
+        // Convert Northing to Latitude (Approximation)
+        double newLatitude = gridItem.Northing / 111000.0; // Approximate meters per degree
+
+        // Find the correct latitude band
+        string newLatitudeBand = LatitudeBandStartDegrees
+            .Where(band => newLatitude >= band.Value) // Find the highest band that matches
+            .OrderByDescending(band => band.Value)
+            .Select(band => band.Key)
+            .First();
+
+        // Did the new Northing input, trigger a Latitude Band change?  
+        if (newLatitudeBand != gridItem.LatitudeBand)
+        {
+            gridItem.LatitudeBand = newLatitudeBand;
+
+            // Don't trigger the setter logic here
+            _selectedLatitudeBand = newLatitudeBand;
+
+            // But do trigger UI refresh!
+            SelectedLatitudeBandItem = LatitudeBands
+                .Where(x => x.Key == _selectedLatitudeBand)
+                .First();
+        }
+
+        // Lastly, regardless of the magnitude of the Northing change, always update the GeoCoordinateString since it includes Northing too and it's used for updating the WGS84MapPoint
+        if (string.IsNullOrEmpty(gridItem.MGRSquareID))
+        {
+            gridItem.GeoCoordinateString = gridItem.Zone + gridItem.LatitudeBand +
+                                           gridItem.Easting.ToString("D6") + gridItem.Northing.ToString("D7");
+        }
+        else
+        {
+            gridItem.GeoCoordinateString = gridItem.Zone + gridItem.LatitudeBand + gridItem.MGRSquareID +
+                                           gridItem.Easting.ToString("D5") + gridItem.Northing.ToString("D5");
+        }
+    }
+
 
     /// <summary>
     ///     Validates that the decimal degrees entered are valid.
