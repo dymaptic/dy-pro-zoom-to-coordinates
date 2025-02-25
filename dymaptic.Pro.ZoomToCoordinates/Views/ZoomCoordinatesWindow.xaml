@@ -69,13 +69,20 @@
 
                 <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="Zone:" />
                 <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5"
-                         ItemsSource="{Binding Zones}"
-                         SelectedItem="{Binding SelectedZone}" />
+                         ItemsSource="{Binding UTMZones}"
+                         SelectedItem="{Binding SelectedUTMZone}"
+                         ToolTip="Select a UTM Zone, and note that UTM Zone will also automatically update as the Easting changes." />
 
                 <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="Latitude Band:" />
-                <ComboBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5"
+                <TextBlock Grid.Row="1" Grid.Column="1" Margin="5,5,15,5"
+                        Text="{Binding SelectedLatitudeBandItem.DisplayText}"
+                        ToolTip="Latitude band automatically updates as the Northing changes."/>
+                
+                
+                <!--<ComboBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5"
                          ItemsSource="{Binding LatitudeBands}" DisplayMemberPath="DisplayText"
-                         SelectedItem="{Binding SelectedLatitudeBandItem}" />
+                         SelectedItem="{Binding SelectedLatitudeBandItem}" 
+                          IsEnabled="False" />   --><!--IsHitTestVisible="False" Focusable="False" />-->
             </Grid>
         </StackPanel>
 
@@ -92,7 +99,7 @@
                 </Grid.RowDefinitions>
 
                 <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="100 KM Grid ID" />
-                <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5" 
+                <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,5,5" 
                           ItemsSource="{Binding MgrsGridIds}" 
                           SelectedItem="{Binding OneHundredKMGridID}" />
             </Grid>
@@ -100,9 +107,13 @@
 
         <!-- Coordinate text boxes -->
         <Label Grid.Row="3" Grid.Column="0" Margin="5" Content="{Binding XCoordinateLabel}" />
-        <TextBox Grid.Row="3" Grid.Column="1" Margin="5,5,10,5" Text="{Binding XCoordinateString}"/>
+        <TextBox Grid.Row="3" Grid.Column="1" Margin="5,5,10,5" 
+                 Text="{Binding XCoordinateString}"
+                 ToolTip="{Binding XCoordinateToolTip}"/>
         <Label Grid.Row="4" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
-        <TextBox Grid.Row="4" Grid.Column="1" Margin="5,5,10,5" Text="{Binding YCoordinateString}" />
+        <TextBox Grid.Row="4" Grid.Column="1" Margin="5,5,10,5" 
+                 Text="{Binding YCoordinateString}"
+                 ToolTip="{Binding YCoordinateToolTip}"/>
 
         <!-- Display -->
         <Button Grid.Row="5" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}" Style="{DynamicResource Esri_Button}"/>
