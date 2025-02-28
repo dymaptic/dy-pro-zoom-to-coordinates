@@ -279,11 +279,11 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
             DMSGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_degreesMinutesSecondsParam);
             string[] parts = DMSGeoCoordinateString.Split(' ');
 
-            LatitudeDMS = $"{parts[0]} {parts[1]} {parts[2][..^1]}";
-            LongitudeDMS = $"{parts[3]} {parts[4]} {parts[5][..^1]}";
-
             char latitudeLabel = parts[2][^1];
             char longitudeLabel = parts[5][^1];
+
+            LatitudeDMS = $"{parts[0]} {parts[1]} {parts[2][..^1]} {latitudeLabel}";
+            LongitudeDMS = $"{parts[3]} {parts[4]} {parts[5][..^1]} {longitudeLabel}";
 
             LatitudeDMSFormatted = $"{parts[0]}° {parts[1]}' {parts[2][..^1]}'' {latitudeLabel}";
             LongitudeDMSFormatted = $"{parts[3]}° {parts[4]}' {parts[5][..^1]}'' {longitudeLabel}";
@@ -297,11 +297,11 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
             DDMGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_degreesDecimalMinutesParam);
             string[] parts = DDMGeoCoordinateString.Split(' ');
 
-            LatitudeDDM = $"{parts[0]} {parts[1][..^1]}";
-            LongitudeDDM = $"{parts[2]} {parts[3][..^1]}";
-
             char latitudeLabel = parts[1][^1];
             char longitudeLabel = parts[3][^1];
+
+            LatitudeDDM = $"{parts[0]} {parts[1][..^1]} {latitudeLabel}";
+            LongitudeDDM = $"{parts[2]} {parts[3][..^1]} {longitudeLabel}";
 
             LatitudeDDMFormatted = $"{parts[0]}° {parts[1][..^1]}' {latitudeLabel}";
             LongitudeDDMFormatted = $"{parts[2]}° {parts[3][..^1]}' {longitudeLabel}";
