@@ -41,8 +41,11 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     private string _oneHundredKMGridID = "";
     private bool _showUtmControls;
     private bool _showMgrsControl;
+    private bool _isDegrees = true;
+    private bool _showFormattedDegrees = false;
     private double _scale = _settings.Scale;
 	private bool _createGraphic = _settings.CreateGraphic;
+    private LongLatItem _longLatItem = new(_settings.Longitude, _settings.Latitude);
 
     public ICommand ZoomCommand { get; }
 
@@ -51,6 +54,11 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     {
         // Create a MapPoint right off the bat with the default coordinates
         _mapPoint = MapPointBuilderEx.CreateMapPoint(_longitude, _latitude, SpatialReferences.WGS84);
+        _longLatItem.UpdateCoordinates(_mapPoint!.X, _mapPoint.Y);
+
+        // Set initially for the Display
+        _xCoordinateString = _longLatItem.Longitude.ToString("F6");
+        _yCoordinateString = _longLatItem.Latitude.ToString("F6");
 
         // Initialize GridSRItem objects and fields
         FormatAsUTM(_longitude, _latitude, out _utm);
@@ -60,10 +68,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 
         FormatAsMGRS(_longitude, _latitude, out _mgrs);
         _oneHundredKMGridID = _mgrs.MGRSquareID;
-
-        // Set initially for the Display
-        _xCoordinateString = $"{Math.Abs(_longitude):F6}° {(_longitude >= 0 ? "E" : "W")}";
-        _yCoordinateString = $"{Math.Abs(_latitude):F6}° {(_latitude >= 0 ? "N" : "S")}";
 
         UpdateDisplay();
         UpdateCoordinateLabels();
@@ -137,6 +141,25 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         set => SetProperty(ref _showMgrsControl, value);
     }
 
+    public bool IsDegrees
+    {
+        get => _isDegrees;
+        set => SetProperty(ref _isDegrees, value);
+    }
+
+    /// <summary>
+    ///     Only applicable for Decimal Degrees / Degrees Minutes Seconds / Degrees Decimal Minutes
+    /// </summary>
+    public bool ShowFormattedDegrees
+    {
+        get => _showFormattedDegrees;
+        set
+        {
+            SetProperty(ref _showFormattedDegrees, value);
+            UpdateDegreesDisplay();
+        }
+    }
+
     /// <summary>
     ///     The selected coordinate reference system.
     /// </summary>
@@ -149,30 +172,30 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             SelectedFormat = value.Format;
             UpdateCoordinateLabels();
 
+            IsDegrees = SelectedFormat == CoordinateFormat.DecimalDegrees || SelectedFormat ==  CoordinateFormat.DegreesMinutesSeconds || SelectedFormat == CoordinateFormat.DegreesDecimalMinutes;
+
             // MGRS is a superset of UTM
             ShowUtmControls = SelectedFormat == CoordinateFormat.UTM || SelectedFormat == CoordinateFormat.MGRS;
 
-            // MGRS builds upon UTM by also including 100 km grid zone designations 
+            // MGRS builds upon UTM by also including 100 km grid zone designations
             ShowMgrsControl = SelectedFormat == CoordinateFormat.MGRS;
 
             // Automatic formatting conversions!
             switch (SelectedFormat)
             {
                 case CoordinateFormat.DecimalDegrees:
-                    _xCoordinateString = $"{Math.Abs(_mapPoint!.X):F6}° {(_mapPoint.X >= 0 ? "E" : "W")}";
-                    _yCoordinateString = $"{Math.Abs(_mapPoint.Y):F6}° {(_mapPoint.Y >= 0 ? "N" : "S")}";
-                    break;
-
-                case CoordinateFormat.DegreesDecimalMinutes:
-                    FormatAsDegreesDecimalMinutes(_mapPoint!.X, _mapPoint.Y, out string xDDM, out string yDDM);
-                    _xCoordinateString = xDDM;
-                    _yCoordinateString = yDDM;
+                    _longLatItem.UpdateCoordinates(_mapPoint!.X, _mapPoint.Y);
+                    UpdateDegreesDisplay();
                     break;
 
                 case CoordinateFormat.DegreesMinutesSeconds:
-                    FormatAsDegreesMinutesSeconds(_mapPoint!.X, _mapPoint.Y, out string xDMS, out string yDMS);
-                    _xCoordinateString = xDMS;
-                    _yCoordinateString = yDMS;
+                    _longLatItem.UpdateCoordinates(_mapPoint!.X, _mapPoint.Y);
+                    UpdateDegreesDisplay();
+                    break;
+
+                case CoordinateFormat.DegreesDecimalMinutes:
+                    _longLatItem.UpdateCoordinates(_mapPoint!.X, _mapPoint.Y);
+                    UpdateDegreesDisplay();
                     break;
 
                 case CoordinateFormat.MGRS:
@@ -546,21 +569,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         { "W", 64 }, { "X", 72 }
     };
 
-    /// <summary>
-    ///     Validates that the decimal degrees entered are valid.
-    /// </summary>
-    /// <param name="value">The latitude or longitude value as a double.</param>
-    /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
-    /// <returns></returns>
-	private static bool IsValidDecimalDegree(double value, string axis)
-	{
-		// "X" is Longitude -180 to 180
-		// "Y" is Latitude -90 to 90
-		double min = axis == "X" ? -180 : -90;
-		double max = axis == "X" ? 180 : 90;
-
-		return value >= min && value <= max;
-	}
 
     /// <summary>
     ///     Validates coordinate according to which coordinate system format is selected.
@@ -568,14 +576,14 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     /// <param name="coordinateValue">The coordinate string (it can be in one of five formats: DD, DDM, DMS, MGRS, or UTM).</param>
     /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
     /// <returns></returns>
-    private bool ValidateCoordinate(string coordinateValue, string axis)
+    public bool ValidateCoordinate(string coordinateValue, string axis)
     {
         if (string.IsNullOrWhiteSpace(coordinateValue))
             return false;
 
         // Only DD/DDM/DDS allow non-numeric characters
         bool isNegative = false;
-        string cleanedLatLongValue = CleanLatLongCoordinateString(coordinateValue, axis, ref isNegative);
+        string cleanedLatLongValue = LongLatItem.CleanLatLongCoordinateString(coordinateValue, axis, ref isNegative);
 
         switch (SelectedFormat)
         {
@@ -615,42 +623,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     }
 
     /// <summary>
-    ///     Removes expected (allowed) non-numeric characters for latitude/longitude values. 
-    /// </summary>
-    /// <param name="value">The latitude or longitude value as a string which may have degree symbols, minute and seconds symbols as well as notation for hemisphere.</param>
-    /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
-    /// <param name="isNegative">A reference parameter that is set to <c>true</c> if the coordinate is in the western or southern hemisphere; 
-    /// otherwise, remains <c>false</c>.</param>
-    /// <returns></returns>
-    private static string CleanLatLongCoordinateString(string value, string axis, ref bool isNegative)
-    {
-        string cleanedValue = value;
-
-        // Handle cardinal directions and set negative flag
-        if (axis == "X")
-        {
-            if (cleanedValue.Contains('W'))
-            {
-                cleanedValue = cleanedValue.Replace("W", "");
-                isNegative = true;
-            }
-            cleanedValue = cleanedValue.Replace("E", "");
-        }
-        else
-        {
-            if (cleanedValue.Contains('S'))
-            {
-                cleanedValue = cleanedValue.Replace("S", "");
-                isNegative = true;
-            }
-            cleanedValue = cleanedValue.Replace("N", "");
-        }
-
-        // Remove degree symbols and trim
-        return cleanedValue.Replace("°", " ").Replace("'", " ").Replace("\"", "").Trim();
-    }
-
-    /// <summary>
     ///     Validates a decimal degrees coordinate string.
     /// </summary>
     /// <param name="value">The latitude or longitude value as a string.</param>
@@ -665,7 +637,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         if (isNegative)
             degrees *= -1;
 
-        if (!IsValidDecimalDegree(degrees, axis))
+        if (!LongLatItem.IsValidDecimalDegree(degrees, axis))
             return false;
 
         if (axis == "X")
@@ -689,7 +661,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         if (parts.Length != 2)
             return false;
 
-        if (!double.TryParse(parts[0], out double degrees) || 
+        if (!double.TryParse(parts[0], out double degrees) ||
             !double.TryParse(parts[1], out double decimalMinutes))
             return false;
 
@@ -700,7 +672,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         if (isNegative)
             decimalDegrees *= -1;
 
-        if (!IsValidDecimalDegree(decimalDegrees, axis))
+        if (!LongLatItem.IsValidDecimalDegree(decimalDegrees, axis))
             return false;
 
         if (axis == "X")
@@ -723,8 +695,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         if (parts.Length != 3)
             return false;
 
-        if (!double.TryParse(parts[0], out double degrees) || 
-            !double.TryParse(parts[1], out double minutes) || 
+        if (!double.TryParse(parts[0], out double degrees) ||
+            !double.TryParse(parts[1], out double minutes) ||
             !double.TryParse(parts[2], out double seconds))
             return false;
 
@@ -735,7 +707,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         if (isNegative)
             decimalDegrees *= -1;
 
-        if (!IsValidDecimalDegree(decimalDegrees, axis))
+        if (!LongLatItem.IsValidDecimalDegree(decimalDegrees, axis))
             return false;
 
         if (axis == "X")
@@ -744,6 +716,64 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             _latitude = decimalDegrees;
 
         return true;
+    }
+
+    private void UpdateDegreesDisplay()
+    {
+        switch (SelectedFormat)
+        {
+            case CoordinateFormat.DecimalDegrees:
+                if (_showFormattedDegrees)
+                {
+                    _xCoordinateString = _longLatItem.LongitudeDDFormatted;
+                    _yCoordinateString = _longLatItem.LatitudeDDFormatted;
+                    Display = _longLatItem.DecimalDegreesFormatted;
+                }
+                else
+                {
+                    _xCoordinateString = _longLatItem.Longitude.ToString("F6");
+                    _yCoordinateString = _longLatItem.Latitude.ToString("F6");
+                    Display = _longLatItem.DecimalDegrees;
+                }
+                break;
+
+            case CoordinateFormat.DegreesMinutesSeconds:
+                if (_showFormattedDegrees)
+                {
+                    _xCoordinateString = _longLatItem.LongitudeDMSFormatted;
+                    _yCoordinateString = _longLatItem.LatitudeDMSFormatted;
+                    Display = _longLatItem.DegreesMinutesSecondsFormatted;
+                }
+                else
+                {
+                    _xCoordinateString = _longLatItem.LongitudeDMS;
+                    _yCoordinateString = _longLatItem.LatitudeDMS;
+                    Display = _longLatItem.DegreesMinutesSeconds;
+                }
+                break;
+
+            case CoordinateFormat.DegreesDecimalMinutes:
+                if (_showFormattedDegrees)
+                {
+                    _xCoordinateString = _longLatItem.LongitudeDDMFormatted;
+                    _yCoordinateString = _longLatItem.LatitudeDDMFormatted;
+                    Display = _longLatItem.DegreesDecimalMinutesFormatted;
+                }
+                else
+                {
+                    _xCoordinateString = _longLatItem.LongitudeDDM;
+                    _yCoordinateString = _longLatItem.LatitudeDDM;
+                    Display = _longLatItem.DegreesDecimalMinutes;
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        // Send UI update withtout triggering setter logic
+        NotifyPropertyChanged(nameof(XCoordinateString));
+        NotifyPropertyChanged(nameof(YCoordinateString));
     }
 
     /// <summary>
@@ -864,7 +894,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             }
             else  // Handle decimal degrees formats
             {
-                _mapPoint = MapPointBuilderEx.CreateMapPoint(_longitude, _latitude, SpatialReferences.WGS84);
+                _mapPoint = MapPointBuilderEx.CreateMapPoint(_longLatItem.Longitude, _longLatItem.Latitude, SpatialReferences.WGS84);
             }
 
             _longitude = _mapPoint.X;

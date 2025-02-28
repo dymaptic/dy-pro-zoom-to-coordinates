@@ -1,4 +1,5 @@
 ﻿using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Core.Utilities;
 using ArcGIS.Desktop.Framework.Contracts;
 using System;
 using System.Collections.ObjectModel;
@@ -84,12 +85,6 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         // Create MGRS coordinate using truncation, rather than rounding
         ToGeoCoordinateParameter mgrsParam = new(geoCoordType: GeoCoordinateType.MGRS, geoCoordMode: ToGeoCoordinateMode.MgrsNewStyle, numDigits:5, rounding:false, addSpaces:false);
         string geoCoordString = wgs84Point.ToGeoCoordinateString(mgrsParam);
-
-        //ToGeoCoordinateParameter mgrsParam2 = new(geoCoordType: GeoCoordinateType.MGRS, geoCoordMode: ToGeoCoordinateMode.MgrsNewStyle, numDigits: 5, rounding: true, addSpaces: false);
-        //string geoCoordString2 = wgs84Point.ToGeoCoordinateString(mgrsParam2);
-
-        //ToGeoCoordinateParameter mgrsParam3 = new(geoCoordType: GeoCoordinateType.MGRS);
-        //string geoCoordString3 = wgs84Point.ToGeoCoordinateString(mgrsParam3);
 
         int zone = int.Parse(geoCoordString[..2]);
         string latBand = geoCoordString[2..3];
@@ -223,5 +218,176 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         public string Display => $"{Zone}{LatitudeBand}{MGRSquareID}{Easting}{Northing}";
 
         public string GeoCoordinateString { get; set; } = "";
+    }
+
+    public class LongLatItem
+    {
+        private readonly ToGeoCoordinateParameter _decimalDegreesParam = new(geoCoordType: GeoCoordinateType.DD);
+        private readonly ToGeoCoordinateParameter _degreesMinutesSecondsParam = new(geoCoordType: GeoCoordinateType.DMS);
+        private readonly ToGeoCoordinateParameter _degreesDecimalMinutesParam = new(geoCoordType: GeoCoordinateType.DDM);
+
+        // Constructor
+        public LongLatItem(double  longitude, double latitude)
+        {
+            Longitude = longitude;
+            Latitude = latitude;
+            WGS84MapPoint = MapPointBuilderEx.CreateMapPoint(Longitude, Latitude, SpatialReferences.WGS84);
+            FormatAsDecimalDegrees();
+            FormatAsDegreesMinutesSeconds();
+            FormatAsDegreesDecimalMinutes();
+        }
+        public MapPoint WGS84MapPoint { get; set; }
+
+        #region Decimal Degrees
+        public double Longitude { get; set; }
+        public double Latitude { get; set; }
+
+        public string LongitudeDDFormatted { get; set; } = "";
+        public string LatitudeDDFormatted { get; set; } = "";
+
+        public string DecimalDegrees => $"{Latitude}, {Longitude}";
+        public string DecimalDegreesFormatted => $"{LatitudeDDFormatted} {LongitudeDDFormatted}";
+        #endregion
+
+        #region Degrees Minutes Seconds
+        // Degrees/Minutes/Seconds without the degree, minute, second symbols or N/S/E/W labels
+        public string LongitudeDMS { get; set; } = "";
+        public string LatitudeDMS { get; set; } = "";
+
+        public string LongitudeDMSFormatted { get; set; } = "";
+        public string LatitudeDMSFormatted { get; set; } = "";
+
+        public string DegreesMinutesSeconds => $"{LatitudeDMS} {LongitudeDMS}";
+        public string DegreesMinutesSecondsFormatted => $"{LatitudeDMSFormatted} {LongitudeDMSFormatted}";
+        #endregion
+
+        #region Degrees Decimal Minutes
+        public string LongitudeDDM { get; set; } = "";
+        public string LatitudeDDM { get; set; } = "";
+
+        public string LongitudeDDMFormatted { get; set; } = "";
+        public string LatitudeDDMFormatted { get; set; } = "";
+
+        public string DegreesDecimalMinutes => $"{LatitudeDDM} {LongitudeDDM}";
+        public string DegreesDecimalMinutesFormatted => $"{LatitudeDDMFormatted} {LongitudeDDMFormatted}";
+        #endregion
+
+        public string DDGeoCoordinateString { get; set; } = "";
+        public string DMSGeoCoordinateString { get; set; } = "";
+        public string DDMGeoCoordinateString { get; set; } = "";
+
+        private void FormatAsDecimalDegrees()
+        {
+            DDGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_decimalDegreesParam);
+            string[] parts = DDGeoCoordinateString.Split(' ');
+            string latitude = parts[0];
+            char latitudeLabel = latitude[^1];
+            latitude = latitude[..(latitude.Length - 1)];
+
+            // Formatted Latitude WON'T include a negative value if S is in Southern Hemisphere
+            LatitudeDDFormatted = latitudeLabel == 'S' ? $"{latitude:F6}° S" : $"{latitude:F6}° N";
+            
+            // This WILL include negative value if necessary
+            Latitude = latitudeLabel == 'S' ? -1 * double.Parse(latitude) : double.Parse(latitude);
+
+            string longitude = parts[1];
+            char longitudeLabel = longitude[^1];
+            longitude = longitude[..(longitude.Length - 1)];
+
+            LongitudeDDFormatted = longitudeLabel == 'W' ? $"{longitude}° W" : $"{longitude}° E";
+            Longitude = longitudeLabel == 'W' ? - 1 * double.Parse(longitude) : double.Parse(longitude);
+        }
+
+        private void FormatAsDegreesMinutesSeconds()
+        {
+            DMSGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_degreesMinutesSecondsParam);
+            string[] parts = DMSGeoCoordinateString.Split(' ');
+
+            LongitudeDMS = $"{parts[0]} {parts[1]} {parts[2][..^1]}";
+            LatitudeDMS = $"{parts[3]} {parts[4]} {parts[5][..^1]}";
+
+            char longitudeLabel = parts[2][^1];
+            char latitudeLabel = parts[5][^1];
+
+            LongitudeDMSFormatted = $"{parts[0]}° {parts[1]}' {parts[2][..^1]}'' {longitudeLabel}";
+            LatitudeDMSFormatted = $"{parts[3]}° {parts[4]}' {parts[5][..^1]}'' {latitudeLabel}";
+        }
+
+        private void FormatAsDegreesDecimalMinutes()
+        {
+            DDMGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_degreesDecimalMinutesParam);
+            string[] parts = DDMGeoCoordinateString.Split(' ');
+
+            LongitudeDDM = $"{parts[0]} {parts[1][..^1]}";
+            LatitudeDDM = $"{parts[2]} {parts[3][..^1]}";
+
+            char longitudeLabel = parts[1][^1];
+            char latitudeLabel = parts[3][^1];
+
+            LongitudeDDMFormatted = $"{parts[0]}° {parts[1][..^1]}' {longitudeLabel}";
+            LatitudeDDMFormatted = $"{parts[2]}° {parts[3][..^1]}' {latitudeLabel}";
+        }
+
+        public void UpdateCoordinates(double longitude, double latitude)
+        {
+            // Update the MapPoint
+            WGS84MapPoint = MapPointBuilderEx.CreateMapPoint(longitude, latitude, SpatialReferences.WGS84);
+
+            FormatAsDecimalDegrees();
+            FormatAsDegreesMinutesSeconds();
+            FormatAsDegreesDecimalMinutes();
+        }
+
+        /// <summary>
+        ///     Validates that the decimal degrees entered are valid.
+        /// </summary>
+        /// <param name="value">The latitude or longitude value as a double.</param>
+        /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
+        /// <returns></returns>
+        public static bool IsValidDecimalDegree(double value, string axis)
+        {
+            // "X" is Longitude -180 to 180
+            // "Y" is Latitude -90 to 90
+            double min = axis == "X" ? -180 : -90;
+            double max = axis == "X" ? 180 : 90;
+
+            return value >= min && value <= max;
+        }
+
+        /// <summary>
+        ///     Removes expected (allowed) non-numeric characters for latitude/longitude values. 
+        /// </summary>
+        /// <param name="value">The latitude or longitude value as a string which may have degree symbols, minute and seconds symbols as well as notation for hemisphere.</param>
+        /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
+        /// <param name="isNegative">A reference parameter that is set to <c>true</c> if the coordinate is in the western or southern hemisphere; 
+        /// otherwise, remains <c>false</c>.</param>
+        /// <returns></returns>
+        public static string CleanLatLongCoordinateString(string value, string axis, ref bool isNegative)
+        {
+            string cleanedValue = value;
+
+            // Handle cardinal directions and set negative flag
+            if (axis == "X")
+            {
+                if (cleanedValue.Contains('W'))
+                {
+                    cleanedValue = cleanedValue.Replace("W", "");
+                    isNegative = true;
+                }
+                cleanedValue = cleanedValue.Replace("E", "");
+            }
+            else
+            {
+                if (cleanedValue.Contains('S'))
+                {
+                    cleanedValue = cleanedValue.Replace("S", "");
+                    isNegative = true;
+                }
+                cleanedValue = cleanedValue.Replace("N", "");
+            }
+
+            // Remove degree symbols and trim
+            return cleanedValue.Replace("°", " ").Replace("'", " ").Replace("\"", "").Trim();
+        }
     }
 }
