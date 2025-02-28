@@ -58,6 +58,9 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         set => SetProperty(ref _selectedFormat, value);
     }
 
+    /// <summary>
+    ///     Is selected coordinate format DD/DMS/DDM?
+    /// </summary>
     public bool IsDegrees
     {
         get => _isDegrees;
@@ -244,7 +247,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         public string DDMGeoCoordinateString { get; set; } = "";
 
         /// <summary>
-        /// 
+        ///     Format degrees as decimal degrees.
         /// </summary>
         private void FormatAsDecimalDegrees()
         {
@@ -276,14 +279,14 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
             DMSGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_degreesMinutesSecondsParam);
             string[] parts = DMSGeoCoordinateString.Split(' ');
 
-            LongitudeDMS = $"{parts[0]} {parts[1]} {parts[2][..^1]}";
-            LatitudeDMS = $"{parts[3]} {parts[4]} {parts[5][..^1]}";
+            LatitudeDMS = $"{parts[0]} {parts[1]} {parts[2][..^1]}";
+            LongitudeDMS = $"{parts[3]} {parts[4]} {parts[5][..^1]}";
 
-            char longitudeLabel = parts[2][^1];
-            char latitudeLabel = parts[5][^1];
+            char latitudeLabel = parts[2][^1];
+            char longitudeLabel = parts[5][^1];
 
-            LongitudeDMSFormatted = $"{parts[0]}° {parts[1]}' {parts[2][..^1]}'' {longitudeLabel}";
-            LatitudeDMSFormatted = $"{parts[3]}° {parts[4]}' {parts[5][..^1]}'' {latitudeLabel}";
+            LatitudeDMSFormatted = $"{parts[0]}° {parts[1]}' {parts[2][..^1]}'' {latitudeLabel}";
+            LongitudeDMSFormatted = $"{parts[3]}° {parts[4]}' {parts[5][..^1]}'' {longitudeLabel}";
         }
 
         /// <summary>
@@ -294,14 +297,14 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
             DDMGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_degreesDecimalMinutesParam);
             string[] parts = DDMGeoCoordinateString.Split(' ');
 
-            LongitudeDDM = $"{parts[0]} {parts[1][..^1]}";
-            LatitudeDDM = $"{parts[2]} {parts[3][..^1]}";
+            LatitudeDDM = $"{parts[0]} {parts[1][..^1]}";
+            LongitudeDDM = $"{parts[2]} {parts[3][..^1]}";
 
-            char longitudeLabel = parts[1][^1];
-            char latitudeLabel = parts[3][^1];
+            char latitudeLabel = parts[1][^1];
+            char longitudeLabel = parts[3][^1];
 
-            LongitudeDDMFormatted = $"{parts[0]}° {parts[1][..^1]}' {longitudeLabel}";
-            LatitudeDDMFormatted = $"{parts[2]}° {parts[3][..^1]}' {latitudeLabel}";
+            LatitudeDDMFormatted = $"{parts[0]}° {parts[1][..^1]}' {latitudeLabel}";
+            LongitudeDDMFormatted = $"{parts[2]}° {parts[3][..^1]}' {longitudeLabel}";
         }
 
         public void UpdateCoordinates(double longitude, double latitude)

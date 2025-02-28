@@ -58,13 +58,13 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         _yCoordinateString = _longLatItem.Latitude.ToString("F6");
 
         // Initialize GridSRItem objects and fields
-        FormatAsUTM(_longitude, _latitude, out _utm);
-        _selectedUTMZone = _utm.Zone;
-        _selectedLatitudeBand = _utm.LatitudeBand;
-        _selectedLatitudeBandItem = LatitudeBands.First(b => b.Key == _utm.LatitudeBand);
+        //FormatAsUTM(_longitude, _latitude, out _utm);
+        //_selectedUTMZone = _utm.Zone;
+        //_selectedLatitudeBand = _utm.LatitudeBand;
+        //_selectedLatitudeBandItem = LatitudeBands.First(b => b.Key == _utm.LatitudeBand);
 
-        FormatAsMGRS(_longitude, _latitude, out _mgrs);
-        _oneHundredKMGridID = _mgrs.MGRSquareID;
+        //FormatAsMGRS(_longitude, _latitude, out _mgrs);
+        //_oneHundredKMGridID = _mgrs.MGRSquareID;
 
         UpdateDisplay();
         UpdateCoordinateLabels();
@@ -175,15 +175,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             switch (SelectedFormat)
             {
                 case CoordinateFormat.DecimalDegrees:
-                    _longLatItem.UpdateCoordinates(_mapPoint!.X, _mapPoint.Y);
-                    UpdateDegreesDisplay();
-                    break;
-
                 case CoordinateFormat.DegreesMinutesSeconds:
-                    _longLatItem.UpdateCoordinates(_mapPoint!.X, _mapPoint.Y);
-                    UpdateDegreesDisplay();
-                    break;
-
                 case CoordinateFormat.DegreesDecimalMinutes:
                     _longLatItem.UpdateCoordinates(_mapPoint!.X, _mapPoint.Y);
                     UpdateDegreesDisplay();
@@ -342,6 +334,12 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 {
                     switch (SelectedFormat)
                     {
+                        case CoordinateFormat.DecimalDegrees:
+                        case CoordinateFormat.DegreesMinutesSeconds:
+                        case CoordinateFormat.DegreesDecimalMinutes:
+                            _longLatItem.UpdateCoordinates(_longitude, _latitude);
+                            break;
+
                         case CoordinateFormat.MGRS:
                             _mgrs.Easting = int.Parse(_xCoordinateString);
                             break;
@@ -380,6 +378,12 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 				{
                     switch (SelectedFormat)
                     {
+                        case CoordinateFormat.DecimalDegrees:
+                        case CoordinateFormat.DegreesMinutesSeconds:
+                        case CoordinateFormat.DegreesDecimalMinutes:
+                            _longLatItem.UpdateCoordinates(_longitude, _latitude);
+                            break;
+
                         case CoordinateFormat.MGRS:
                             _mgrs.Northing = int.Parse(_yCoordinateString);
                             break;
@@ -552,15 +556,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         return mgrsGridIds;
     }
 
-    private static readonly Dictionary<string, int> LatitudeBandStartDegrees = new()
-    {
-        { "C", -80 }, { "D", -72 }, { "E", -64 }, { "F", -56 }, { "G", -48 }, { "H", -40 },
-        { "J", -32 }, { "K", -24 }, { "L", -16 }, { "M", -8 }, { "N", 0 }, { "P", 8 },
-        { "Q", 16 }, { "R", 24 }, { "S", 32 }, { "T", 40 }, { "U", 48 }, { "V", 56 },
-        { "W", 64 }, { "X", 72 }
-    };
-
-
     /// <summary>
     ///     Validates coordinate according to which coordinate system format is selected.
     /// </summary>
@@ -708,7 +703,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 
         return true;
     }
-    protected void UpdateDegreesDisplay()
+
+    private void UpdateDegreesDisplay()
     {
         switch (SelectedFormat)
         {
@@ -776,7 +772,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             case CoordinateFormat.DecimalDegrees:
             case CoordinateFormat.DegreesDecimalMinutes:
             case CoordinateFormat.DegreesMinutesSeconds:
-                Display = $"{XCoordinateString} {YCoordinateString}";
+                UpdateDegreesDisplay();
                 break;
 
             case CoordinateFormat.MGRS:
@@ -889,7 +885,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 
             _longitude = _mapPoint.X;
             _latitude = _mapPoint.Y;
-
 
             return true;
         }

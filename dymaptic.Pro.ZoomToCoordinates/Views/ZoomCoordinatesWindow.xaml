@@ -43,7 +43,6 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
@@ -131,7 +130,7 @@
 
         <!-- Radio Button Group -->
         <Label Grid.Row="7" Grid.Column="0" Content="Zoom Scale:" Margin="5"/>
-        <StackPanel Orientation="Vertical" Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2" Margin="5,8,0,0">
+        <StackPanel Orientation="Vertical" Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="2" Margin="5,8,0,0">
             <RadioButton Content="5,000,000 - State" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=5000000}" Margin="0,0,0,5"/>
             <RadioButton Content="1,000,000 - County" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=1000000}" Margin="0,0,0,5"/>
             <RadioButton Content="100,000 - City" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=100000}" Margin="0,0,0,5"/>
@@ -140,11 +139,11 @@
         </StackPanel>
 
         <!-- Checkbox -->
-        <Label Grid.Row="9" Grid.Column="0" Content="Create Graphic?" Margin="5,0,0,0"/>
-        <CheckBox Grid.Row="9" Grid.Column="1" Margin="5,5,0,0" IsChecked="{Binding CreateGraphic}"/>
+        <Label Grid.Row="8" Grid.Column="0" Content="Create Graphic?" Margin="5,0,0,0"/>
+        <CheckBox Grid.Row="8" Grid.Column="1" Margin="5,5,0,0" IsChecked="{Binding CreateGraphic}"/>
 
         <!-- Buttons -->
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2">
             <Button Style="{DynamicResource Esri_Button}" Margin="5" Width="85" Content="Zoom" ToolTip="Zoom" Command="{Binding ZoomCommand}"/>
             <Button Style="{DynamicResource Esri_Button}" Margin="5" Width="85" Content="Close" ToolTip="Close" Click="CloseButton_Click"/>
         </StackPanel>
