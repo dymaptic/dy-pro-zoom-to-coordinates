@@ -1,143 +1,20 @@
 using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Framework;
-using System;
 using System.Linq;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
 public class GetCoordinatesViewModel : CoordinatesBaseViewModel
 {
-    private double _yCoordinate;
-    private double _xCoordinate;
-    private string _formattedYCoordinate = "";
-    private string _formattedXCoordinate = "";
+    private string _yCoordinateString = "";
+    private string _xCoordinateString = "";
 
     // MapPoint will always be WGS84 (we ensure it is in the MapTool)
     private MapPoint _mapPoint = MapPointBuilderEx.CreateMapPoint();
 
     private CoordinateFormatItem _selectedFormatItem;
-    public CoordinateFormatItem SelectedFormatItem
-    {
-        get => _selectedFormatItem;
-        set
-        {
-            SetProperty(ref _selectedFormatItem, value);
-            SelectedFormat = value.Format;
-            UpdateCoordinates(_mapPoint);
-            UpdateCoordinateLabels();
-            UpdateFormattedCoordinates();
-        }
-    }
 
-    public string FormattedYCoordinate
-    {
-        get => _formattedYCoordinate;
-        set => SetProperty(ref _formattedYCoordinate, value);
-    }
-
-    public string FormattedXCoordinate
-    {
-        get => _formattedXCoordinate;
-        set => SetProperty(ref _formattedXCoordinate, value);
-    }
-
-    // Keep the numeric properties for internal use
-    private double YCoordinate
-    {
-        get => _yCoordinate;
-        set
-        {
-            if (SetProperty(ref _yCoordinate, value))
-            {
-                UpdateFormattedCoordinates();
-            }
-        }
-    }
-
-    private double XCoordinate
-    {
-        get => _xCoordinate;
-        set
-        {
-            if (SetProperty(ref _xCoordinate, value))
-            {
-                UpdateFormattedCoordinates();
-            }
-        }
-    }
-
-    public void UpdateFormattedCoordinates()
-    {
-        switch (SelectedFormat)
-        {
-            case CoordinateFormat.DecimalDegrees:
-                FormattedXCoordinate = $"{Math.Abs(XCoordinate):F6}° {(XCoordinate >= 0 ? "E" : "W")}";
-                FormattedYCoordinate = $"{Math.Abs(YCoordinate):F6}° {(YCoordinate >= 0 ? "N" : "S")}";
-                Display = $"{FormattedXCoordinate} {FormattedYCoordinate}";
-                break;
-
-            case CoordinateFormat.DegreesDecimalMinutes:
-                FormatAsDegreesDecimalMinutes(YCoordinate, XCoordinate, out string yDDM, out string xDDM);
-                FormattedXCoordinate = xDDM;
-                FormattedYCoordinate = yDDM;
-                Display = $"{FormattedXCoordinate} {FormattedYCoordinate}";
-                break;
-
-            case CoordinateFormat.DegreesMinutesSeconds:
-                FormatAsDegreesMinutesSeconds(YCoordinate, XCoordinate, out string yDMS, out string xDMS);
-                FormattedXCoordinate = xDMS;
-                FormattedYCoordinate = yDMS;
-                Display = $"{FormattedXCoordinate} {FormattedYCoordinate}";
-                break;
-
-            case CoordinateFormat.MGRS:
-                FormattedXCoordinate = _mgrs.Easting.ToString();
-                FormattedYCoordinate = _mgrs.Northing.ToString();
-                Display = _mgrs.Display;
-                break;
-
-            case CoordinateFormat.UTM:
-                FormattedXCoordinate = _utm.Easting.ToString();
-                FormattedYCoordinate = _utm.Northing.ToString();
-                Display = _utm.Display;
-                break;
-        }
-    }
-
-    public void UpdateCoordinates(MapPoint mapPoint)
-    {
-        _mapPoint = mapPoint;
-        if (mapPoint == null)
-        {
-            Display = "";
-            return;
-        }
-
-        switch (SelectedFormat)    
-        {
-            case CoordinateFormat.DecimalDegrees:
-            case CoordinateFormat.DegreesDecimalMinutes:
-            case CoordinateFormat.DegreesMinutesSeconds:
-                XCoordinate = mapPoint.X;
-                YCoordinate = mapPoint.Y;
-                break;
-
-            case CoordinateFormat.MGRS:
-                FormatAsMGRS(mapPoint.X, mapPoint.Y, out _mgrs);
-                XCoordinate = _mgrs.Easting;
-                YCoordinate = _mgrs.Northing;
-                Display = _mgrs.Display;
-                break;
-
-            case CoordinateFormat.UTM:
-                FormatAsUTM(mapPoint.X, mapPoint.Y, out _utm);
-                XCoordinate = _utm.Easting;
-                YCoordinate = _utm.Northing;
-                Display = _utm.Display;
-                break;
-        }
-    }
-
+    // Constructor
     public GetCoordinatesViewModel()
     {
         Settings settings = ZoomToCoordinatesModule.GetSettings();
@@ -150,5 +27,145 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         {
             CopyText();
         });
+    }
+
+    /// <summary>
+    ///     Only applicable for Decimal Degrees / Degrees Minutes Seconds / Degrees Decimal Minutes
+    /// </summary>
+    public bool ShowFormattedDegrees
+    {
+        get => _showFormattedDegrees;
+        set
+        {
+            SetProperty(ref _showFormattedDegrees, value);
+            UpdateFormattedCoordinates();
+        }
+    }
+
+    public CoordinateFormatItem SelectedFormatItem
+    {
+        get => _selectedFormatItem;
+        set
+        {
+            SetProperty(ref _selectedFormatItem, value);
+            SelectedFormat = value.Format;
+
+            if (SelectedFormat == CoordinateFormat.MGRS || SelectedFormat == CoordinateFormat.UTM)
+            {
+                IsDegrees = false;
+            } 
+            else
+            {
+                IsDegrees = true;
+            }
+
+            UpdateCoordinates(_mapPoint);
+            UpdateCoordinateLabels();
+            UpdateFormattedCoordinates();
+        }
+    }
+
+    public string YCoordinateString
+    {
+        get => _yCoordinateString;
+        set => SetProperty(ref _yCoordinateString, value);
+    }
+
+    public string XCoordinateString
+    {
+        get => _xCoordinateString;
+        set => SetProperty(ref _xCoordinateString, value);
+    }
+
+    public void UpdateCoordinates(MapPoint mapPoint)
+    {
+        _mapPoint = mapPoint;
+        if (mapPoint == null)
+        {
+            Display = "";
+            return;
+        }
+
+        switch (SelectedFormat)
+        {
+            case CoordinateFormat.DecimalDegrees:
+            case CoordinateFormat.DegreesMinutesSeconds:
+            case CoordinateFormat.DegreesDecimalMinutes:
+                _longLatItem.UpdateCoordinates(mapPoint.X, mapPoint.Y);
+                break;
+
+
+            case CoordinateFormat.MGRS:
+                FormatAsMGRS(mapPoint.X, mapPoint.Y, out _mgrs);
+                break;
+
+            case CoordinateFormat.UTM:
+                FormatAsUTM(mapPoint.X, mapPoint.Y, out _utm);
+                break;
+        }
+        UpdateFormattedCoordinates();
+    }
+
+    public void UpdateFormattedCoordinates()
+    {
+        switch (SelectedFormat)
+        {
+            case CoordinateFormat.DecimalDegrees:
+                if (_showFormattedDegrees)
+                {
+                    XCoordinateString = _longLatItem.LongitudeDDFormatted;
+                    YCoordinateString = _longLatItem.LatitudeDDFormatted;
+                    Display = _longLatItem.DecimalDegreesFormatted;
+                }
+                else
+                {
+                    XCoordinateString = _longLatItem.Longitude.ToString("F6");
+                    YCoordinateString = _longLatItem.Latitude.ToString("F6");
+                    Display = _longLatItem.DecimalDegrees;
+                }
+                break;
+
+            case CoordinateFormat.DegreesMinutesSeconds:
+                if (_showFormattedDegrees)
+                {
+                    XCoordinateString = _longLatItem.LongitudeDMSFormatted;
+                    YCoordinateString = _longLatItem.LatitudeDMSFormatted;
+                    Display = _longLatItem.DegreesMinutesSecondsFormatted;
+                }
+                else
+                {
+                    XCoordinateString = _longLatItem.LongitudeDMS;
+                    YCoordinateString = _longLatItem.LatitudeDMS;
+                    Display = _longLatItem.DegreesMinutesSeconds;
+                }
+                break;
+
+            case CoordinateFormat.DegreesDecimalMinutes:
+                if (_showFormattedDegrees)
+                {
+                    XCoordinateString = _longLatItem.LongitudeDDMFormatted;
+                    YCoordinateString = _longLatItem.LatitudeDDMFormatted;
+                    Display = _longLatItem.DegreesDecimalMinutesFormatted;
+                }
+                else
+                {
+                    XCoordinateString = _longLatItem.LongitudeDDM;
+                    YCoordinateString = _longLatItem.LatitudeDDM;
+                    Display = _longLatItem.DegreesDecimalMinutes;
+                }
+                break;
+
+            case CoordinateFormat.MGRS:
+                XCoordinateString = _mgrs.Easting.ToString();
+                YCoordinateString = _mgrs.Northing.ToString();
+                Display = _mgrs.Display;
+                break;
+
+            case CoordinateFormat.UTM:
+                XCoordinateString = _utm.Easting.ToString();
+                YCoordinateString = _utm.Northing.ToString();
+                Display = _utm.Display;
+                break;
+        }
     }
 }

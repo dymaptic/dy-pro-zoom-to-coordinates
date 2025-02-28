@@ -1,7 +1,5 @@
 ﻿using ArcGIS.Core.Geometry;
-using ArcGIS.Desktop.Core.Utilities;
 using ArcGIS.Desktop.Framework.Contracts;
-using System;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
@@ -21,9 +19,15 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
     ///     Holds MGRS Point information once a conversion has occurred.
     /// </summary>
     protected GridSRItem _mgrs = new();
+
+    protected LongLatItem _longLatItem = new(_settings.Longitude, _settings.Latitude);
+
+
     private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
     private CoordinateFormat _selectedFormat = _settings.CoordinateFormat;
+    protected bool _isDegrees = true;
+    protected bool _showFormattedDegrees = false;
     public ICommand? CopyTextCommand { get; set; }
 
 
@@ -53,6 +57,13 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         get => _selectedFormat;
         set => SetProperty(ref _selectedFormat, value);
     }
+
+    public bool IsDegrees
+    {
+        get => _isDegrees;
+        set => SetProperty(ref _isDegrees, value);
+    }
+
 
     /// <summary>
     ///     Either Longitude or Easting depending on selected coordinate format.
@@ -132,50 +143,6 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         {
             Clipboard.SetText(Display);
         }
-    }
-
-    /// <summary>
-    /// Returns latitude/longitude in decimal degrees as Degrees Decimal Minutes (e.g., 37° 29.1911' N  121° 42.8099' W)
-    /// </summary>
-    /// <param name="longitude"></param>
-    /// <param name="latitude"></param>
-    /// <param name="xDDM"></param>
-    /// <param name="yDDM"></param>
-    public static void FormatAsDegreesDecimalMinutes(double longitude, double latitude, out string xDDM, out string yDDM)
-    {
-        // Latitude
-        int latDegrees = (int)Math.Abs(latitude);
-        double latMinutes = Math.Abs((Math.Abs(latitude) - latDegrees) * 60);
-        yDDM = $"{latDegrees}° {latMinutes:F4}' {(latitude >= 0 ? "N" : "S")}";
-
-        // Longitude
-        int lonDegrees = (int)Math.Abs(longitude);
-        double lonMinutes = Math.Abs((Math.Abs(longitude) - lonDegrees) * 60);
-        xDDM = $"{lonDegrees}° {lonMinutes:F4}' {(longitude >= 0 ? "E" : "W")}";
-    }
-
-    /// <summary>
-    /// Returns latitude/longitude in decimal degrees as Degrees Minutes Seconds (e.g., 37° 29' 2.08" N  121° 42' 57.95" W)
-    /// </summary>
-    /// <param name="longitude"></param>
-    /// <param name="latitude"></param>
-    /// <param name="xDMS"></param>
-    /// <param name="yDMS"></param>
-    public static void FormatAsDegreesMinutesSeconds(double longitude, double latitude, out string xDMS, out string yDMS)
-    {
-        // Latitude
-        int latDegrees = (int)Math.Abs(latitude);
-        double latTotalMinutes = Math.Abs((Math.Abs(latitude) - latDegrees) * 60);
-        int latMinutes = (int)latTotalMinutes;
-        double latSeconds = (latTotalMinutes - latMinutes) * 60;
-        yDMS = $"{latDegrees}° {latMinutes}' {latSeconds:F2}\" {(latitude >= 0 ? "N" : "S")}";
-
-        // Longitude
-        int lonDegrees = (int)Math.Abs(longitude);
-        double lonTotalMinutes = Math.Abs((Math.Abs(longitude) - lonDegrees) * 60);
-        int lonMinutes = (int)lonTotalMinutes;
-        double lonSeconds = (lonTotalMinutes - lonMinutes) * 60;
-        xDMS = $"{lonDegrees}° {lonMinutes}' {lonSeconds:F2}\" {(longitude >= 0 ? "E" : "W")}";
     }
 
     protected void UpdateCoordinateLabels()
@@ -276,6 +243,9 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         public string DMSGeoCoordinateString { get; set; } = "";
         public string DDMGeoCoordinateString { get; set; } = "";
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void FormatAsDecimalDegrees()
         {
             DDGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_decimalDegreesParam);
@@ -298,6 +268,9 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
             Longitude = longitudeLabel == 'W' ? - 1 * double.Parse(longitude) : double.Parse(longitude);
         }
 
+        /// <summary>
+        ///     Formats degrees as Degrees Minutes Seconds with and without symbols (e.g., 37° 29' 2.08" N  121° 42' 57.95" W)
+        /// </summary>
         private void FormatAsDegreesMinutesSeconds()
         {
             DMSGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_degreesMinutesSecondsParam);
@@ -313,6 +286,9 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
             LatitudeDMSFormatted = $"{parts[3]}° {parts[4]}' {parts[5][..^1]}'' {latitudeLabel}";
         }
 
+        /// <summary>
+        ///     Formats degrees as Degrees Decimal Minutes with and without symbols (e.g., 37° 29.1911' N  121° 42.8099' W)
+        /// </summary>
         private void FormatAsDegreesDecimalMinutes()
         {
             DDMGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_degreesDecimalMinutesParam);

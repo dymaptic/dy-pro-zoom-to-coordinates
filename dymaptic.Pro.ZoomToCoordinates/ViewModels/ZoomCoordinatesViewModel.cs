@@ -41,11 +41,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     private string _oneHundredKMGridID = "";
     private bool _showUtmControls;
     private bool _showMgrsControl;
-    private bool _isDegrees = true;
-    private bool _showFormattedDegrees = false;
     private double _scale = _settings.Scale;
 	private bool _createGraphic = _settings.CreateGraphic;
-    private LongLatItem _longLatItem = new(_settings.Longitude, _settings.Latitude);
 
     public ICommand ZoomCommand { get; }
 
@@ -139,12 +136,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     {
         get => _showMgrsControl;
         set => SetProperty(ref _showMgrsControl, value);
-    }
-
-    public bool IsDegrees
-    {
-        get => _isDegrees;
-        set => SetProperty(ref _isDegrees, value);
     }
 
     /// <summary>
@@ -717,8 +708,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 
         return true;
     }
-
-    private void UpdateDegreesDisplay()
+    protected void UpdateDegreesDisplay()
     {
         switch (SelectedFormat)
         {
