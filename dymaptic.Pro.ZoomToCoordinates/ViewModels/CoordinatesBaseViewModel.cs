@@ -185,7 +185,7 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
         public int Easting { get; set; }
         public int Northing { get; set; }
 
-        public string Display => $"{Zone}{LatitudeBand}{MGRSquareID}{Easting}{Northing}";
+        public string Display => $"{Zone}{LatitudeBand}{MGRSquareID}{Easting:D6}{Northing:D7}";
 
         public string GeoCoordinateString { get; set; } = "";
     }
@@ -257,6 +257,9 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
             char latitudeLabel = latitude[^1];
             latitude = latitude[..(latitude.Length - 1)];
 
+            // Remove leading zeros
+            latitude = latitude.TrimStart('0');
+
             // Formatted Latitude WON'T include a negative value if S is in Southern Hemisphere
             LatitudeDDFormatted = latitudeLabel == 'S' ? $"{latitude:F6}° S" : $"{latitude:F6}° N";
             
@@ -267,7 +270,10 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
             char longitudeLabel = longitude[^1];
             longitude = longitude[..(longitude.Length - 1)];
 
-            LongitudeDDFormatted = longitudeLabel == 'W' ? $"{longitude}° W" : $"{longitude}° E";
+            // Remove leading zeros
+            longitude = longitude.TrimStart('0');
+
+            LongitudeDDFormatted = longitudeLabel == 'W' ? $"{longitude:F6}° W" : $"{longitude:F6}° E";
             Longitude = longitudeLabel == 'W' ? - 1 * double.Parse(longitude) : double.Parse(longitude);
         }
 
@@ -282,11 +288,20 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
             char latitudeLabel = parts[2][^1];
             char longitudeLabel = parts[5][^1];
 
-            LatitudeDMS = $"{parts[0]} {parts[1]} {parts[2][..^1]} {latitudeLabel}";
-            LongitudeDMS = $"{parts[3]} {parts[4]} {parts[5][..^1]} {longitudeLabel}";
+            // Remove leading zeros from each numeric part
+            string latDegrees = parts[0].TrimStart('0');
+            string latMinutes = parts[1].TrimStart('0');
+            string latSeconds = parts[2][..^1].TrimStart('0');
 
-            LatitudeDMSFormatted = $"{parts[0]}° {parts[1]}' {parts[2][..^1]}'' {latitudeLabel}";
-            LongitudeDMSFormatted = $"{parts[3]}° {parts[4]}' {parts[5][..^1]}'' {longitudeLabel}";
+            string lonDegrees = parts[3].TrimStart('0');
+            string lonMinutes = parts[4].TrimStart('0');
+            string lonSeconds = parts[5][..^1].TrimStart('0');
+
+            LatitudeDMS = $"{latDegrees} {latMinutes} {latSeconds} {latitudeLabel}";
+            LongitudeDMS = $"{lonDegrees} {lonMinutes} {lonSeconds} {longitudeLabel}";
+
+            LatitudeDMSFormatted = $"{latDegrees}° {latMinutes}' {latSeconds}'' {latitudeLabel}";
+            LongitudeDMSFormatted = $"{latDegrees}° {latMinutes}' {lonSeconds}'' {longitudeLabel}";
         }
 
         /// <summary>
@@ -300,11 +315,18 @@ public class CoordinatesBaseViewModel : PropertyChangedBase
             char latitudeLabel = parts[1][^1];
             char longitudeLabel = parts[3][^1];
 
-            LatitudeDDM = $"{parts[0]} {parts[1][..^1]} {latitudeLabel}";
-            LongitudeDDM = $"{parts[2]} {parts[3][..^1]} {longitudeLabel}";
+            // Remove leading zeros from numeric parts
+            string latDegrees = parts[0].TrimStart('0');
+            string latMinutes = parts[1][..^1].TrimStart('0');
 
-            LatitudeDDMFormatted = $"{parts[0]}° {parts[1][..^1]}' {latitudeLabel}";
-            LongitudeDDMFormatted = $"{parts[2]}° {parts[3][..^1]}' {longitudeLabel}";
+            string lonDegrees = parts[2].TrimStart('0');
+            string lonMinutes = parts[3][..^1].TrimStart('0');
+
+            LatitudeDDM = $"{latDegrees} {latMinutes} {latitudeLabel}";
+            LongitudeDDM = $"{lonDegrees} {lonMinutes} {longitudeLabel}";
+
+            LatitudeDDMFormatted = $"{latDegrees}° {latMinutes}' {latitudeLabel}";
+            LongitudeDDMFormatted = $"{lonDegrees}° {lonMinutes}' {longitudeLabel}";
         }
 
         public void UpdateCoordinates(double longitude, double latitude)
