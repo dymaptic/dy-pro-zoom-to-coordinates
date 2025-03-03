@@ -63,7 +63,8 @@ internal class GetCoordinatesMapTool : MapTool
 
             if (mapPoint != null)
             {
-                viewModel.UpdateCoordinates(mapPoint);
+                viewModel.MapPoint = mapPoint;
+                viewModel.UpdateCoordinates();
             }
         }
     }

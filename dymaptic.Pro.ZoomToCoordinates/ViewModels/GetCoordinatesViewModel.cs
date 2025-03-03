@@ -10,7 +10,7 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
     private string _xCoordinateString = "";
 
     // MapPoint will always be WGS84 (we ensure it is in the MapTool)
-    private MapPoint _mapPoint = MapPointBuilderEx.CreateMapPoint();
+    private MapPoint? _mapPoint;
 
     private CoordinateFormatItem _selectedFormatItem;
 
@@ -59,10 +59,15 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 IsDegrees = true;
             }
 
-            UpdateCoordinates(_mapPoint);
             UpdateCoordinateLabels();
-            UpdateFormattedCoordinates();
+            UpdateCoordinates();
         }
+    }
+
+    public MapPoint MapPoint
+    {
+        get => _mapPoint;
+        set => SetProperty(ref _mapPoint, value);
     }
 
     public string YCoordinateString
@@ -77,30 +82,26 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         set => SetProperty(ref _xCoordinateString, value);
     }
 
-    public void UpdateCoordinates(MapPoint mapPoint)
+    public void UpdateCoordinates()
     {
-        _mapPoint = mapPoint;
-        if (mapPoint == null)
-        {
-            Display = "";
-            return;
-        }
+        // Exit early if user hasn't clicked the map
+        if (_mapPoint == null) return;
 
         switch (SelectedFormat)
         {
             case CoordinateFormat.DecimalDegrees:
             case CoordinateFormat.DegreesMinutesSeconds:
             case CoordinateFormat.DegreesDecimalMinutes:
-                _longLatItem.UpdateCoordinates(mapPoint.X, mapPoint.Y);
+                _longLatItem.UpdateCoordinates(MapPoint.X, MapPoint.Y);
                 break;
 
 
             case CoordinateFormat.MGRS:
-                FormatAsMGRS(mapPoint.X, mapPoint.Y, out _mgrs);
+                FormatAsMGRS(MapPoint.X, MapPoint.Y, out _mgrs);
                 break;
 
             case CoordinateFormat.UTM:
-                FormatAsUTM(mapPoint.X, mapPoint.Y, out _utm);
+                FormatAsUTM(MapPoint.X, MapPoint.Y, out _utm);
                 break;
         }
         UpdateFormattedCoordinates();
