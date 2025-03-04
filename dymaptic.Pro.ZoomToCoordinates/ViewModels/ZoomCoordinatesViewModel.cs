@@ -58,13 +58,13 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         _yCoordinateString = _longLatItem.Latitude.ToString("F6");
 
         // Initialize GridSRItem objects and fields
-        //FormatAsUTM(_longitude, _latitude, out _utm);
-        //_selectedUTMZone = _utm.Zone;
-        //_selectedLatitudeBand = _utm.LatitudeBand;
-        //_selectedLatitudeBandItem = LatitudeBands.First(b => b.Key == _utm.LatitudeBand);
+        FormatAsUTM(_longitude, _latitude, out _utm);
+        _selectedUTMZone = _utm.Zone;
+        _selectedLatitudeBand = _utm.LatitudeBand;
+        _selectedLatitudeBandItem = LatitudeBands.First(b => b.Key == _utm.LatitudeBand);
 
-        //FormatAsMGRS(_longitude, _latitude, out _mgrs);
-        //_oneHundredKMGridID = _mgrs.MGRSquareID;
+        FormatAsMGRS(_longitude, _latitude, out _mgrs);
+        _oneHundredKMGridID = _mgrs.MGRSquareID;
 
         UpdateDisplay();
         UpdateCoordinateLabels();
@@ -472,26 +472,31 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     /// </summary>
     private void UpdateMgrsGridIds()
     {
-        if (MgrsGridIds.Count == 0)
+        if (_mgrsGridIds.Count == 0)
         {
-            MgrsGridIds = GetMgrsGridIds(_selectedUTMZone, _selectedLatitudeBand);
-            OneHundredKMGridID = _oneHundredKMGridID;
+            foreach (var id in GetMgrsGridIds(_selectedUTMZone, _selectedLatitudeBand))
+            {
+                _mgrsGridIds.Add(id);
+            }
         }
         else
         {
             // Find the current index
-            int index = MgrsGridIds.IndexOf(_oneHundredKMGridID);
+            int index = _mgrsGridIds.IndexOf(_oneHundredKMGridID);
 
             // Store the value of the selected 100 KM MGRS Grid ID
             //string temp = _oneHundredKMGridID;
 
             // Reset the possibilities - sets the selected value to null
             _mgrsGridIds.Clear();
-            MgrsGridIds = GetMgrsGridIds(_selectedUTMZone, _selectedLatitudeBand);
+            foreach (var id in GetMgrsGridIds(_selectedUTMZone, _selectedLatitudeBand))
+            {
+                _mgrsGridIds.Add(id);
+            }
 
             // Set selected value back to what it was (combobox will now be updated with valid possibilities).
             // OneHundredKMGridID = temp;
-            OneHundredKMGridID = MgrsGridIds[index];
+            OneHundredKMGridID = _mgrsGridIds[index];
         }
     }
 
