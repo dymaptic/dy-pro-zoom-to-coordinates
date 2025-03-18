@@ -120,7 +120,7 @@
         <!-- Format Control -->
         <Label Grid.Row="5" Grid.Column="0" Margin="5" Content="Formatted?"/>
         <CheckBox Grid.Row="5" Grid.Column="1"
-          IsChecked="{Binding ShowFormattedDegrees, Mode=TwoWay}"/>
+          IsChecked="{Binding ShowFormattedCoordinates, Mode=TwoWay}"/>
         
         <!-- Display -->
         <Button Grid.Row="6" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}" Style="{DynamicResource Esri_Button}"/>

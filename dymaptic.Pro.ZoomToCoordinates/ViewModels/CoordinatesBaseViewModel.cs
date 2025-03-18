@@ -32,11 +32,6 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
     protected bool _showFormattedCoordinates = false;
     public ICommand? CopyTextCommand { get; set; }
 
-    // Abstract or virtual properties to enforce setter logic in derived classes
-    public abstract string XCoordinateString { get; set; }
-    public abstract string YCoordinateString { get; set; }
-
-
     public static ObservableCollection<CoordinateFormatItem> CoordinateFormats { get; } =
     [
         new CoordinateFormatItem { Format = CoordinateFormat.DecimalDegrees, DisplayName = "Decimal Degrees" },
@@ -65,6 +60,21 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
     }
 
     /// <summary>
+    ///     Should coordinates be formatted in the display?
+    ///     For Decimal degrees, degrees minutes seconds and degrees decimal minutes this adds degree, minute and seconds symbols where applicable.
+    ///     For UTM and MGRS, this adds spaces between Easting and Northing to make them easier to read.
+    /// </summary>
+    public bool ShowFormattedCoordinates
+    {
+        get => _showFormattedCoordinates;
+        set
+        {
+            SetProperty(ref _showFormattedCoordinates, value);
+            UpdateDisplay();
+        }
+    }
+
+    /// <summary>
     ///     Either Longitude or Easting depending on selected coordinate format.
     /// </summary>
     public string XCoordinateLabel
@@ -81,6 +91,10 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
         get => _yCoordinateLabel;
         set => SetProperty(ref _yCoordinateLabel, value);
     }
+
+    // Abstract or virtual properties to enforce setter logic in derived classes
+    public abstract string XCoordinateString { get; set; }
+    public abstract string YCoordinateString { get; set; }
 
     /// <summary>
     ///     Format the coordinates as Military Grid Reference System (MGRS).

@@ -29,21 +29,6 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         });
     }
 
-    /// <summary>
-    ///     Should coordinates be formatted in the display?
-    ///     For Decimal degrees, degrees minutes seconds and degrees decimal minutes this adds degree, minute and seconds symbols where applicable.
-    ///     For UTM and MGRS, this adds spaces between Easting and Northing to make them easier to read.
-    /// </summary>
-    public bool ShowFormattedCoordinates
-    {
-        get => _showFormattedCoordinates;
-        set
-        {
-            SetProperty(ref _showFormattedCoordinates, value);
-            UpdateFormattedCoordinates();
-        }
-    }
-
     public CoordinateFormatItem SelectedFormatItem
     {
         get => _selectedFormatItem;
@@ -73,7 +58,11 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
     public MapPoint? MapPoint
     {
         get => _mapPoint;
-        set => SetProperty(ref _mapPoint, value);
+        set
+        {
+            SetProperty(ref _mapPoint, value);
+            EnableFormatting = true;
+        }
     }
 
     /// <summary>
@@ -82,11 +71,7 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
     public override string YCoordinateString
     {
         get => _yCoordinateString;
-        set
-        {
-            SetProperty(ref _yCoordinateString, value);
-            EnableFormatting = true;
-        }
+        set => SetProperty(ref _yCoordinateString, value);
     }
 
     /// <summary>
@@ -120,84 +105,6 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 FormatAsUTM(MapPoint!.X, MapPoint.Y, out _utm);
                 break;
         }
-        UpdateFormattedCoordinates();
+        UpdateDisplay();
     }
-
-    public void UpdateFormattedCoordinates()
-    {
-        switch (SelectedFormat)
-        {
-            case CoordinateFormat.DecimalDegrees:
-                if (_showFormattedCoordinates)
-                {
-                    XCoordinateString = _longLatItem.LongitudeDDFormatted;
-                    YCoordinateString = _longLatItem.LatitudeDDFormatted;
-                    Display = _longLatItem.DecimalDegreesFormatted;
-                }
-                else
-                {
-                    XCoordinateString = _longLatItem.Longitude.ToString("F6");
-                    YCoordinateString = _longLatItem.Latitude.ToString("F6");
-                    Display = _longLatItem.DecimalDegrees;
-                }
-                break;
-
-            case CoordinateFormat.DegreesMinutesSeconds:
-                if (_showFormattedCoordinates)
-                {
-                    XCoordinateString = _longLatItem.LongitudeDMSFormatted;
-                    YCoordinateString = _longLatItem.LatitudeDMSFormatted;
-                    Display = _longLatItem.DegreesMinutesSecondsFormatted;
-                }
-                else
-                {
-                    XCoordinateString = _longLatItem.LongitudeDMS;
-                    YCoordinateString = _longLatItem.LatitudeDMS;
-                    Display = _longLatItem.DegreesMinutesSeconds;
-                }
-                break;
-
-            case CoordinateFormat.DegreesDecimalMinutes:
-                if (_showFormattedCoordinates)
-                {
-                    XCoordinateString = _longLatItem.LongitudeDDMFormatted;
-                    YCoordinateString = _longLatItem.LatitudeDDMFormatted;
-                    Display = _longLatItem.DegreesDecimalMinutesFormatted;
-                }
-                else
-                {
-                    XCoordinateString = _longLatItem.LongitudeDDM;
-                    YCoordinateString = _longLatItem.LatitudeDDM;
-                    Display = _longLatItem.DegreesDecimalMinutes;
-                }
-                break;
-
-            case CoordinateFormat.MGRS:
-                XCoordinateString = _mgrs.Easting.ToString();
-                YCoordinateString = _mgrs.Northing.ToString();
-                if (_showFormattedCoordinates)
-                {
-                    Display = _mgrs.Display;
-                }
-                else
-                {
-                    Display = _mgrs.GeoCoordinateString;
-                }
-                break;
-
-            case CoordinateFormat.UTM:
-                XCoordinateString = _utm.Easting.ToString();
-                YCoordinateString = _utm.Northing.ToString();
-                if (_showFormattedCoordinates)
-                {
-                    Display = _utm.Display;
-                }
-                else
-                {
-                    Display = _utm.GeoCoordinateString;
-                }
-                break;
-        }
-    }
-
 }

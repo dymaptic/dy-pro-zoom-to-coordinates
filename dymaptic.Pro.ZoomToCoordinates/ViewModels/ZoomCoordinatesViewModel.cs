@@ -138,19 +138,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     }
 
     /// <summary>
-    ///     Only applicable for Decimal Degrees / Degrees Minutes Seconds / Degrees Decimal Minutes
-    /// </summary>
-    public bool ShowFormattedDegrees
-    {
-        get => _showFormattedCoordinates;
-        set
-        {
-            SetProperty(ref _showFormattedCoordinates, value);
-            UpdateDisplay();
-        }
-    }
-
-    /// <summary>
     ///     The selected coordinate reference system.
     /// </summary>
     public CoordinateFormatItem SelectedFormatItem
@@ -699,30 +686,12 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         return true;
     }
 
-    /// <summary>
-    ///     The GeoCoordinateString needs to be kept updated b/c it's how the WGS84MapPoint is kept updated.
-    /// </summary>
-    /// <param name="gridItem">Either the UTM or MGRS objects.</param>
-    private static void UpdateGeoCoordinateString(GridSRBaseItem gridItem)
-    {
-        if (gridItem is MgrsItem mgrs)
-        {
-            // Only MgrsItem has MGRSquareID and Easting/Northing have maximum of 5 digits.
-            gridItem.GeoCoordinateString = $"{mgrs.Zone}{mgrs.LatitudeBand}{mgrs.MGRSquareID}{mgrs.Easting:D5}{mgrs.Northing:D5}";
-        }
-        else
-        {
-            gridItem.GeoCoordinateString = $"{gridItem.Zone}{gridItem.LatitudeBand}{gridItem.Easting:D6}{gridItem.Northing:D7}";
-        }
-    }
-
     private bool UpdateWGS84MapPoint()
     {
         try
         {
             if (SelectedFormat == CoordinateFormat.MGRS)
             {
-                UpdateGeoCoordinateString(_mgrs);
                 _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(geoCoordString: _mgrs.GeoCoordinateString, 
                                                                       spatialReference:SpatialReferences.WGS84, 
                                                                       geoCoordType:GeoCoordinateType.MGRS,
@@ -756,12 +725,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     _yCoordinateString = _mgrs.Northing.ToString();
                     NotifyPropertyChanged(nameof(YCoordinateString));
                 }
-                UpdateGeoCoordinateString(_mgrs);
                 _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(_mgrs.GeoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.MGRS);
             }
             else if (SelectedFormat == CoordinateFormat.UTM)
             {
-                UpdateGeoCoordinateString(_utm);
                 _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(_utm.GeoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.UTM);
          
                 // Reformat it to UTM (various UTM properties might update based upon what user entered)
@@ -787,7 +754,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     _yCoordinateString = _utm.Northing.ToString();
                     NotifyPropertyChanged(nameof(YCoordinateString));
                 }
-                UpdateGeoCoordinateString(_utm);
                 _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(_utm.GeoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.UTM);
 
             }

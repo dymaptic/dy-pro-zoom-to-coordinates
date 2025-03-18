@@ -53,17 +53,13 @@ public class LongLatItem
     public string DegreesDecimalMinutesFormatted => $"{LatitudeDDMFormatted} {LongitudeDDMFormatted}";
     #endregion
 
-    public string DDGeoCoordinateString { get; set; } = "";
-    public string DMSGeoCoordinateString { get; set; } = "";
-    public string DDMGeoCoordinateString { get; set; } = "";
-
     /// <summary>
     ///     Format degrees as decimal degrees.
     /// </summary>
     private void FormatAsDecimalDegrees()
     {
-        DDGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_decimalDegreesParam);
-        string[] parts = DDGeoCoordinateString.Split(' ');
+        string _ddGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_decimalDegreesParam);
+        string[] parts = _ddGeoCoordinateString.Split(' ');
         string latitude = parts[0];
         char latitudeLabel = latitude[^1];
         latitude = latitude[..(latitude.Length - 1)];
@@ -93,8 +89,8 @@ public class LongLatItem
     /// </summary>
     private void FormatAsDegreesMinutesSeconds()
     {
-        DMSGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_degreesMinutesSecondsParam);
-        string[] parts = DMSGeoCoordinateString.Split(' ');
+        string _dmsGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_degreesMinutesSecondsParam);
+        string[] parts = _dmsGeoCoordinateString.Split(' ');
 
         char latitudeLabel = parts[2][^1];
         char longitudeLabel = parts[5][^1];
@@ -120,8 +116,8 @@ public class LongLatItem
     /// </summary>
     private void FormatAsDegreesDecimalMinutes()
     {
-        DDMGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_degreesDecimalMinutesParam);
-        string[] parts = DDMGeoCoordinateString.Split(' ');
+        string _ddmGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_degreesDecimalMinutesParam);
+        string[] parts = _ddmGeoCoordinateString.Split(' ');
 
         char latitudeLabel = parts[1][^1];
         char longitudeLabel = parts[3][^1];
