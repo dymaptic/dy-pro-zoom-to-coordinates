@@ -46,12 +46,11 @@
         <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
         <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding YCoordinateString, Mode=OneWay}" IsReadOnly="True" />
 
-        <!-- Degrees-only Control -->
-        <Label Grid.Row="3" Grid.Column="0" Margin="5" Content="Show Formatted?"
-               Visibility="{Binding IsDegrees, Converter={StaticResource ResourceKey=boolToVisibilityConverterKey}}"/>
+        <!-- Format Control -->
+        <Label Grid.Row="3" Grid.Column="0" Margin="5" Content="Format?" />
         <CheckBox Grid.Row="3" Grid.Column="1" 
-          IsChecked="{Binding ShowFormattedDegrees, Mode=TwoWay}"
-          Visibility="{Binding IsDegrees, Converter={StaticResource ResourceKey=boolToVisibilityConverterKey}}"/>
+                  IsChecked="{Binding ShowFormattedCoordinates, Mode=TwoWay}"
+                  IsEnabled="{Binding EnableFormatting}"/>
 
         <!-- Display -->
         <Button Style="{DynamicResource Esri_Button}" Grid.Row="4" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}"/>

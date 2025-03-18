@@ -117,12 +117,10 @@
                  Text="{Binding YCoordinateString}"
                  ToolTip="{Binding YCoordinateToolTip}"/>
 
-        <!-- Degrees-only Control -->
-        <Label Grid.Row="5" Grid.Column="0" Margin="5" Content="Show Formatted?"
-               Visibility="{Binding IsDegrees, Converter={StaticResource ResourceKey=boolToVisibilityConverterKey}}"/>
-        <CheckBox Grid.Row="5" Grid.Column="1" 
-          IsChecked="{Binding ShowFormattedDegrees, Mode=TwoWay}"
-          Visibility="{Binding IsDegrees, Converter={StaticResource ResourceKey=boolToVisibilityConverterKey}}"/>
+        <!-- Format Control -->
+        <Label Grid.Row="5" Grid.Column="0" Margin="5" Content="Formatted?"/>
+        <CheckBox Grid.Row="5" Grid.Column="1"
+          IsChecked="{Binding ShowFormattedDegrees, Mode=TwoWay}"/>
         
         <!-- Display -->
         <Button Grid.Row="6" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}" Style="{DynamicResource Esri_Button}"/>
