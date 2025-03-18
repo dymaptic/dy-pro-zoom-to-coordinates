@@ -14,13 +14,13 @@
     <insertModule id="ZoomToCoordinates_Module" className="ZoomToCoordinatesModule" autoLoad="false" caption="Zoom To Coordinates">
       <!-- uncomment to have the control hosted on a separate tab-->
       <tabs>
-        <!--<tab id="dymaptic.Pro.ZoomToCoordinates_Tab1" caption="New Tab">
-          <group refID="dymaptic.Pro.ZoomToCoordinates_Group1"/>
-        </tab>-->
+        <tab id="dymaptic_tab" caption="dymaptic">
+          <group refID="ZoomToCoordinates_Group1"/>
+        </tab>
       </tabs>
       <groups>
         <!-- comment this out if you have no controls on the Addin tab to avoid an empty group-->
-        <group id="ZoomToCoordinates_Group1" caption="Coordinates" appearsOnAddInTab="true">
+        <group id="ZoomToCoordinates_Group1" caption="Coordinates" appearsOnAddInTab="false">
           <!-- host controls within groups -->
           <button refID="ZoomToCoordinates_Views_ZoomCoordinatesWindow" size="large" />
           <tool refID="dymaptic_Pro_ZoomToCoordinates_GetCoordinates" size="large" />
