@@ -113,15 +113,7 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
         int zone = int.Parse(geoCoordString[..2]);
         string latBand = geoCoordString[2..3];
         string gridSquare = geoCoordString[3..5];
-        mgrs = new MgrsItem
-        {
-            Zone = zone,
-            LatitudeBand = latBand,
-            MGRSquareID = gridSquare,
-            Easting = int.Parse(geoCoordString[5..10]),
-            Northing = int.Parse(geoCoordString[10..]),
-            GeoCoordinateString = geoCoordString
-        };
+        mgrs = new MgrsItem(zone, latBand, gridSquare, int.Parse(geoCoordString[5..10]), int.Parse(geoCoordString[10..]));
     }
 
     /// <summary>
@@ -139,17 +131,12 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
         string[] parts = geoCoordString.Split(" ");
         int zone = int.Parse(parts[0][..2]);
         string latBand = parts[0][2..3];
-
-        utm = new UtmItem
-        {
-            Zone = zone,
-            LatitudeBand = latBand,
-            Easting = int.Parse(parts[1]),
-            Northing = int.Parse(parts[2]),
-            GeoCoordinateString = geoCoordString.Replace(" ", "")
-        };
+        utm = new UtmItem(zone, latBand, int.Parse(parts[1]), int.Parse(parts[2]));
     }
 
+    /// <summary>
+    ///     Allows text to be copied.
+    /// </summary>
     public void CopyText()
     {
         if (!string.IsNullOrEmpty(Display))
@@ -158,6 +145,9 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
         }
     }
 
+    /// <summary>
+    ///     Updates the View's labels depending on the selected coordinates.
+    /// </summary>
     protected void UpdateCoordinateLabels()
     {
         if (SelectedFormat == CoordinateFormat.UTM || SelectedFormat == CoordinateFormat.MGRS)

@@ -3,13 +3,14 @@
 /// <summary>
 ///     Stores UTM or MGRS information (note: MGRS is an extension of UTM).
 /// </summary>
-public abstract class GridSRBaseItem
+public abstract class GridSRBaseItem(int zone, string latitudeBand, int easting, int northing)
 {
-    protected int _zone;
-    protected string _latitudeBand = "";
-    protected int _easting;
-    protected int _northing;
+    protected int _zone = zone;
+    protected string _latitudeBand = latitudeBand;
+    protected int _easting = easting;
+    protected int _northing = northing;
     protected string _geoCoordinateString = "";
+
 
     /// <summary>
     ///     The UTM zone.

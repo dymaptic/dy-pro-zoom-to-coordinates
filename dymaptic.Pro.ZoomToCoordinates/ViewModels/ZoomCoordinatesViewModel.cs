@@ -63,7 +63,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         _selectedLatitudeBandItem = LatitudeBands.First(b => b.Key == _utm.LatitudeBand);
 
         FormatAsMGRS(_longitude, _latitude, out _mgrs);
-        _oneHundredKMGridID = _mgrs.MGRSquareID;
+        _oneHundredKMGridID = _mgrs.OneHundredKMGridID;
 
         UpdateDisplay();
         UpdateCoordinateLabels();
@@ -169,7 +169,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     _selectedUTMZone = _mgrs.Zone;
                     _selectedLatitudeBand = _mgrs.LatitudeBand;
                     _selectedLatitudeBandItem = LatitudeBands.First(band => band.Key == _selectedLatitudeBand);
-                    _oneHundredKMGridID = _mgrs.MGRSquareID;
+                    _oneHundredKMGridID = _mgrs.OneHundredKMGridID;
                     UpdateMgrsGridIds();
                     break;
 
@@ -284,7 +284,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             SetProperty(ref _oneHundredKMGridID, value);
             if (_xCoordinateValidated && _yCoordinateValidated)
             {
-                _mgrs.MGRSquareID = _oneHundredKMGridID;
+                _mgrs.OneHundredKMGridID = _oneHundredKMGridID;
                 if (UpdateWGS84MapPoint())
                 {
                     UpdateDisplay();
@@ -710,9 +710,9 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     UpdateMgrsGridIds();
                     SelectedLatitudeBandItem = LatitudeBands.Where(x => x.Key == _mgrs.LatitudeBand).First();
                 }
-                if (_mgrs.MGRSquareID != _oneHundredKMGridID)
+                if (_mgrs.OneHundredKMGridID != _oneHundredKMGridID)
                 {
-                    _oneHundredKMGridID = _mgrs.MGRSquareID;
+                    _oneHundredKMGridID = _mgrs.OneHundredKMGridID;
                     NotifyPropertyChanged(nameof(OneHundredKMGridID));
                 }
                 if (_mgrs.Easting != int.Parse(_xCoordinateString))
