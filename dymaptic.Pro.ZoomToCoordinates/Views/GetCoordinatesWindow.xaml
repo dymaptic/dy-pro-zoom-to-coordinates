@@ -48,7 +48,7 @@
 
         <!-- Format Control -->
         <Label Grid.Row="3" Grid.Column="0" Margin="5" Content="Format?" />
-        <CheckBox Grid.Row="3" Grid.Column="1" 
+        <CheckBox Grid.Row="3" Grid.Column="1" Margin="5,10,10,5"
                   IsChecked="{Binding ShowFormattedCoordinates, Mode=TwoWay}"
                   IsEnabled="{Binding EnableFormatting}"/>
 
