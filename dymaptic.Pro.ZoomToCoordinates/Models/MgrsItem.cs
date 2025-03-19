@@ -3,8 +3,9 @@
 namespace dymaptic.Pro.ZoomToCoordinates.Models;
 public class MgrsItem : GridSRBaseItem
 {
-    private MapPoint _mapPoint = MapPointBuilderEx.CreateMapPoint(0, 0, SpatialReferences.WGS84);
-    
+    // Create MGRS coordinate using truncation, rather than rounding
+    private readonly ToGeoCoordinateParameter mgrsParam = new(geoCoordType: GeoCoordinateType.MGRS, geoCoordMode: ToGeoCoordinateMode.MgrsNewStyle, numDigits: 5, rounding: false, addSpaces: false);
+
     // Default Constructor
     public MgrsItem()
         : base(0, "A", 0, 0)
@@ -56,7 +57,11 @@ public class MgrsItem : GridSRBaseItem
         string initialGeoCoordinateString = $"{Zone}{LatitudeBand}{OneHundredKMGridID}{Easting:D5}{Northing:D5}";
         string validatedGeoCoordinateString = ValidateGeoCoordinateString(initialGeoCoordinateString);
 
-        _geoCoordinateString = validatedGeoCoordinateString;
+        string result = validatedGeoCoordinateString;
+        if (result != "success!")
+        {
+            int x = 0;
+        }
     }
 
     /// <summary>
@@ -73,15 +78,34 @@ public class MgrsItem : GridSRBaseItem
 
         try
         {
-            _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(geoCoordString: geoCoordinateStringToValidate,
+            MapPoint = MapPointBuilderEx.FromGeoCoordinateString(geoCoordString: geoCoordinateStringToValidate,
                                                                   spatialReference: SpatialReferences.WGS84,
                                                                   geoCoordType: GeoCoordinateType.MGRS,
                                                                   geoCoordMode: FromGeoCoordinateMode.MgrsNewStyle);
-            return geoCoordinateStringToValidate;
+            Update(MapPoint);
+
+            return "success!";
         }
         catch
         {
-            return geoCoordinateStringToValidate;
+            return "GeoCoordinateString error!";
         }
+    }
+
+
+    /// <summary>
+    ///     Updates the MgrsItem using the most recent MapPoint information.
+    /// </summary>
+    /// <param name="mapPoint"></param>
+    public void Update(MapPoint mapPoint)
+    {
+        string geoCoordString = mapPoint.ToGeoCoordinateString(mgrsParam);
+
+        _zone = int.Parse(geoCoordString[..2]);
+        _latitudeBand = geoCoordString[2..3];
+        _oneHundredKMGridID = geoCoordString[3..5];
+        _easting = int.Parse(geoCoordString[5..10]);
+        _northing = int.Parse(geoCoordString[10..]);
+        _geoCoordinateString = geoCoordString;
     }
 }

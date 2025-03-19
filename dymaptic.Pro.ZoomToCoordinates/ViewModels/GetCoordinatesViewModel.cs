@@ -98,11 +98,11 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
 
 
             case CoordinateFormat.MGRS:
-                FormatAsMGRS(MapPoint!.X, MapPoint.Y, out _mgrs);
+                _mgrs.Update(MapPoint!);
                 break;
 
             case CoordinateFormat.UTM:
-                FormatAsUTM(MapPoint!.X, MapPoint.Y, out _utm);
+                _utm.Update(MapPoint!);
                 break;
         }
         UpdateDisplay();

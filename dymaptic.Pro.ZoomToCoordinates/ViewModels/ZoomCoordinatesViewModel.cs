@@ -35,14 +35,14 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     private string _errorMessage = "";
     private CoordinateFormatItem _selectedFormatItem = CoordinateFormats.First(f => f.Format == _settings.CoordinateFormat);
     private int _selectedUTMZone;
-    private LatitudeBand _selectedLatitudeBandItem;
+    private LatitudeBand? _selectedLatitudeBandItem;
     private string _selectedLatitudeBand = "";
     private string _oneHundredKMGridID = "";
     private bool _showUtmControls;
     private bool _showMgrsControl;
     private double _scale = _settings.Scale;
 	private bool _createGraphic = _settings.CreateGraphic;
-
+    private bool _isUpdatingGridIds = false;
     public ICommand ZoomCommand { get; }
 
     // Constructor
@@ -57,13 +57,13 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         _yCoordinateString = _longLatItem.Latitude.ToString("F6");
 
         // Initialize GridSRBaseItem objects and fields
-        FormatAsUTM(_longitude, _latitude, out _utm);
-        _selectedUTMZone = _utm.Zone;
-        _selectedLatitudeBand = _utm.LatitudeBand;
-        _selectedLatitudeBandItem = LatitudeBands.First(b => b.Key == _utm.LatitudeBand);
+        //FormatAsUTM(_longitude, _latitude, out _utm);
+        //_selectedUTMZone = _utm.Zone;
+        //_selectedLatitudeBand = _utm.LatitudeBand;
+        //_selectedLatitudeBandItem = LatitudeBands.First(b => b.Key == _utm.LatitudeBand);
 
-        FormatAsMGRS(_longitude, _latitude, out _mgrs);
-        _oneHundredKMGridID = _mgrs.OneHundredKMGridID;
+        //FormatAsMGRS(_longitude, _latitude, out _mgrs);
+        //_oneHundredKMGridID = _mgrs.OneHundredKMGridID;
 
         UpdateDisplay();
         UpdateCoordinateLabels();
@@ -165,7 +165,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     break;
 
                 case CoordinateFormat.MGRS:
-                    FormatAsMGRS(_mapPoint!.X, _mapPoint.Y, out _mgrs);
+                    _mgrs.Update(_mapPoint!);
                     _selectedUTMZone = _mgrs.Zone;
                     _selectedLatitudeBand = _mgrs.LatitudeBand;
                     _selectedLatitudeBandItem = LatitudeBands.First(band => band.Key == _selectedLatitudeBand);
@@ -174,7 +174,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     break;
 
                 case CoordinateFormat.UTM:
-                    FormatAsUTM(_mapPoint!.X, _mapPoint.Y, out _utm);
+                    _utm.Update(_mapPoint!);
                     _selectedUTMZone = _utm.Zone;
                     _selectedLatitudeBand = _utm.LatitudeBand;
                     _selectedLatitudeBandItem = LatitudeBands.First(band => band.Key == _selectedLatitudeBand);
@@ -279,7 +279,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         get => _oneHundredKMGridID;
         set
         {
-            if (_oneHundredKMGridID == value) return;
+            if (_oneHundredKMGridID == value || _isUpdatingGridIds) return;
 
             SetProperty(ref _oneHundredKMGridID, value);
             if (_xCoordinateValidated && _yCoordinateValidated)
@@ -458,11 +458,9 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         }
         else
         {
-            // Find the current index
-            int index = _mgrsGridIds.IndexOf(_oneHundredKMGridID);
-
-            // Store the value of the selected 100 KM MGRS Grid ID
-            //string temp = _oneHundredKMGridID;
+            // flag to prevent OneHundredKMGridID setter logic (it's the selected MgrsGridId in that observable collection).
+            _isUpdatingGridIds = true;
+            string previousSelection = _oneHundredKMGridID;
 
             // Reset the possibilities - sets the selected value to null
             _mgrsGridIds.Clear();
@@ -472,9 +470,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             }
 
             // Set selected value back to what it was (combobox will now be updated with valid possibilities).
-            // OneHundredKMGridID = temp;
-            OneHundredKMGridID = _mgrsGridIds[index];
+            _oneHundredKMGridID = previousSelection;
+            _isUpdatingGridIds = false;
         }
+        NotifyPropertyChanged(nameof(OneHundredKMGridID));
     }
 
     /// <summary>
@@ -692,11 +691,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         {
             if (SelectedFormat == CoordinateFormat.MGRS)
             {
-                _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(geoCoordString: _mgrs.GeoCoordinateString, 
-                                                                      spatialReference:SpatialReferences.WGS84, 
-                                                                      geoCoordType:GeoCoordinateType.MGRS,
-                                                                      geoCoordMode:FromGeoCoordinateMode.MgrsNewStyle);
-                FormatAsMGRS(_mapPoint.X, _mapPoint.Y, out _mgrs);
+                _mapPoint = _mgrs.MapPoint;
 
                 // Trigger UI refreshes only as necessary
                 if (_mgrs.Zone != _selectedUTMZone)
@@ -725,15 +720,11 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     _yCoordinateString = _mgrs.Northing.ToString();
                     NotifyPropertyChanged(nameof(YCoordinateString));
                 }
-                _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(_mgrs.GeoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.MGRS);
             }
             else if (SelectedFormat == CoordinateFormat.UTM)
             {
-                _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(_utm.GeoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.UTM);
+                _mapPoint = _utm.MapPoint;
          
-                // Reformat it to UTM (various UTM properties might update based upon what user entered)
-                FormatAsUTM(_mapPoint.X, _mapPoint.Y, out _utm);
-
                 // Trigger UI refreshes only as necessary
                 if (_utm.Zone != _selectedUTMZone)
                 {
@@ -754,8 +745,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     _yCoordinateString = _utm.Northing.ToString();
                     NotifyPropertyChanged(nameof(YCoordinateString));
                 }
-                _mapPoint = MapPointBuilderEx.FromGeoCoordinateString(_utm.GeoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.UTM);
-
             }
             else  // Handle decimal degrees formats
             {

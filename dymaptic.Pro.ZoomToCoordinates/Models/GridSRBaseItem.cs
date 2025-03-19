@@ -1,4 +1,6 @@
-﻿namespace dymaptic.Pro.ZoomToCoordinates.Models;
+﻿using ArcGIS.Core.Geometry;
+
+namespace dymaptic.Pro.ZoomToCoordinates.Models;
 
 /// <summary>
 ///     Stores UTM or MGRS information (note: MGRS is an extension of UTM).
@@ -10,7 +12,7 @@ public abstract class GridSRBaseItem(int zone, string latitudeBand, int easting,
     protected int _easting = easting;
     protected int _northing = northing;
     protected string _geoCoordinateString = "";
-
+    public MapPoint MapPoint { get; protected set;} = MapPointBuilderEx.CreateMapPoint(0, 0, SpatialReferences.WGS84);
 
     /// <summary>
     ///     The UTM zone.

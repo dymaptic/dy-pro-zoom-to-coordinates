@@ -1,9 +1,8 @@
-﻿using ArcGIS.Core.Geometry;
-using ArcGIS.Desktop.Framework.Contracts;
+﻿using ArcGIS.Desktop.Framework.Contracts;
+using dymaptic.Pro.ZoomToCoordinates.Models;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
-using dymaptic.Pro.ZoomToCoordinates.Models;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public abstract class CoordinatesBaseViewModel : PropertyChangedBase
@@ -24,7 +23,6 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
     protected MgrsItem _mgrs = new();
 
     protected LongLatItem _longLatItem = new(_settings.Longitude, _settings.Latitude);
-
 
     private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
@@ -95,44 +93,6 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
     // Abstract or virtual properties to enforce setter logic in derived classes
     public abstract string XCoordinateString { get; set; }
     public abstract string YCoordinateString { get; set; }
-
-    /// <summary>
-    ///     Format the coordinates as Military Grid Reference System (MGRS).
-    /// </summary>
-    /// <param name="longitude"></param>
-    /// <param name="latitude"></param>
-    /// <param name="mgrs"></param>
-    public static void FormatAsMGRS(double longitude, double latitude, out MgrsItem mgrs)
-    {
-        MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, SpatialReferences.WGS84);
-        
-        // Create MGRS coordinate using truncation, rather than rounding
-        ToGeoCoordinateParameter mgrsParam = new(geoCoordType: GeoCoordinateType.MGRS, geoCoordMode: ToGeoCoordinateMode.MgrsNewStyle, numDigits:5, rounding:false, addSpaces:false);
-        string geoCoordString = wgs84Point.ToGeoCoordinateString(mgrsParam);
-
-        int zone = int.Parse(geoCoordString[..2]);
-        string latBand = geoCoordString[2..3];
-        string gridSquare = geoCoordString[3..5];
-        mgrs = new MgrsItem(zone, latBand, gridSquare, int.Parse(geoCoordString[5..10]), int.Parse(geoCoordString[10..]));
-    }
-
-    /// <summary>
-    ///     Format the coordinates as Universal Transverse Mercator (UTM).
-    /// </summary>
-    /// <param name="longitude"></param>
-    /// <param name="latitude"></param>
-    /// <param name="utm"></param>
-    public static void FormatAsUTM(double longitude, double latitude, out UtmItem utm)
-    {
-        MapPoint wgs84Point = MapPointBuilderEx.CreateMapPoint(longitude, latitude, SpatialReferences.WGS84);
-        ToGeoCoordinateParameter utmParam = new(geoCoordType: GeoCoordinateType.UTM);
-        string geoCoordString = wgs84Point.ToGeoCoordinateString(utmParam);
-
-        string[] parts = geoCoordString.Split(" ");
-        int zone = int.Parse(parts[0][..2]);
-        string latBand = parts[0][2..3];
-        utm = new UtmItem(zone, latBand, int.Parse(parts[1]), int.Parse(parts[2]));
-    }
 
     /// <summary>
     ///     Allows text to be copied.

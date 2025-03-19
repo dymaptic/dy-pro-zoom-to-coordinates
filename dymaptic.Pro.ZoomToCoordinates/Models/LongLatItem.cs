@@ -17,7 +17,7 @@ public class LongLatItem
         FormatAsDegreesMinutesSeconds();
         FormatAsDegreesDecimalMinutes();
     }
-    public MapPoint WGS84MapPoint { get; set; }
+    public MapPoint WGS84MapPoint { get; private set; }
 
     #region Decimal Degrees
     public double Longitude { get; set; }
