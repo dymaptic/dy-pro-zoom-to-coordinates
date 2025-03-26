@@ -65,7 +65,7 @@ public abstract class GridSRBaseItem(int zone, string latitudeBand, int easting,
     /// <summary>
     ///     The Northing (Y-coordinate value) which is a positive number with a maximum of 7 digits when UTM (5 max for MGRS).
     /// </summary>
-    public int Northing 
+    public int Northing
     {
         get => _northing;
         set
@@ -84,7 +84,7 @@ public abstract class GridSRBaseItem(int zone, string latitudeBand, int easting,
     public abstract string GeoCoordinateString { get; set; }
 
     /// <summary>
-    ///     The GeoCoordinateString needs to be kept updated b/c it's how the WGS84MapPoint is kept updated.
+    ///     The GeoCoordinateString needs to be kept updated b/c it's how the MapPoint is kept updated.
     /// </summary>
     protected abstract void UpdateGeoCoordinateString();
 }

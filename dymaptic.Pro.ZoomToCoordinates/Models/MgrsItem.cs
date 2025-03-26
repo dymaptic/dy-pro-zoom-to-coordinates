@@ -14,7 +14,7 @@ public class MgrsItem : GridSRBaseItem
     }
 
     public MgrsItem(int zone, string latitudeBand, string oneHundredKMGridID, int easting, int northing)
-        :base(zone, latitudeBand, easting, northing)
+        : base(zone, latitudeBand, easting, northing)
     {
         _oneHundredKMGridID = oneHundredKMGridID;
         UpdateGeoCoordinateString();
@@ -38,6 +38,8 @@ public class MgrsItem : GridSRBaseItem
         }
     }
 
+    public string ErrorMessage { get; set; } = "";
+
     /// <summary>
     ///     A friendly view of the MgrsItem that includes spaces.
     /// </summary>
@@ -48,50 +50,6 @@ public class MgrsItem : GridSRBaseItem
         get => _geoCoordinateString;
         set => _geoCoordinateString = value;
     }
-
-    /// <summary>
-    ///     Updates the GeoCoordinateString after validating it first.
-    /// </summary>
-    protected override void UpdateGeoCoordinateString()
-    {
-        string initialGeoCoordinateString = $"{Zone}{LatitudeBand}{OneHundredKMGridID}{Easting:D5}{Northing:D5}";
-        string validatedGeoCoordinateString = ValidateGeoCoordinateString(initialGeoCoordinateString);
-
-        string result = validatedGeoCoordinateString;
-        if (result != "success!")
-        {
-            int x = 0;
-        }
-    }
-
-    /// <summary>
-    ///     Attempts to create a MapPoint from the provided geoCoordinateString. If attempt is successful, it returns the 
-    ///     GeoCoordinateString unmodified.  However, if it fails, it iteratively changes the Easting and Northing until the 
-    ///     geocoordinate string is valid.
-    /// </summary>
-    /// <param name="geoCoordinateStringToValidate"></param>
-    /// <returns></returns>
-    private string ValidateGeoCoordinateString(string geoCoordinateStringToValidate)
-    {
-        int easting = Easting;
-        int northing = Northing;
-
-        try
-        {
-            MapPoint = MapPointBuilderEx.FromGeoCoordinateString(geoCoordString: geoCoordinateStringToValidate,
-                                                                  spatialReference: SpatialReferences.WGS84,
-                                                                  geoCoordType: GeoCoordinateType.MGRS,
-                                                                  geoCoordMode: FromGeoCoordinateMode.MgrsNewStyle);
-            Update(MapPoint);
-
-            return "success!";
-        }
-        catch
-        {
-            return "GeoCoordinateString error!";
-        }
-    }
-
 
     /// <summary>
     ///     Updates the MgrsItem using the most recent MapPoint information.
@@ -107,5 +65,48 @@ public class MgrsItem : GridSRBaseItem
         _easting = int.Parse(geoCoordString[5..10]);
         _northing = int.Parse(geoCoordString[10..]);
         _geoCoordinateString = geoCoordString;
+    }
+
+    /// <summary>
+    ///     Updates the GeoCoordinateString after validating it first.
+    /// </summary>
+    protected override void UpdateGeoCoordinateString()
+    {
+        string initialGeoCoordinateString = $"{Zone}{LatitudeBand}{OneHundredKMGridID}{Easting:D5}{Northing:D5}";
+        string result = ValidateGeoCoordinateString(initialGeoCoordinateString);
+        if (result == "success!")
+        {
+            ErrorMessage = string.Empty;
+            _geoCoordinateString = initialGeoCoordinateString;
+        }
+        else
+        {
+            ErrorMessage = $"{result} tried to create a MapPoint from this string: {initialGeoCoordinateString}";
+        }
+    }
+
+    /// <summary>
+    ///     Attempts to create a MapPoint from the provided geoCoordinateString. If attempt is successful, it returns the 
+    ///     GeoCoordinateString unmodified.  However, if it fails, it iteratively changes the Easting and Northing until the 
+    ///     geocoordinate string is valid.
+    /// </summary>
+    /// <param name="geoCoordinateStringToValidate"></param>
+    /// <returns></returns>
+    private string ValidateGeoCoordinateString(string geoCoordinateStringToValidate)
+    {
+        try
+        {
+            MapPoint = MapPointBuilderEx.FromGeoCoordinateString(geoCoordString: geoCoordinateStringToValidate,
+                                                                  spatialReference: SpatialReferences.WGS84,
+                                                                  geoCoordType: GeoCoordinateType.MGRS,
+                                                                  geoCoordMode: FromGeoCoordinateMode.MgrsNewStyle);
+            Update(MapPoint);
+
+            return "success!";
+        }
+        catch
+        {
+            return "GeoCoordinateString error!";
+        }
     }
 }

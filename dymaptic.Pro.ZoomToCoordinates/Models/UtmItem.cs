@@ -29,7 +29,7 @@ public class UtmItem : GridSRBaseItem
 
     protected override void UpdateGeoCoordinateString()
     {
-        _geoCoordinateString = $"{Zone}{LatitudeBand}{Easting:D7}{Northing:D7}";
+        _geoCoordinateString = $"{Zone}{LatitudeBand}{Easting:D6}{Northing:D7}";
 
         MapPoint = MapPointBuilderEx.FromGeoCoordinateString(_geoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.UTM);
         Update(MapPoint);

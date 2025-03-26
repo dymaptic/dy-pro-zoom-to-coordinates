@@ -17,7 +17,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 {
     private static readonly char[] separator = [' '];
-    private MapPoint? _mapPoint;
+    private MapPoint _mapPoint;
     private bool _xCoordinateValidated = true;  // when tool loads, valid coordinates are put into the text boxes
     private bool _yCoordinateValidated = true;
 
@@ -49,21 +49,12 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     public ZoomCoordinatesViewModel()
     {
         // Create a MapPoint right off the bat with the default coordinates
-        _mapPoint = MapPointBuilderEx.CreateMapPoint(_longitude, _latitude, SpatialReferences.WGS84);
-        _longLatItem.UpdateCoordinates(_mapPoint!.X, _mapPoint.Y);
+        _longLatItem.UpdateCoordinates(_longitude, _latitude);
+        _mapPoint = _longLatItem.MapPoint;
 
         // Set initially for the Display
         _xCoordinateString = _longLatItem.Longitude.ToString("F6");
         _yCoordinateString = _longLatItem.Latitude.ToString("F6");
-
-        // Initialize GridSRBaseItem objects and fields
-        //FormatAsUTM(_longitude, _latitude, out _utm);
-        //_selectedUTMZone = _utm.Zone;
-        //_selectedLatitudeBand = _utm.LatitudeBand;
-        //_selectedLatitudeBandItem = LatitudeBands.First(b => b.Key == _utm.LatitudeBand);
-
-        //FormatAsMGRS(_longitude, _latitude, out _mgrs);
-        //_oneHundredKMGridID = _mgrs.OneHundredKMGridID;
 
         UpdateDisplay();
         UpdateCoordinateLabels();
@@ -83,7 +74,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     /// <summary>
     ///     UTM Zones 1-60.
     /// </summary>
-    public ObservableCollection<int> UTMZones { get; } = new(Enumerable.Range(1, 60));
+    public ObservableCollection<int> UTMZones { get; } = [.. Enumerable.Range(1, 60)];
 
     /// <summary>
     ///     A collection of all the latitude bands which span 8° latitude except for X, which spans 12° (UTM/MGRS omit the letters O and I).
@@ -111,6 +102,20 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             new LatitudeBand { Key = "W", Value = "64° to 72°" },
             new LatitudeBand { Key = "X", Value = "72° to 84°" } // X spans 12 degrees instead of 8 degrees like the rest.
         ];
+
+    /// <summary>
+    ///     The MapPoint of the current coordinates.
+    /// </summary>
+    public MapPoint MapPoint
+    {
+        get => _mapPoint;
+        set
+        {
+            _mapPoint = value;
+            _longitude = _mapPoint.X;
+            _latitude = _mapPoint.Y;
+        }
+    }
 
     private ObservableCollection<string> _mgrsGridIds = [];
     public ObservableCollection<string> MgrsGridIds
@@ -204,7 +209,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         {
             if (_selectedUTMZone == value) return;
             
-
             SetProperty(ref _selectedUTMZone, value);
             if (_xCoordinateValidated && _yCoordinateValidated)
             {
@@ -212,7 +216,15 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 {
                     case CoordinateFormat.MGRS:
                         _mgrs.Zone = _selectedUTMZone;
-                        UpdateMgrsGridIds();
+                        if (_mgrs.ErrorMessage != String.Empty)
+                        {
+                            ErrorMessage = _mgrs.ErrorMessage;
+                        }
+                        else
+                        {
+                            ErrorMessage = String.Empty;
+                            UpdateMgrsGridIds();
+                        }
                         break;
                     case CoordinateFormat.UTM:
                         _utm.Zone = _selectedUTMZone;
@@ -221,12 +233,9 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                         break;
                 }
 
-                if (UpdateWGS84MapPoint())
-                {
-                    UpdateDisplay();
-                }
-            }
-            
+                UpdateMapPoint();
+                UpdateDisplay();
+            }   
         }
     }
 
@@ -255,7 +264,15 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             {
                 case CoordinateFormat.MGRS:
                     _mgrs.LatitudeBand = _selectedLatitudeBand;
-                    UpdateMgrsGridIds();
+                    if (_mgrs.ErrorMessage != String.Empty)
+                    {
+                        ErrorMessage = _mgrs.ErrorMessage;
+                    }
+                    else
+                    {
+                        ErrorMessage = String.Empty;
+                        UpdateMgrsGridIds();
+                    }
                     break;
                 case CoordinateFormat.UTM:
                     _utm.LatitudeBand = _selectedLatitudeBand;
@@ -264,10 +281,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     break;
             }
 
-            if (UpdateWGS84MapPoint())
-            {
-                UpdateDisplay();
-            }
+            UpdateMapPoint();
+            UpdateDisplay();
         }
     }
 
@@ -279,16 +294,15 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         get => _oneHundredKMGridID;
         set
         {
+            // Avoid setter logic if the value doesn't change and while the MgrsGridIds ObservableCollection is updating.
             if (_oneHundredKMGridID == value || _isUpdatingGridIds) return;
 
             SetProperty(ref _oneHundredKMGridID, value);
             if (_xCoordinateValidated && _yCoordinateValidated)
             {
                 _mgrs.OneHundredKMGridID = _oneHundredKMGridID;
-                if (UpdateWGS84MapPoint())
-                {
-                    UpdateDisplay();
-                }
+                UpdateMapPoint();
+                UpdateDisplay();
             }
         }
     }
@@ -328,10 +342,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                             break;
                     }
 
-                    if (UpdateWGS84MapPoint())
-                    {
-                        UpdateDisplay();
-                    }
+                    UpdateMapPoint();
+                    UpdateDisplay();
                 }
             }
         }
@@ -372,10 +384,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                             break;
                     }
 
-                    if (UpdateWGS84MapPoint())
-                    {
-                        UpdateDisplay();
-                    }
+                    UpdateMapPoint();
+                    UpdateDisplay();
                 }
             }
 		}
@@ -460,9 +470,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         {
             // flag to prevent OneHundredKMGridID setter logic (it's the selected MgrsGridId in that observable collection).
             _isUpdatingGridIds = true;
-            string previousSelection = _oneHundredKMGridID;
-
-            // Reset the possibilities - sets the selected value to null
             _mgrsGridIds.Clear();
             foreach (var id in GetMgrsGridIds(_selectedUTMZone, _selectedLatitudeBand))
             {
@@ -470,7 +477,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             }
 
             // Set selected value back to what it was (combobox will now be updated with valid possibilities).
-            _oneHundredKMGridID = previousSelection;
+            _oneHundredKMGridID = _mgrs.OneHundredKMGridID;
             _isUpdatingGridIds = false;
         }
         NotifyPropertyChanged(nameof(OneHundredKMGridID));
@@ -685,13 +692,22 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         return true;
     }
 
-    private bool UpdateWGS84MapPoint()
+    /// <summary>
+    ///     Updates the MapPoint in the ZoomCoordinatesViewModel from the MapPoint from the various coordinate classes (LongLatItem, MGRS or UTM).
+    /// </summary>
+    /// <returns></returns>
+    private void UpdateMapPoint()
     {
-        try
+        switch (SelectedFormat)
         {
-            if (SelectedFormat == CoordinateFormat.MGRS)
-            {
-                _mapPoint = _mgrs.MapPoint;
+            case CoordinateFormat.DecimalDegrees:
+            case CoordinateFormat.DegreesMinutesSeconds:
+            case CoordinateFormat.DegreesDecimalMinutes:
+                MapPoint = _longLatItem.MapPoint;
+                break;
+
+            case CoordinateFormat.MGRS:
+                MapPoint = _mgrs.MapPoint;
 
                 // Trigger UI refreshes only as necessary
                 if (_mgrs.Zone != _selectedUTMZone)
@@ -720,11 +736,11 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     _yCoordinateString = _mgrs.Northing.ToString();
                     NotifyPropertyChanged(nameof(YCoordinateString));
                 }
-            }
-            else if (SelectedFormat == CoordinateFormat.UTM)
-            {
-                _mapPoint = _utm.MapPoint;
-         
+                break;
+
+            case CoordinateFormat.UTM:
+                MapPoint = _utm.MapPoint;
+
                 // Trigger UI refreshes only as necessary
                 if (_utm.Zone != _selectedUTMZone)
                 {
@@ -745,20 +761,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     _yCoordinateString = _utm.Northing.ToString();
                     NotifyPropertyChanged(nameof(YCoordinateString));
                 }
-            }
-            else  // Handle decimal degrees formats
-            {
-                _mapPoint = MapPointBuilderEx.CreateMapPoint(_longLatItem.Longitude, _longLatItem.Latitude, SpatialReferences.WGS84);
-            }
+                break;
 
-            _longitude = _mapPoint.X;
-            _latitude = _mapPoint.Y;
-
-            return true;
-        }
-        catch
-        {
-            return false;
+            default:
+                break;
         }
     }
 

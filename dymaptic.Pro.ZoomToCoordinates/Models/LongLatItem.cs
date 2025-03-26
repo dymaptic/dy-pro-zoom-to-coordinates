@@ -12,12 +12,12 @@ public class LongLatItem
     {
         Longitude = longitude;
         Latitude = latitude;
-        WGS84MapPoint = MapPointBuilderEx.CreateMapPoint(Longitude, Latitude, SpatialReferences.WGS84);
+        MapPoint = MapPointBuilderEx.CreateMapPoint(Longitude, Latitude, SpatialReferences.WGS84);
         FormatAsDecimalDegrees();
         FormatAsDegreesMinutesSeconds();
         FormatAsDegreesDecimalMinutes();
     }
-    public MapPoint WGS84MapPoint { get; private set; }
+    public MapPoint MapPoint { get; private set; }
 
     #region Decimal Degrees
     public double Longitude { get; set; }
@@ -58,7 +58,7 @@ public class LongLatItem
     /// </summary>
     private void FormatAsDecimalDegrees()
     {
-        string _ddGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_decimalDegreesParam);
+        string _ddGeoCoordinateString = MapPoint.ToGeoCoordinateString(_decimalDegreesParam);
         string[] parts = _ddGeoCoordinateString.Split(' ');
         string latitude = parts[0];
         char latitudeLabel = latitude[^1];
@@ -89,7 +89,7 @@ public class LongLatItem
     /// </summary>
     private void FormatAsDegreesMinutesSeconds()
     {
-        string _dmsGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_degreesMinutesSecondsParam);
+        string _dmsGeoCoordinateString = MapPoint.ToGeoCoordinateString(_degreesMinutesSecondsParam);
         string[] parts = _dmsGeoCoordinateString.Split(' ');
 
         char latitudeLabel = parts[2][^1];
@@ -116,7 +116,7 @@ public class LongLatItem
     /// </summary>
     private void FormatAsDegreesDecimalMinutes()
     {
-        string _ddmGeoCoordinateString = WGS84MapPoint.ToGeoCoordinateString(_degreesDecimalMinutesParam);
+        string _ddmGeoCoordinateString = MapPoint.ToGeoCoordinateString(_degreesDecimalMinutesParam);
         string[] parts = _ddmGeoCoordinateString.Split(' ');
 
         char latitudeLabel = parts[1][^1];
@@ -139,7 +139,7 @@ public class LongLatItem
     public void UpdateCoordinates(double longitude, double latitude)
     {
         // Update the MapPoint
-        WGS84MapPoint = MapPointBuilderEx.CreateMapPoint(longitude, latitude, SpatialReferences.WGS84);
+        MapPoint = MapPointBuilderEx.CreateMapPoint(longitude, latitude, SpatialReferences.WGS84);
 
         FormatAsDecimalDegrees();
         FormatAsDegreesMinutesSeconds();

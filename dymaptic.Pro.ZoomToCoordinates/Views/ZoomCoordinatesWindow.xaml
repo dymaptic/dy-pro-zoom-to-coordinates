@@ -71,9 +71,10 @@
 
                 <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="Zone:" />
                 <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5"
-                         ItemsSource="{Binding UTMZones}"
-                         SelectedItem="{Binding SelectedUTMZone}"
-                         ToolTip="Select a UTM Zone, and note that UTM Zone will also automatically update as the Easting changes." />
+                          ItemsSource="{Binding UTMZones}"
+                          SelectedItem="{Binding SelectedUTMZone}"
+                          ToolTip="Select a UTM Zone, and note that UTM Zone will also automatically update as the Easting changes.">
+                </ComboBox>
 
                 <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="Latitude Band:" />
                 <TextBlock Grid.Row="1" Grid.Column="1" Margin="5,5,15,5"
