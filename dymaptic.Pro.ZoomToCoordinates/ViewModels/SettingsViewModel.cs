@@ -61,7 +61,21 @@ internal class SettingsViewModel : Page
 		}
 	}
 
-	public bool ShowGraphic
+    public bool ShowFormattedCoordinates
+    {
+        get => _settings.ShowFormattedCoordinates;
+        set
+        {
+            if (_settings.ShowFormattedCoordinates != value)
+            {
+                _settings.ShowFormattedCoordinates = value;
+                ZoomToCoordinatesModule.SaveSettings(_settings);
+                NotifyPropertyChanged();
+            }
+        }
+    }
+
+    public bool ShowGraphic
 	{
 		get => _settings.ShowGraphic;
 		set

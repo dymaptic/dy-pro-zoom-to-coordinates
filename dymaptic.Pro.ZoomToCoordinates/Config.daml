@@ -20,12 +20,12 @@
       </tabs>
       <groups>
         <!-- comment this out if you have no controls on the Addin tab to avoid an empty group-->
-        <group id="ZoomToCoordinates_Group1" caption="Coordinates" appearsOnAddInTab="false">
+        <group id="ZoomToCoordinates_Group1" caption="dymaptic Coordinates" appearsOnAddInTab="false">
           <!-- host controls within groups -->
           <button refID="ZoomToCoordinates_Views_ZoomCoordinatesWindow" size="large" />
           <tool refID="dymaptic_Pro_ZoomToCoordinates_GetCoordinates" size="large" />
-          <button refID="dymaptic_Pro_ZoomToCoordinates_Views_SettingsView" size="middle" />
-          <button refID="dymaptic_Pro_ZoomToCoordinates_Views_About" size="middle" />
+          <button refID="dymaptic_Pro_ZoomToCoordinates_Views_SettingsView" size="large" />
+          <button refID="dymaptic_Pro_ZoomToCoordinates_Views_About" size="large" />
         </group>
       </groups>
       <controls>

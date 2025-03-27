@@ -21,7 +21,7 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
     protected LongLatItem _longLatItem = new();
     protected MgrsItem _mgrs = new();
     protected UtmItem _utm = new();
-    protected bool _showFormattedCoordinates = false;
+    protected bool _showFormattedCoordinates = _settings.ShowFormattedCoordinates;
     private CoordinateFormat _selectedFormat = _settings.CoordinateFormat;
     private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";

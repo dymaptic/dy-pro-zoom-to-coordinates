@@ -7,6 +7,7 @@ public class Settings
 	// Default settings when Add-In loaded for initial time; user's actual default choices as they modify the drop-downs get saved/updated by EventHandler in ZoomToCoordinatesModule.cs 
 	public double Longitude = -122.4774494;
 	public double Latitude = 37.8108275;
+    public bool ShowFormattedCoordinates = false;
     public double Scale = 10_000;
 	public bool ShowGraphic = false;
 	public string Marker = "Pushpin";
