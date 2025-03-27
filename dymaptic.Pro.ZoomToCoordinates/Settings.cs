@@ -11,10 +11,12 @@ public class Settings
 	public bool ShowGraphic = false;
 	public string Marker = "Pushpin";
 	public string MarkerColor = "Green";
-	public string FontFamily = "Tahoma";
-	public string FontStyle = "Regular";
+    public int MarkerSize = 15;
+    public string FontFamily = "Tahoma";
+    public int FontSize = 11;
+    public string FontStyle = "Regular";
 	public string FontColor = "Black";
 
-	// Note: user doesn't get the option to change the default CoordinateFormat 
-	public CoordinateFormat CoordinateFormat = CoordinateFormat.DecimalDegrees;
+    // Note: user doesn't get the option to change the default CoordinateFormat 
+    public CoordinateFormat CoordinateFormat = CoordinateFormat.DecimalDegrees;
 }

@@ -103,7 +103,21 @@ internal class SettingsViewModel : Page
 		}
 	}
 
-	public string FontFamily
+    public int MarkerSize
+    {
+        get => _settings.MarkerSize;
+        set
+        {
+            if (_settings.MarkerSize != value)
+            {
+                _settings.MarkerSize = value;
+                ZoomToCoordinatesModule.SaveSettings(_settings);
+                NotifyPropertyChanged();
+            }
+        }
+    }
+
+    public string FontFamily
 	{
 		get => _settings.FontFamily;
 		set
@@ -117,7 +131,21 @@ internal class SettingsViewModel : Page
 		}
 	}
 
-	public string FontStyle
+    public int FontSize
+    {
+        get => _settings.FontSize;
+        set
+        {
+            if (_settings.FontSize != value)
+            {
+                _settings.FontSize = value;
+                ZoomToCoordinatesModule.SaveSettings(_settings);
+                NotifyPropertyChanged();
+            }
+        }
+    }
+
+    public string FontStyle
 	{
 		get => _settings.FontStyle;
 		set

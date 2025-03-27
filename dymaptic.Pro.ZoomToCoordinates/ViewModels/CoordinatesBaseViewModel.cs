@@ -118,19 +118,23 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
         if (_mapPoint == null) { return; }
 
         MapView mapView = MapView.Active;
-        Camera camera = mapView.Camera;
-        SpatialReference sr = camera.SpatialReference;
+        Map map = mapView.Map;
+        SpatialReference sr = mapView.Camera.SpatialReference;
 
-        Map map = MapView.Active.Map;
-        CIMPointSymbol symbol = SymbolFactory.Instance.ConstructPointSymbol(color: GetColor(_settings.MarkerColor), size: 20, style: GetMarkerStyle(_settings.Marker));
+        CIMPointSymbol symbol = SymbolFactory.Instance.ConstructPointSymbol(
+            color: GetColor(_settings.MarkerColor), 
+            size: _settings.MarkerSize, 
+            style: GetMarkerStyle(_settings.Marker));
 
         // 2D Map
         if (map.MapType == MapType.Map)
         {
             // Create the outer Group Layer container (if necessary) which is where point graphics will be placed in ArcGIS Pro Table of Contents
-            string groupLyrName = "Coordinates (Graphics Layers)";
-            var groupLyrContainer = map.GetLayersAsFlattenedList().OfType<GroupLayer>().Where(x => x.Name.StartsWith(groupLyrName)).FirstOrDefault();
-            groupLyrContainer ??= LayerFactory.Instance.CreateGroupLayer(container: map, index: 0, layerName: groupLyrName);
+            const string groupLyrName = "Coordinates (Graphics Layers)";
+            var groupLyrContainer = map.GetLayersAsFlattenedList()
+                .OfType<GroupLayer>()
+                .FirstOrDefault(x => x.Name.StartsWith(groupLyrName))
+                ?? LayerFactory.Instance.CreateGroupLayer(container: map, index: 0, layerName: groupLyrName);
 
             // Create point at specified coordinates & graphic for the map
             MapPoint point = MapPointBuilderEx.CreateMapPoint(new Coordinate2D(_mapPoint.X, _mapPoint.Y), SpatialReferences.WGS84);
@@ -144,7 +148,12 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
             // Finally create a point label graphic & add it to the point container
             CIMTextGraphic label = new()
             {
-                Symbol = SymbolFactory.Instance.ConstructTextSymbol(color: GetColor(_settings.FontColor), size: 12, fontFamilyName: _settings.FontFamily, fontStyleName: _settings.FontStyle).MakeSymbolReference(),
+                Symbol = SymbolFactory.Instance.ConstructTextSymbol(
+                    color: GetColor(_settings.FontColor), 
+                    size: _settings.FontSize, 
+                    fontFamilyName: _settings.FontFamily, 
+                    fontStyleName: _settings.FontStyle
+                ).MakeSymbolReference(),
                 Text = $"    <b>{_display}</b>",
                 Shape = point
             };

@@ -9,7 +9,7 @@
         xmlns:converters="clr-namespace:dymaptic.Pro.ZoomToCoordinates.Converters" 
         d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
         mc:Ignorable="d"
-        Title="Settings" Height="470" Width="275"
+        Title="Settings" Height="480" Width="275"
         WindowStartupLocation="CenterOwner">
     <controls:ProWindow.Resources>
         <ResourceDictionary>
@@ -78,6 +78,8 @@
                     <RowDefinition Height="auto"/>
                     <RowDefinition Height="auto"/>
                     <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
 
                 <Grid.ColumnDefinitions>
@@ -90,17 +92,23 @@
                 <Label Grid.Row="1" Grid.Column="0" Content="Graphic Color:"/>
                 <ComboBox  Grid.Row="1" Grid.Column="1" Margin="5,5,10,5" ItemsSource="{Binding ColorSchemes}" SelectedItem="{Binding MarkerColor}"  SelectedIndex="4"/>
 
-                <Label Grid.Row="2" Grid.Column="0" Content="Font Family:"/>
-                <ComboBox  Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" ItemsSource="{Binding FontFamilySchemes}" SelectedItem="{Binding FontFamily}" SelectedIndex="2"/>
+                <Label Grid.Row="2" Grid.Column="0" Content="Graphic Size:"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding MarkerSize}"/>
 
-                <Label Grid.Row="3" Grid.Column="0" Content="Font Style:"/>
-                <ComboBox  Grid.Row="3" Grid.Column="1" Margin="5,5,10,5" ItemsSource="{Binding FontStyleSchemes}" SelectedItem="{Binding FontStyle}" SelectedIndex="0"/>
+                <Label Grid.Row="3" Grid.Column="0" Content="Font Family:"/>
+                <ComboBox  Grid.Row="3" Grid.Column="1" Margin="5,5,10,5" ItemsSource="{Binding FontFamilySchemes}" SelectedItem="{Binding FontFamily}" SelectedIndex="2"/>
 
-                <Label Grid.Row="4" Grid.Column="0" Content="Font Color:"/>
-                <ComboBox  Grid.Row="4" Grid.Column="1" Margin="5,5,10,5" ItemsSource="{Binding ColorSchemes}" SelectedItem="{Binding FontColor}"  SelectedIndex="0"/>
+                <Label Grid.Row="4" Grid.Column="0" Content="Font Size:"/>
+                <TextBox Grid.Row="4" Grid.Column="1" Margin="5,5,10,5" Text="{Binding FontSize}"/>
 
-                <Label Grid.Row="5" Grid.Column="0" Content="Create Graphic?"/>
-                <CheckBox Grid.Row="5" Grid.Column="1" Margin="5,5,0,0" IsChecked="{Binding CreateGraphic}"/>
+                <Label Grid.Row="5" Grid.Column="0" Content="Font Style:"/>
+                <ComboBox  Grid.Row="5" Grid.Column="1" Margin="5,5,10,5" ItemsSource="{Binding FontStyleSchemes}" SelectedItem="{Binding FontStyle}" SelectedIndex="0"/>
+
+                <Label Grid.Row="6" Grid.Column="0" Content="Font Color:"/>
+                <ComboBox  Grid.Row="6" Grid.Column="1" Margin="5,5,10,5" ItemsSource="{Binding ColorSchemes}" SelectedItem="{Binding FontColor}"  SelectedIndex="0"/>
+
+                <Label Grid.Row="7" Grid.Column="0" Content="Create Graphic?"/>
+                <CheckBox Grid.Row="7" Grid.Column="1" Margin="5,5,0,0" IsChecked="{Binding ShowGraphic}"/>
             </Grid>
         </GroupBox>
     </Grid>
