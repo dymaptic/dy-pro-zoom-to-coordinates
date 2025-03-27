@@ -5,12 +5,15 @@ using ArcGIS.Desktop.Mapping;
 using dymaptic.Pro.ZoomToCoordinates.ViewModels;
 using dymaptic.Pro.ZoomToCoordinates.Views;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace dymaptic.Pro.ZoomToCoordinates.MapTools;
 internal class GetCoordinatesMapTool : MapTool
 {
     private GetCoordinatesWindow? _getCoordinatesWindow = null;
+    private readonly Stopwatch _throttleTimer = Stopwatch.StartNew();
+    private readonly TimeSpan _throttleDelay = TimeSpan.FromMilliseconds(50);
 
     protected override Task OnToolActivateAsync(bool active)
     {
@@ -39,6 +42,28 @@ internal class GetCoordinatesMapTool : MapTool
     }
 
     /// <summary>
+    ///     As the user moves the mouse, update the coordinates.  
+    ///     Since this could trigger a ton, throttle it to improve performance.
+    /// </summary>
+    /// <param name="e"></param>
+    protected async override void OnToolMouseMove(MapViewMouseEventArgs e)
+    {
+        if (_throttleTimer.Elapsed < _throttleDelay)
+            return; // too soon, skip
+
+        _throttleTimer.Restart(); // otherwise reset timer
+
+        if (_getCoordinatesWindow?.DataContext is not GetCoordinatesViewModel viewModel) { return; }
+
+        MapPoint? mapPoint = await ToWgs84Async(e.ClientPoint);
+
+        if (mapPoint == null) { return; }
+
+        viewModel.MapPoint = mapPoint;
+        viewModel.UpdateCoordinates();
+    }
+
+    /// <summary>
     ///     Creates a MapPoint when the user clicks the map.
     /// </summary>
     /// <returns></returns>
@@ -46,20 +71,7 @@ internal class GetCoordinatesMapTool : MapTool
     {
         if (_getCoordinatesWindow?.DataContext is not GetCoordinatesViewModel viewModel) { return; }
 
-        // When the map is clicked, pass the MapPoint to the GetCoordinatesViewModel
-        MapPoint mapPoint = await QueuedTask.Run(() =>
-        {
-            MapPoint point = MapView.Active.ClientToMap(e.ClientPoint);
-
-            // Check if the point is already in WGS84 (SpatialReference WKID 4326)
-            if (point?.SpatialReference?.Wkid != 4326)
-            {
-                // Reproject to WGS84 if necessary
-                point = (MapPoint)GeometryEngine.Instance.Project(point, SpatialReferences.WGS84);
-            }
-
-            return point;
-        });
+        MapPoint? mapPoint = await ToWgs84Async(e.ClientPoint);
 
         if (mapPoint == null) { return; }
 
@@ -84,5 +96,21 @@ internal class GetCoordinatesMapTool : MapTool
 
         // Deactivate the map tool if user closes the Pro Window
         FrameworkApplication.SetCurrentToolAsync("esri_mapping_exploreTool");
+    }
+
+    /// <summary>
+    /// Converts a screen point to a MapPoint in WGS84.
+    /// </summary>
+    private static Task<MapPoint?> ToWgs84Async(System.Windows.Point clientPoint)
+    {
+        return QueuedTask.Run(() =>
+        {
+            var point = MapView.Active?.ClientToMap(clientPoint);
+            if (point == null) return null;
+
+            return point.SpatialReference?.Wkid == 4326
+                ? point
+                : (MapPoint)GeometryEngine.Instance.Project(point, SpatialReferences.WGS84);
+        });
     }
 }
