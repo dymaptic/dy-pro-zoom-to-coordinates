@@ -44,36 +44,31 @@ internal class GetCoordinatesMapTool : MapTool
     /// <returns></returns>
     protected async override Task HandleMouseDownAsync(MapViewMouseButtonEventArgs e)
     {
-        if (_getCoordinatesWindow?.DataContext is GetCoordinatesViewModel viewModel)
+        if (_getCoordinatesWindow?.DataContext is not GetCoordinatesViewModel viewModel) { return; }
+
+        // When the map is clicked, pass the MapPoint to the GetCoordinatesViewModel
+        MapPoint mapPoint = await QueuedTask.Run(() =>
         {
-            // When the map is clicked, pass the MapPoint to the GetCoordinatesViewModel
-            MapPoint mapPoint = await QueuedTask.Run(() =>
+            MapPoint point = MapView.Active.ClientToMap(e.ClientPoint);
+
+            // Check if the point is already in WGS84 (SpatialReference WKID 4326)
+            if (point?.SpatialReference?.Wkid != 4326)
             {
-                MapPoint point = MapView.Active.ClientToMap(e.ClientPoint);
-
-                // Check if the point is already in WGS84 (SpatialReference WKID 4326)
-                if (point?.SpatialReference?.Wkid != 4326)
-                {
-                    // Reproject to WGS84 if necessary
-                    point = (MapPoint)GeometryEngine.Instance.Project(point, SpatialReferences.WGS84);
-                }
-
-                return point;
-            });
-
-            if (mapPoint != null)
-            {
-                viewModel.MapPoint = mapPoint;
-                viewModel.UpdateCoordinates();
-                if (viewModel.ShowGraphic)
-                {
-                    await QueuedTask.Run(() =>
-                    {
-                        viewModel.CreateGraphic();
-                    });
-                }
+                // Reproject to WGS84 if necessary
+                point = (MapPoint)GeometryEngine.Instance.Project(point, SpatialReferences.WGS84);
             }
-        }
+
+            return point;
+        });
+
+        if (mapPoint == null) { return; }
+
+        viewModel.MapPoint = mapPoint;
+        viewModel.UpdateCoordinates();
+        if (viewModel.ShowGraphic)
+        {
+            await QueuedTask.Run(() => viewModel.CreateGraphic());
+        } 
     }
 
     /// <summary>
