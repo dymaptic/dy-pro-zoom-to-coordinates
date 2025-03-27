@@ -5,7 +5,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.Models;
 /// <summary>
 ///     Stores UTM or MGRS information (note: MGRS is an extension of UTM).
 /// </summary>
-public abstract class GridSRBaseItem(int zone, string latitudeBand, int easting, int northing)
+public abstract class GridBaseItem(int zone, string latitudeBand, int easting, int northing)
 {
     protected int _zone = zone;
     protected string _latitudeBand = latitudeBand;
@@ -13,22 +13,6 @@ public abstract class GridSRBaseItem(int zone, string latitudeBand, int easting,
     protected int _northing = northing;
     protected string _geoCoordinateString = "";
     public MapPoint MapPoint { get; protected set;} = MapPointBuilderEx.CreateMapPoint(0, 0, SpatialReferences.WGS84);
-
-    /// <summary>
-    ///     The UTM zone.
-    /// </summary>
-    public int Zone 
-    {
-        get => _zone;
-        set
-        {
-            if (_zone != value)
-            {
-                _zone = value;
-                UpdateGeoCoordinateString();
-            }
-        }
-    }
 
     /// <summary>
     ///     UTM and MGRS stores latitude band, one of "CDEFGHJKLMNPQRSTUVWXX" Excludes 'I' and 'O' (1 character total) 

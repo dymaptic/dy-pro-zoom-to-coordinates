@@ -1,8 +1,6 @@
-﻿using ArcGIS.Core.CIM;
-using ArcGIS.Core.Geometry;
+﻿using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
-using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
 using dymaptic.Pro.ZoomToCoordinates.Models;
 using System;
@@ -17,7 +15,6 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 {
     private static readonly char[] separator = [' '];
-    private MapPoint _mapPoint;
     private bool _xCoordinateValidated = true;  // when tool loads, valid coordinates are put into the text boxes
     private bool _yCoordinateValidated = true;
 
@@ -33,15 +30,13 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 
     // Private backing-fields to the public properties
     private string _errorMessage = "";
-    private CoordinateFormatItem _selectedFormatItem = CoordinateFormats.First(f => f.Format == _settings.CoordinateFormat);
     private int _selectedUTMZone;
-    private LatitudeBand? _selectedLatitudeBandItem;
+    private LatitudeBand _selectedLatitudeBandItem;
     private string _selectedLatitudeBand = "";
     private string _oneHundredKMGridID = "";
     private bool _showUtmControls;
     private bool _showMgrsControl;
     private double _scale = _settings.Scale;
-	private bool _createGraphic = _settings.CreateGraphic;
     private bool _isUpdatingGridIds = false;
     public ICommand ZoomCommand { get; }
 
@@ -49,12 +44,15 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     public ZoomCoordinatesViewModel()
     {
         // Create a MapPoint right off the bat with the default coordinates
-        _longLatItem.UpdateCoordinates(_longitude, _latitude);
+        _longLatItem.Update(_longitude, _latitude);
         _mapPoint = _longLatItem.MapPoint;
 
         // Set initially for the Display
         _xCoordinateString = _longLatItem.Longitude.ToString("F6");
         _yCoordinateString = _longLatItem.Latitude.ToString("F6");
+
+        // Prevent null reference
+        _selectedLatitudeBandItem = LatitudeBands.First(band => band.Key == "C");
 
         UpdateDisplay();
         UpdateCoordinateLabels();
@@ -104,11 +102,12 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         ];
 
     /// <summary>
-    ///     The MapPoint of the current coordinates.
+    ///     The MapPoint of the current coordinates. 
+    ///     In the ViewModel, it's populated by the individual Coordinate Format classes, so we know it will never be null.
     /// </summary>
     public MapPoint MapPoint
     {
-        get => _mapPoint;
+        get => _mapPoint!;
         set
         {
             _mapPoint = value;
@@ -166,7 +165,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                 case CoordinateFormat.DecimalDegrees:
                 case CoordinateFormat.DegreesMinutesSeconds:
                 case CoordinateFormat.DegreesDecimalMinutes:
-                    _longLatItem.UpdateCoordinates(_mapPoint!.X, _mapPoint.Y);
+                    _longLatItem.Update(_mapPoint!);
                     break;
 
                 case CoordinateFormat.MGRS:
@@ -328,7 +327,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                         case CoordinateFormat.DecimalDegrees:
                         case CoordinateFormat.DegreesMinutesSeconds:
                         case CoordinateFormat.DegreesDecimalMinutes:
-                            _longLatItem.UpdateCoordinates(_longitude, _latitude);
+                            _longLatItem.Update(_longitude, _latitude);
                             break;
 
                         case CoordinateFormat.MGRS:
@@ -370,7 +369,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                         case CoordinateFormat.DecimalDegrees:
                         case CoordinateFormat.DegreesMinutesSeconds:
                         case CoordinateFormat.DegreesDecimalMinutes:
-                            _longLatItem.UpdateCoordinates(_longitude, _latitude);
+                            _longLatItem.Update(_longitude, _latitude);
                             break;
 
                         case CoordinateFormat.MGRS:
@@ -443,15 +442,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 	{
 		get => _scale;
 		set => SetProperty(ref _scale, value);
-	}
-
-    /// <summary>
-    ///     Indicates if user wants to create a graphic after the zoom.
-    /// </summary>
-	public bool CreateGraphic
-	{
-		get => _createGraphic;
-		set => SetProperty(ref _createGraphic, value);
 	}
 
     /// <summary>
@@ -792,160 +782,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 				mapView.ZoomTo(camera, TimeSpan.Zero);
 			}
 
-			if (CreateGraphic)
+			if (ShowGraphic)
 			{
-				Map map = MapView.Active.Map;
-				CIMPointSymbol symbol = SymbolFactory.Instance.ConstructPointSymbol(color: GetColor(_settings.MarkerColor), size: 20, style: GetMarkerStyle(_settings.Marker));
-
-				// 2D Map
-				if (map.MapType == MapType.Map)
-				{
-					// Create the outer Group Layer container (if necessary) which is where point graphics will be placed in ArcGIS Pro Table of Contents
-					string groupLyrName = "Coordinates (Graphics Layers)";
-					var groupLyrContainer = map.GetLayersAsFlattenedList().OfType<GroupLayer>().Where(x => x.Name.StartsWith(groupLyrName)).FirstOrDefault();
-					groupLyrContainer ??= LayerFactory.Instance.CreateGroupLayer(container: map, index: 0, layerName: groupLyrName);
-
-					// Create point at specified coordinates & graphic for the map
-					MapPoint point = MapPointBuilderEx.CreateMapPoint(new Coordinate2D(_longitude, _latitude), SpatialReferences.WGS84);
-					CIMGraphic graphic = GraphicFactory.Instance.CreateSimpleGraphic(geometry: point, symbol: symbol);
-
-					// Create the point container inside the group layer container and place graphic into it to create graphic element
-					GraphicsLayerCreationParams lyrParams = new() { Name = $"{_display}" };
-					GraphicsLayer pointGraphicContainer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(layerParams: lyrParams, container: groupLyrContainer);
-					ElementFactory.Instance.CreateGraphicElement(elementContainer: pointGraphicContainer, cimGraphic: graphic, select: false);
-
-					// Finally create a point label graphic & add it to the point container
-					CIMTextGraphic label = new()
-					{
-						Symbol = SymbolFactory.Instance.ConstructTextSymbol(color: GetColor(_settings.FontColor), size:12, fontFamilyName:_settings.FontFamily, fontStyleName: _settings.FontStyle).MakeSymbolReference(),
-						Text = $"    <b>{_display}</b>",
-						Shape = point
-					};
-
-					pointGraphicContainer.AddElement(cimGraphic:label, select: false);
-				}
-
-				// 3D Map (adds an overlay without a label, since CIMTextGraphic is a graphic & graphics are 2D only. Therefore, there isn't a graphics container in the ArcGIS Pro Table of Contents).
-				else if (map.IsScene)
-				{
-					MapPoint point = MapPointBuilderEx.CreateMapPoint(new Coordinate3D(x: _longitude, y: _latitude, z: 0), sr);
-					mapView.AddOverlay(point, symbol.MakeSymbolReference());
-				}
+                CreateGraphic();
 			}
 		});
-	}
-
-	private static CIMColor GetColor(string selectedColor)
-	{
-		CIMColor color = ColorFactory.Instance.BlackRGB;
-		switch (selectedColor)
-		{
-			case "Black":
-				color = ColorFactory.Instance.BlackRGB;
-
-				break;
-			case "Gray":
-				color = ColorFactory.Instance.GreyRGB;
-
-				break;
-			case "White":
-				color = ColorFactory.Instance.WhiteRGB;
-
-				break;
-			case "Red":
-				color = ColorFactory.Instance.RedRGB;
-
-				break;
-			case "Green":
-				color = ColorFactory.Instance.GreenRGB;
-
-				break;
-			case "Blue":
-				color = ColorFactory.Instance.BlueRGB;
-
-				break;
-		}
-		return color;
-	}
-
-	private static SimpleMarkerStyle GetMarkerStyle(string selectedMarker)
-	{
-		SimpleMarkerStyle marker = SimpleMarkerStyle.Circle;
-		switch (selectedMarker)
-		{
-			case "Circle":
-				marker = SimpleMarkerStyle.Circle;
-					
-				break;
-			case "Cross":
-				marker = SimpleMarkerStyle.Cross;
-					
-				break;
-			case "Diamond":
-				marker = SimpleMarkerStyle.Diamond;
-					
-				break;
-			case "Square":
-				marker = SimpleMarkerStyle.Square;
-					
-				break;
-			case "X":
-				marker = SimpleMarkerStyle.X;
-					
-				break;
-			case "Triangle":
-				marker = SimpleMarkerStyle.Triangle;
-					
-				break;
-			case "Pushpin":
-				marker = SimpleMarkerStyle.Pushpin;
-					
-				break;
-			case "Star":
-				marker = SimpleMarkerStyle.Star;
-					
-				break;
-			case "RoundedSquare":
-				marker = SimpleMarkerStyle.RoundedSquare;
-					
-				break;
-			case "RoundedTriangle":
-				marker = SimpleMarkerStyle.RoundedTriangle;
-					
-				break;
-			case "Rod":
-				marker = SimpleMarkerStyle.Rod;
-					
-				break;
-			case "Rectangle":
-				marker = SimpleMarkerStyle.Rectangle;
-					
-				break;
-			case "RoundedRectangle":
-				marker = SimpleMarkerStyle.RoundedRectangle;
-					
-				break;
-			case "Hexagon":
-				marker = SimpleMarkerStyle.Hexagon;
-					
-				break;
-			case "StretchedHexagon":
-				marker = SimpleMarkerStyle.StretchedHexagon;
-					
-				break;
-			case "RaceTrack":
-				marker = SimpleMarkerStyle.RaceTrack;
-					
-				break;
-			case "HalfCircle":
-				marker = SimpleMarkerStyle.HalfCircle;
-					
-				break;
-			case "Cloud":
-				marker = SimpleMarkerStyle.Cloud;
-					
-				break;
-		}
-		return marker;
 	}
 }

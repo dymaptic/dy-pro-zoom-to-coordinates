@@ -80,12 +80,6 @@
                 <TextBlock Grid.Row="1" Grid.Column="1" Margin="5,5,15,5"
                         Text="{Binding SelectedLatitudeBandItem.DisplayText}"
                         ToolTip="Latitude band automatically updates as the Northing changes."/>
-                
-                
-                <!--<ComboBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5"
-                         ItemsSource="{Binding LatitudeBands}" DisplayMemberPath="DisplayText"
-                         SelectedItem="{Binding SelectedLatitudeBandItem}" 
-                          IsEnabled="False" />   --><!--IsHitTestVisible="False" Focusable="False" />-->
             </Grid>
         </StackPanel>
 
@@ -139,7 +133,7 @@
 
         <!-- Checkbox -->
         <Label Grid.Row="8" Grid.Column="0" Content="Create Graphic?" Margin="5,0,0,0"/>
-        <CheckBox Grid.Row="8" Grid.Column="1" Margin="5,5,0,0" IsChecked="{Binding CreateGraphic}"/>
+        <CheckBox Grid.Row="8" Grid.Column="1" Margin="5,5,0,0" IsChecked="{Binding ShowGraphic}"/>
 
         <!-- Buttons -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2">

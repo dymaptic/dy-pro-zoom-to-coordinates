@@ -46,11 +46,22 @@
         <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
         <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding YCoordinateString, Mode=OneWay}" IsReadOnly="True" />
 
-        <!-- Format Control -->
-        <Label Grid.Row="3" Grid.Column="0" Margin="5" Content="Format?" />
-        <CheckBox Grid.Row="3" Grid.Column="1" Margin="5,10,10,5"
-                  IsChecked="{Binding ShowFormattedCoordinates, Mode=TwoWay}"
-                  IsEnabled="{Binding EnableFormatting}"/>
+        <!-- Format and Create Graphic Control -->
+        <Grid Grid.Row="3" Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0" Margin="5" Content="Format?" />
+            <CheckBox Grid.Column="1" Margin="5,10,10,5"
+                      IsChecked="{Binding ShowFormattedCoordinates, Mode=TwoWay}"
+                      IsEnabled="{Binding EnableFormatting}"/>
+            <Label Grid.Column="2" Margin="5" Content="Create Graphic?" />
+            <CheckBox Grid.Column="3" Margin="5,10,10,5" IsChecked="{Binding ShowGraphic}"/>
+        </Grid>
 
         <!-- Display -->
         <Button Style="{DynamicResource Esri_Button}" Grid.Row="4" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}"/>

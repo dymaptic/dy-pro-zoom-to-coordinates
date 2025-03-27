@@ -1,6 +1,11 @@
-﻿using ArcGIS.Desktop.Framework.Contracts;
+﻿using ArcGIS.Core.CIM;
+using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Framework.Contracts;
+using ArcGIS.Desktop.Layouts;
+using ArcGIS.Desktop.Mapping;
 using dymaptic.Pro.ZoomToCoordinates.Models;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 
@@ -11,23 +16,17 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
     protected string _xCoordinateString = "";
     protected string _yCoordinateString = "";
     protected string _display = "";
-
-    /// <summary>
-    ///     Holds UTM Point information once a conversion has occurred.
-    /// </summary>
-    protected UtmItem _utm = new();
-
-    /// <summary>
-    ///     Holds MGRS Point information once a conversion has occurred.
-    /// </summary>
+    protected MapPoint? _mapPoint;
+    protected CoordinateFormatItem _selectedFormatItem = CoordinateFormats.First(f => f.Format == _settings.CoordinateFormat);
+    protected LongLatItem _longLatItem = new();
     protected MgrsItem _mgrs = new();
-
-    protected LongLatItem _longLatItem = new(_settings.Longitude, _settings.Latitude);
-
+    protected UtmItem _utm = new();
+    protected bool _showFormattedCoordinates = false;
+    private CoordinateFormat _selectedFormat = _settings.CoordinateFormat;
     private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
-    private CoordinateFormat _selectedFormat = _settings.CoordinateFormat;
-    protected bool _showFormattedCoordinates = false;
+    private bool _showGraphic = _settings.ShowGraphic;
+
     public ICommand? CopyTextCommand { get; set; }
 
     public static ObservableCollection<CoordinateFormatItem> CoordinateFormats { get; } =
@@ -38,6 +37,15 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
         new CoordinateFormatItem { Format = CoordinateFormat.MGRS, DisplayName = "MGRS" },
         new CoordinateFormatItem { Format = CoordinateFormat.UTM, DisplayName = "UTM" }
     ];
+
+    /// <summary>
+    ///     Indicates if user wants to create a graphic after the zoom.
+    /// </summary>
+    public bool ShowGraphic
+    {
+        get => _showGraphic;
+        set => SetProperty(ref _showGraphic, value);
+    }
 
     /// <summary>
     ///     Shows the formatted X Coordinate followed by the formatted Y Coordinate.
@@ -103,6 +111,167 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
         {
             Clipboard.SetText(Display);
         }
+    }
+
+    public void CreateGraphic()
+    {
+        if (_mapPoint == null) { return; }
+
+        MapView mapView = MapView.Active;
+        Camera camera = mapView.Camera;
+        SpatialReference sr = camera.SpatialReference;
+
+        Map map = MapView.Active.Map;
+        CIMPointSymbol symbol = SymbolFactory.Instance.ConstructPointSymbol(color: GetColor(_settings.MarkerColor), size: 20, style: GetMarkerStyle(_settings.Marker));
+
+        // 2D Map
+        if (map.MapType == MapType.Map)
+        {
+            // Create the outer Group Layer container (if necessary) which is where point graphics will be placed in ArcGIS Pro Table of Contents
+            string groupLyrName = "Coordinates (Graphics Layers)";
+            var groupLyrContainer = map.GetLayersAsFlattenedList().OfType<GroupLayer>().Where(x => x.Name.StartsWith(groupLyrName)).FirstOrDefault();
+            groupLyrContainer ??= LayerFactory.Instance.CreateGroupLayer(container: map, index: 0, layerName: groupLyrName);
+
+            // Create point at specified coordinates & graphic for the map
+            MapPoint point = MapPointBuilderEx.CreateMapPoint(new Coordinate2D(_mapPoint.X, _mapPoint.Y), SpatialReferences.WGS84);
+            CIMGraphic graphic = GraphicFactory.Instance.CreateSimpleGraphic(geometry: point, symbol: symbol);
+
+            // Create the point container inside the group layer container and place graphic into it to create graphic element
+            GraphicsLayerCreationParams lyrParams = new() { Name = $"{_display}" };
+            GraphicsLayer pointGraphicContainer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(layerParams: lyrParams, container: groupLyrContainer);
+            ElementFactory.Instance.CreateGraphicElement(elementContainer: pointGraphicContainer, cimGraphic: graphic, select: false);
+
+            // Finally create a point label graphic & add it to the point container
+            CIMTextGraphic label = new()
+            {
+                Symbol = SymbolFactory.Instance.ConstructTextSymbol(color: GetColor(_settings.FontColor), size: 12, fontFamilyName: _settings.FontFamily, fontStyleName: _settings.FontStyle).MakeSymbolReference(),
+                Text = $"    <b>{_display}</b>",
+                Shape = point
+            };
+
+            pointGraphicContainer.AddElement(cimGraphic: label, select: false);
+        }
+
+        // 3D Map (adds an overlay without a label, since CIMTextGraphic is a graphic & graphics are 2D only. Therefore, there isn't a graphics container in the ArcGIS Pro Table of Contents).
+        else if (map.IsScene)
+        {
+            MapPoint point = MapPointBuilderEx.CreateMapPoint(new Coordinate3D(_mapPoint!.X, _mapPoint.Y, z: 0), sr);
+            mapView.AddOverlay(point, symbol.MakeSymbolReference());
+        }
+    }
+
+    private static CIMColor GetColor(string selectedColor)
+    {
+        CIMColor color = ColorFactory.Instance.BlackRGB;
+        switch (selectedColor)
+        {
+            case "Black":
+                color = ColorFactory.Instance.BlackRGB;
+
+                break;
+            case "Gray":
+                color = ColorFactory.Instance.GreyRGB;
+
+                break;
+            case "White":
+                color = ColorFactory.Instance.WhiteRGB;
+
+                break;
+            case "Red":
+                color = ColorFactory.Instance.RedRGB;
+
+                break;
+            case "Green":
+                color = ColorFactory.Instance.GreenRGB;
+
+                break;
+            case "Blue":
+                color = ColorFactory.Instance.BlueRGB;
+
+                break;
+        }
+        return color;
+    }
+
+    private static SimpleMarkerStyle GetMarkerStyle(string selectedMarker)
+    {
+        SimpleMarkerStyle marker = SimpleMarkerStyle.Circle;
+        switch (selectedMarker)
+        {
+            case "Circle":
+                marker = SimpleMarkerStyle.Circle;
+
+                break;
+            case "Cross":
+                marker = SimpleMarkerStyle.Cross;
+
+                break;
+            case "Diamond":
+                marker = SimpleMarkerStyle.Diamond;
+
+                break;
+            case "Square":
+                marker = SimpleMarkerStyle.Square;
+
+                break;
+            case "X":
+                marker = SimpleMarkerStyle.X;
+
+                break;
+            case "Triangle":
+                marker = SimpleMarkerStyle.Triangle;
+
+                break;
+            case "Pushpin":
+                marker = SimpleMarkerStyle.Pushpin;
+
+                break;
+            case "Star":
+                marker = SimpleMarkerStyle.Star;
+
+                break;
+            case "RoundedSquare":
+                marker = SimpleMarkerStyle.RoundedSquare;
+
+                break;
+            case "RoundedTriangle":
+                marker = SimpleMarkerStyle.RoundedTriangle;
+
+                break;
+            case "Rod":
+                marker = SimpleMarkerStyle.Rod;
+
+                break;
+            case "Rectangle":
+                marker = SimpleMarkerStyle.Rectangle;
+
+                break;
+            case "RoundedRectangle":
+                marker = SimpleMarkerStyle.RoundedRectangle;
+
+                break;
+            case "Hexagon":
+                marker = SimpleMarkerStyle.Hexagon;
+
+                break;
+            case "StretchedHexagon":
+                marker = SimpleMarkerStyle.StretchedHexagon;
+
+                break;
+            case "RaceTrack":
+                marker = SimpleMarkerStyle.RaceTrack;
+
+                break;
+            case "HalfCircle":
+                marker = SimpleMarkerStyle.HalfCircle;
+
+                break;
+            case "Cloud":
+                marker = SimpleMarkerStyle.Cloud;
+
+                break;
+        }
+        return marker;
     }
 
     /// <summary>

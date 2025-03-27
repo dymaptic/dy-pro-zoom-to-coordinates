@@ -1,19 +1,35 @@
 ﻿using ArcGIS.Core.Geometry;
 
 namespace dymaptic.Pro.ZoomToCoordinates.Models;
-public class UtmItem : GridSRBaseItem
+public class UtmItem : GridBaseItem
 {
     private readonly ToGeoCoordinateParameter utmParam = new(geoCoordType: GeoCoordinateType.UTM);
 
     // Default constructor
     public UtmItem()
-        :base(0, "A", 0, 0) { }
+        :base(1, "C", 0, 0) { }
 
 
     public UtmItem(int zone, string latitudeBand, int easting, int northing)
         : base(zone, latitudeBand, easting, northing) 
     {
         UpdateGeoCoordinateString();
+    }
+
+    /// <summary>
+    ///     The UTM zone.
+    /// </summary>
+    public int Zone
+    {
+        get => _zone;
+        set
+        {
+            if (_zone != value)
+            {
+                _zone = value;
+                UpdateGeoCoordinateString();
+            }
+        }
     }
 
     /// <summary>
@@ -25,14 +41,6 @@ public class UtmItem : GridSRBaseItem
     {
         get => _geoCoordinateString;
         set => _geoCoordinateString = value;
-    }
-
-    protected override void UpdateGeoCoordinateString()
-    {
-        _geoCoordinateString = $"{Zone}{LatitudeBand}{Easting:D6}{Northing:D7}";
-
-        MapPoint = MapPointBuilderEx.FromGeoCoordinateString(_geoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.UTM);
-        Update(MapPoint);
     }
 
     /// <summary>
@@ -49,5 +57,13 @@ public class UtmItem : GridSRBaseItem
         _easting = int.Parse(parts[1]);
         _northing = int.Parse(parts[2]);
         _geoCoordinateString = geoCoordString.Replace(" ", "");
+    }
+
+    protected override void UpdateGeoCoordinateString()
+    {
+        _geoCoordinateString = $"{Zone}{LatitudeBand}{Easting:D6}{Northing:D7}";
+
+        MapPoint = MapPointBuilderEx.FromGeoCoordinateString(_geoCoordinateString, SpatialReferences.WGS84, GeoCoordinateType.UTM);
+        Update(MapPoint);
     }
 }

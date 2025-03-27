@@ -12,10 +12,6 @@ internal class GetCoordinatesMapTool : MapTool
 {
     private GetCoordinatesWindow? _getCoordinatesWindow = null;
 
-    public GetCoordinatesMapTool()
-    {
-    }
-
     protected override Task OnToolActivateAsync(bool active)
     {
         // Always ensure the ProWindow opens when the MapTool is activated.
@@ -42,6 +38,10 @@ internal class GetCoordinatesMapTool : MapTool
             e.Handled = true; //Handle the event args to get the call to the corresponding async method
     }
 
+    /// <summary>
+    ///     Creates a MapPoint when the user clicks the map.
+    /// </summary>
+    /// <returns></returns>
     protected async override Task HandleMouseDownAsync(MapViewMouseButtonEventArgs e)
     {
         if (_getCoordinatesWindow?.DataContext is GetCoordinatesViewModel viewModel)
@@ -65,10 +65,20 @@ internal class GetCoordinatesMapTool : MapTool
             {
                 viewModel.MapPoint = mapPoint;
                 viewModel.UpdateCoordinates();
+                if (viewModel.ShowGraphic)
+                {
+                    await QueuedTask.Run(() =>
+                    {
+                        viewModel.CreateGraphic();
+                    });
+                }
             }
         }
     }
 
+    /// <summary>
+    ///     Deactivate the map tool if user closes the Pro Window.
+    /// </summary>
     private void OnGetCoordinatesWindowClosed(object? o, EventArgs e)
     {
         if (_getCoordinatesWindow != null)

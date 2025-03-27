@@ -8,7 +8,7 @@ public class LongLatItem
     private readonly ToGeoCoordinateParameter _degreesDecimalMinutesParam = new(geoCoordType: GeoCoordinateType.DDM);
 
     // Constructor
-    public LongLatItem(double longitude, double latitude)
+    public LongLatItem(double longitude=0, double latitude=0)
     {
         Longitude = longitude;
         Latitude = latitude;
@@ -136,9 +136,26 @@ public class LongLatItem
         LongitudeDDMFormatted = $"{lonDegrees}° {lonMinutes}' {longitudeLabel}";
     }
 
-    public void UpdateCoordinates(double longitude, double latitude)
+    /// <summary>
+    ///     Update the LongLatItem's mapPoint using the one from the ViewModel.
+    /// </summary>
+    /// <param name="mapPoint">The mapPoint from the ViewModel.</param>
+    public void Update(MapPoint mapPoint)
     {
-        // Update the MapPoint
+        MapPoint = MapPointBuilderEx.CreateMapPoint(mapPoint.X, mapPoint.Y, SpatialReferences.WGS84);
+
+        FormatAsDecimalDegrees();
+        FormatAsDegreesMinutesSeconds();
+        FormatAsDegreesDecimalMinutes();
+    }
+
+    /// <summary>
+    ///     Update the LongLatItem's mapPoint using lat/long.
+    /// </summary>
+    /// <param name="longitude"></param>
+    /// <param name="latitude"></param>
+    public void Update(double longitude, double latitude)
+    {
         MapPoint = MapPointBuilderEx.CreateMapPoint(longitude, latitude, SpatialReferences.WGS84);
 
         FormatAsDecimalDegrees();

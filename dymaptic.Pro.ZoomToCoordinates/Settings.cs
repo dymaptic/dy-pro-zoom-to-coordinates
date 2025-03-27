@@ -8,7 +8,7 @@ public class Settings
 	public double Longitude = -122.4774494;
 	public double Latitude = 37.8108275;
     public double Scale = 10_000;
-	public bool CreateGraphic = false;
+	public bool ShowGraphic = false;
 	public string Marker = "Pushpin";
 	public string MarkerColor = "Green";
 	public string FontFamily = "Tahoma";

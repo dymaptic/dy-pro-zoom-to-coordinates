@@ -9,11 +9,6 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
 {
     private bool _enableFormatting;
 
-    // MapPoint will always be WGS84 (we ensure it is in the MapTool)
-    private MapPoint? _mapPoint;
-
-    private CoordinateFormatItem _selectedFormatItem;
-
     // Constructor
     public GetCoordinatesViewModel()
     {
@@ -53,7 +48,7 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
     }
 
     /// <summary>
-    ///     The MapPoint that is created when a user clicks that map.
+    ///     The MapPoint that is created when the user clicks that map.
     /// </summary>
     public MapPoint? MapPoint
     {
@@ -93,7 +88,7 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
             case CoordinateFormat.DecimalDegrees:
             case CoordinateFormat.DegreesMinutesSeconds:
             case CoordinateFormat.DegreesDecimalMinutes:
-                _longLatItem.UpdateCoordinates(MapPoint!.X, MapPoint.Y);
+                _longLatItem.Update(MapPoint!);
                 break;
 
 

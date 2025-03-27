@@ -14,8 +14,8 @@ internal class ZoomToCoordinatesModule : Module
 	/// </summary>
 	public static ZoomToCoordinatesModule Current => _this ??= (ZoomToCoordinatesModule)FrameworkApplication.FindModule("ZoomToCoordinates_Module");
 
-	public event EventHandler SettingsLoaded;
-	public event EventHandler SettingsUpdated;
+	public event EventHandler? SettingsLoaded;
+	public event EventHandler? SettingsUpdated;
 
 	public static Settings GetSettings()
 	{
@@ -30,8 +30,8 @@ internal class ZoomToCoordinatesModule : Module
 		Current.SettingsUpdated?.Invoke(Current, EventArgs.Empty);
 	}
 
-	private static ZoomToCoordinatesModule _this;
-	private static Settings _settings;
+	private static ZoomToCoordinatesModule? _this;
+	private static Settings? _settings;
 
 	#region Overrides
 	/// <summary>
