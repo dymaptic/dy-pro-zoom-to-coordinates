@@ -9,7 +9,7 @@
         xmlns:converters="clr-namespace:dymaptic.Pro.ZoomToCoordinates.Converters" 
         d:DataContext="{d:DesignInstance Type=viewmodels:GetCoordinatesViewModel}"
         mc:Ignorable="d"
-        Title="Get Coordinates" Height="200" Width="300"
+        Title="Get Coordinates" Height="210" Width="300"
         WindowStartupLocation="CenterOwner">
     <controls:ProWindow.Resources>
         <ResourceDictionary>
@@ -51,16 +51,19 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Label Grid.Column="0" Margin="5" Content="Format?" />
-            <CheckBox Grid.Column="1" Margin="5,10,10,5"
-                      IsChecked="{Binding ShowFormattedCoordinates, Mode=TwoWay}"
-                      IsEnabled="{Binding EnableFormatting}"/>
-            <Label Grid.Column="2" Margin="5" Content="Create Graphic?" />
-            <CheckBox Grid.Column="3" Margin="5,10,10,5" IsChecked="{Binding ShowGraphic}"/>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="5">
+                <Label Content="Format?" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <CheckBox IsChecked="{Binding ShowFormattedCoordinates}" VerticalAlignment="Center"
+                          IsEnabled="{Binding EnableFormatting}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="5">
+                <Label Content="Create Graphic?" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <CheckBox IsChecked="{Binding ShowGraphic}" VerticalAlignment="Center"/>
+            </StackPanel>
+
         </Grid>
 
         <!-- Display -->

@@ -9,7 +9,7 @@
         xmlns:viewmodels="clr-namespace:dymaptic.Pro.ZoomToCoordinates.ViewModels" 
         d:DataContext="{d:DesignInstance Type=viewmodels:ZoomCoordinatesViewModel}"
         mc:Ignorable="d"
-        Title="Zoom To Coordinates" Height="325" Width="300"
+        Title="Zoom To Coordinates" Height="430" Width="300"
         WindowStartupLocation="CenterOwner">
     <controls:ProWindow.Resources>
         <ResourceDictionary>
@@ -33,7 +33,6 @@
     </controls:ProWindow.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
@@ -96,7 +95,7 @@
                 </Grid.RowDefinitions>
 
                 <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="100 KM Grid ID" />
-                <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,5,5" 
+                <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5" 
                           ItemsSource="{Binding MgrsGridIds}" 
                           SelectedItem="{Binding OneHundredKMGridID}" />
             </Grid>
@@ -112,11 +111,24 @@
                  Text="{Binding YCoordinateString}"
                  ToolTip="{Binding YCoordinateToolTip}"/>
 
-        <!-- Format Control -->
-        <Label Grid.Row="5" Grid.Column="0" Margin="5" Content="Formatted?"/>
-        <CheckBox Grid.Row="5" Grid.Column="1" Margin="5,10,10,5"
-          IsChecked="{Binding ShowFormattedCoordinates, Mode=TwoWay}"/>
-        
+        <!-- Format and Create Graphic Control -->
+        <Grid Grid.Row="5" Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="5">
+                <Label Content="Format?" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <CheckBox IsChecked="{Binding ShowFormattedCoordinates}" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="5">
+                <Label Content="Create Graphic?" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <CheckBox IsChecked="{Binding ShowGraphic}" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
         <!-- Display -->
         <Button Grid.Row="6" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}" Style="{DynamicResource Esri_Button}"/>
         <TextBox Grid.Row="6" Grid.Column="1" Margin="5,5,10,5" Text="{Binding Display, Mode=OneWay}" IsReadOnly="True"/>
@@ -131,12 +143,8 @@
             <RadioButton Content="1,000 - Street" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=1000}" Margin="0,0,0,5"/>
         </StackPanel>
 
-        <!-- Checkbox -->
-        <Label Grid.Row="8" Grid.Column="0" Content="Create Graphic?" Margin="5,0,0,0"/>
-        <CheckBox Grid.Row="8" Grid.Column="1" Margin="5,5,0,0" IsChecked="{Binding ShowGraphic}"/>
-
         <!-- Buttons -->
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2">
             <Button Style="{DynamicResource Esri_Button}" Margin="5" Width="85" Content="Zoom" ToolTip="Zoom" Command="{Binding ZoomCommand}"/>
             <Button Style="{DynamicResource Esri_Button}" Margin="5" Width="85" Content="Close" ToolTip="Close" Click="CloseButton_Click"/>
         </StackPanel>
