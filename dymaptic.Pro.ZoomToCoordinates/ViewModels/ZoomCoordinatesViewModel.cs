@@ -26,6 +26,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     private bool _showMgrsControl;
     private double _scale = _settings.Scale;
     private bool _isUpdatingGridIds = false;
+    private bool _enableLatitudeBands = false;
 
     /// <summary>
     ///     Regardless of selected coordinate format, we ALWAYS store a longitude value in decimal degrees.
@@ -100,6 +101,12 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             new LatitudeBand { Key = "X", Value = "72° to 84°" } // X spans 12 degrees instead of 8 degrees like the rest.
         ];
 
+    public bool EnableLatitudeBands
+    {
+        get => _enableLatitudeBands;
+        set => SetProperty(ref _enableLatitudeBands, value);
+    }
+
     /// <summary>
     ///     The MapPoint of the current coordinates. 
     ///     In the ViewModel, it's populated by the individual Coordinate Format classes, so we know it will never be null.
@@ -157,6 +164,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 
             // MGRS builds upon UTM by also including 100 km grid zone designations
             ShowMgrsControl = SelectedFormat == CoordinateFormat.MGRS;
+            EnableLatitudeBands = SelectedFormat == CoordinateFormat.MGRS;
 
             // Automatic formatting conversions!
             switch (SelectedFormat)
