@@ -15,9 +15,25 @@ public abstract class GridBaseItem(int zone, string latitudeBand, int easting, i
     public MapPoint MapPoint { get; protected set;} = MapPointBuilderEx.CreateMapPoint(0, 0, SpatialReferences.WGS84);
 
     /// <summary>
+    ///     The UTM zone.
+    /// </summary>
+    public virtual int Zone
+    {
+        get => _zone;
+        set
+        {
+            if (_zone != value)
+            {
+                _zone = value;
+                UpdateGeoCoordinateString();
+            }
+        }
+    }
+
+    /// <summary>
     ///     UTM and MGRS stores latitude band, one of "CDEFGHJKLMNPQRSTUVWXX" Excludes 'I' and 'O' (1 character total) 
     /// </summary>
-    public string LatitudeBand 
+    public virtual string LatitudeBand
     {
         get => _latitudeBand;
         set
@@ -29,7 +45,7 @@ public abstract class GridBaseItem(int zone, string latitudeBand, int easting, i
             }
         }
     }
-    
+
     /// <summary>
     ///     The Easting (X-coordinate value) which is a positive number with a maximum of 6 digits when UTM (5 max for MGRS).
     /// </summary>

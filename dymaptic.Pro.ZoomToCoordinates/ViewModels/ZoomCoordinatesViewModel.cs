@@ -444,67 +444,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 	}
 
     /// <summary>
-    ///     Gets the 100 KM MGRS Grid ID possibilities given a UTM Zone and latitude band.
-    /// </summary>
-    /// <param name="utmZone">The UTM Zone value of 1-60.</param>
-    /// <param name="latitudeBand">The Latitude Band letter, C-X excluding I and O.</param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    private static ObservableCollection<string> GetMgrsGridIds(int utmZone, string latitudeBand)
-    {
-        // MGRS column possibilities depend on the UTM Zone
-        string[] columnSets = ["ABCDEFGH", "JKLMNPQR", "STUVWXYZ"];
-        int setIndex = (utmZone - 1) % 3;
-        string columnSet = columnSets[setIndex];
-
-        // MGRS row possibilities based on Latitude Band
-        Dictionary<string, List<string>> rows = new()
-        {
-            // Southern Hemisphere
-            { "C", new List<string> { "F", "E", "D", "C", "B", "A", "V", "U", "T", "S" } },
-            { "D", new List<string> { "Q", "P", "N", "M", "L", "K", "J", "H", "G", "F" } },
-            { "E", new List<string> { "C", "B", "A", "V", "U", "T", "S", "R", "Q", "P", "Q" } },
-            { "F", new List<string> { "M", "L", "K", "J", "H", "G", "F", "E", "D", "C" } },
-            { "G", new List<string> { "A", "V", "U", "T", "S", "R", "Q", "P", "N", "M" } },
-            { "H", new List<string> { "K", "J", "H", "G", "F", "E", "D", "C", "B", "A" } },
-            { "J", new List<string> { "U", "T", "S", "R", "Q", "P", "N", "M", "L", "K" } },
-            { "K", new List<string> { "H", "G", "F", "E", "D", "C", "B", "A", "V", "U" } },
-            { "L", new List<string> { "S", "R", "Q", "P", "N", "M", "L", "K", "J", "H" } },
-            { "M", new List<string> { "E", "D", "C", "B", "A", "V", "U", "T", "S" } },
-
-            // Northern Hemisphere
-            { "N", new List<string> { "F", "G", "H", "J", "K", "L", "M", "N", "P" } },
-            { "P", new List<string> { "P", "Q", "R", "S", "T", "U", "V", "A", "B", "C" } },
-            { "Q", new List<string> { "C", "D", "E", "F", "G", "H", "J", "K", "L", "M" } },
-            { "R", new List<string> { "M", "N", "P", "Q", "R", "S", "T", "U", "V", "A" } },
-            { "S", new List<string> { "A", "B", "C", "D", "E", "F", "G", "H", "J", "K" } },
-            { "T", new List<string> { "K", "L", "M", "N", "P", "Q", "R", "S", "T", "U" } },
-            { "U", new List<string> { "U", "V", "A", "B", "C", "D", "E", "F", "G", "H" } },
-            { "V", new List<string> { "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S" } },
-            { "W", new List<string> { "S", "T", "U", "V", "A", "B", "C", "D", "E" } },
-            { "X", new List<string> { "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "U" } }
-        };
-
-        // Note: exception shouldn't ever be thrown b/c we constrain the Latitude Band possibilities that the user can select.
-        if (!rows.TryGetValue(latitudeBand, out List<string> rowSet))
-        {
-            throw new ArgumentException($"Invalid latitude band: {latitudeBand}");
-        }
-
-        ObservableCollection<string> mgrsGridIds = [];
-
-        foreach (char col in columnSet)
-        {
-            foreach (string row in rowSet)
-            {
-                mgrsGridIds.Add($"{col}{row}");
-            }
-        }
-
-        return mgrsGridIds;
-    }
-
-    /// <summary>
     ///     Updates the MapPoint in the ZoomCoordinatesViewModel from the MapPoint from the various coordinate classes (LongLatItem, MGRS or UTM).
     /// </summary>
     /// <returns></returns>
@@ -587,7 +526,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     {
         if (_mgrsGridIds.Count == 0)
         {
-            foreach (var id in GetMgrsGridIds(_selectedUTMZone, _selectedLatitudeBand))
+            foreach (var id in MgrsItem.GetMgrsGridIdsObservable(_selectedUTMZone, _selectedLatitudeBand))
             {
                 _mgrsGridIds.Add(id);
             }
@@ -597,7 +536,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             // flag to prevent OneHundredKMGridID setter logic (it's the selected MgrsGridId in that observable collection).
             _isUpdatingGridIds = true;
             _mgrsGridIds.Clear();
-            foreach (var id in GetMgrsGridIds(_selectedUTMZone, _selectedLatitudeBand))
+            foreach (var id in MgrsItem.GetMgrsGridIdsObservable(_selectedUTMZone, _selectedLatitudeBand))
             {
                 _mgrsGridIds.Add(id);
             }

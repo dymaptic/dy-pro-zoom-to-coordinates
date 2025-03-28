@@ -17,22 +17,6 @@ public class UtmItem : GridBaseItem
     }
 
     /// <summary>
-    ///     The UTM zone.
-    /// </summary>
-    public int Zone
-    {
-        get => _zone;
-        set
-        {
-            if (_zone != value)
-            {
-                _zone = value;
-                UpdateGeoCoordinateString();
-            }
-        }
-    }
-
-    /// <summary>
     ///     A friendly view of the UtmItem that includes spaces.
     /// </summary>
     public string Display => $"{Zone}{LatitudeBand} {Easting:D6} {Northing:D7}";

@@ -88,16 +88,16 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
             case CoordinateFormat.DecimalDegrees:
             case CoordinateFormat.DegreesMinutesSeconds:
             case CoordinateFormat.DegreesDecimalMinutes:
-                _longLatItem.Update(MapPoint!);
+                _longLatItem.Update(_mapPoint);
                 break;
 
 
             case CoordinateFormat.MGRS:
-                _mgrs.Update(MapPoint!);
+                _mgrs.Update(_mapPoint);
                 break;
 
             case CoordinateFormat.UTM:
-                _utm.Update(MapPoint!);
+                _utm.Update(_mapPoint);
                 break;
         }
         UpdateDisplay();

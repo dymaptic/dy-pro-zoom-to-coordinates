@@ -76,9 +76,11 @@
                 </ComboBox>
 
                 <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="Latitude Band:" />
-                <TextBlock Grid.Row="1" Grid.Column="1" Margin="5,5,15,5"
-                        Text="{Binding SelectedLatitudeBandItem.DisplayText}"
-                        ToolTip="Latitude band automatically updates as the Northing changes."/>
+                <ComboBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5"
+                          ItemsSource="{Binding LatitudeBands}"
+                       SelectedItem="{Binding SelectedLatitudeBandItem}"
+                          DisplayMemberPath="DisplayText"
+                       ToolTip="Latitude band automatically updates as the Northing changes."/>
             </Grid>
         </StackPanel>
 
