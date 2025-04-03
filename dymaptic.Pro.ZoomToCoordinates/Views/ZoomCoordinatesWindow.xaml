@@ -9,7 +9,7 @@
         xmlns:viewmodels="clr-namespace:dymaptic.Pro.ZoomToCoordinates.ViewModels" 
         d:DataContext="{d:DesignInstance Type=viewmodels:ZoomCoordinatesViewModel}"
         mc:Ignorable="d"
-        Title="Zoom To Coordinates" Height="430" Width="300"
+        Title="Zoom To Coordinates" Height="430" Width="325"
         WindowStartupLocation="CenterOwner">
     <controls:ProWindow.Resources>
         <ResourceDictionary>
@@ -68,12 +68,31 @@
                     <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
 
-                <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="Zone:" />
-                <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5"
-                          ItemsSource="{Binding UTMZones}"
-                          SelectedItem="{Binding SelectedUTMZone}"
-                          ToolTip="Select a UTM Zone, and note that UTM Zone will also automatically update as the Easting changes.">
-                </ComboBox>
+                <Grid Grid.Row="0" Grid.ColumnSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="50"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="Zone:" />
+                    <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5"
+                              ItemsSource="{Binding UTMZones}"
+                              SelectedItem="{Binding SelectedUTMZone}"
+                              ToolTip="Select a UTM Zone, and note that UTM Zone will also automatically update as the Easting changes.">
+                    </ComboBox>
+
+                    <Label Grid.Row="0" Grid.Column="2" Margin="5" Content="Hemisphere:" />
+                    <ComboBox Grid.Row="0" Grid.Column="3" Margin="5,5,10,5"
+                              ItemsSource="{Binding Hemispheres}"
+                              SelectedItem="{Binding SelectedHemisphere}"
+                              ToolTip="Selecting a hemisphere will automatically update the latitude band.">
+                    </ComboBox>
+                </Grid>
 
                 <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="Latitude Band:" />
                 <ComboBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5"
@@ -99,20 +118,47 @@
 
                 <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="100 KM Grid ID" />
                 <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5" 
-                          ItemsSource="{Binding MgrsGridIds}" 
+                          ItemsSource="{Binding MgrsGridIds}"
                           SelectedItem="{Binding OneHundredKMGridID}" />
             </Grid>
         </StackPanel>
 
         <!-- Coordinate text boxes -->
         <Label Grid.Row="3" Grid.Column="0" Margin="5" Content="{Binding XCoordinateLabel}" />
-        <TextBox Grid.Row="3" Grid.Column="1" Margin="5,5,10,5" 
-                 Text="{Binding XCoordinateString}"
-                 ToolTip="{Binding XCoordinateToolTip}"/>
+        <TextBox Grid.Row="3" Grid.Column="1" Margin="5,5,10,5"
+                 Text="{Binding XCoordinateString, 
+                                UpdateSourceTrigger=PropertyChanged, 
+                                ValidatesOnDataErrors=True, 
+                                NotifyOnValidationError=True}">
+            <TextBox.Style>
+                <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                    <Style.Triggers>
+                        <Trigger Property="Validation.HasError" Value="True">
+                            <Setter Property="ToolTip"
+                            Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBox.Style>
+        </TextBox>
+
         <Label Grid.Row="4" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
-        <TextBox Grid.Row="4" Grid.Column="1" Margin="5,5,10,5" 
-                 Text="{Binding YCoordinateString}"
-                 ToolTip="{Binding YCoordinateToolTip}"/>
+        <TextBox Grid.Row="4" Grid.Column="1" Margin="5,5,10,5"
+                 Text="{Binding YCoordinateString, 
+                                UpdateSourceTrigger=PropertyChanged, 
+                                ValidatesOnDataErrors=True, 
+                                NotifyOnValidationError=True}">
+            <TextBox.Style>
+                <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                    <Style.Triggers>
+                        <Trigger Property="Validation.HasError" Value="True">
+                            <Setter Property="ToolTip"
+                            Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBox.Style>
+        </TextBox>
 
         <!-- Format and Create Graphic Control -->
         <Grid Grid.Row="5" Grid.ColumnSpan="2">

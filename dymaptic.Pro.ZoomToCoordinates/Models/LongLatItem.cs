@@ -184,10 +184,9 @@ public class LongLatItem
     /// </summary>
     /// <param name="value">The latitude or longitude value as a string which may have degree symbols, minute and seconds symbols as well as notation for hemisphere.</param>
     /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
-    /// <param name="isNegative">A reference parameter that is set to <c>true</c> if the coordinate is in the western or southern hemisphere; 
     /// otherwise, remains <c>false</c>.</param>
     /// <returns></returns>
-    public static string CleanLatLongCoordinateString(string value, CoordinateAxis axis, ref bool isNegative)
+    public static string CleanLatLongCoordinateString(string value, CoordinateAxis axis)
     {
         string cleanedValue = value;
 
@@ -197,7 +196,6 @@ public class LongLatItem
             if (cleanedValue.Contains('W'))
             {
                 cleanedValue = cleanedValue.Replace("W", "");
-                isNegative = true;
             }
             cleanedValue = cleanedValue.Replace("E", "");
         }
@@ -206,7 +204,6 @@ public class LongLatItem
             if (cleanedValue.Contains('S'))
             {
                 cleanedValue = cleanedValue.Replace("S", "");
-                isNegative = true;
             }
             cleanedValue = cleanedValue.Replace("N", "");
         }

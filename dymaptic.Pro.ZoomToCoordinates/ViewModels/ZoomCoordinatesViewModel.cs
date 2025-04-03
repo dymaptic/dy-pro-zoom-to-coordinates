@@ -4,21 +4,24 @@ using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using dymaptic.Pro.ZoomToCoordinates.Models;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
-public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
+public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
 {
     private static readonly char[] separator = [' '];
     private bool _xCoordinateValidated = true;  // when tool loads, valid coordinates are put into the text boxes
     private bool _yCoordinateValidated = true;
+    private string _xErrorMessage = "";
+    private string _yErrorMessage = "";
     private string _errorMessage = "";
     private int _selectedUTMZone;
+    private string _selectedHemisphere = "Northern";
     private LatitudeBand _selectedLatitudeBandItem;
     private string _selectedLatitudeBand = "";
     private string _oneHundredKMGridID = "";
@@ -74,31 +77,33 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     /// </summary>
     public ObservableCollection<int> UTMZones { get; } = [.. Enumerable.Range(1, 60)];
 
+    public ObservableCollection<string> Hemispheres { get; } = ["Northern", "Southern"];
+
     /// <summary>
     ///     A collection of all the latitude bands which span 8° latitude except for X, which spans 12° (UTM/MGRS omit the letters O and I).
     /// </summary>
     public ObservableCollection<LatitudeBand> LatitudeBands { get; } =
         [
-            new LatitudeBand { Key = "C", Value = "-80° to -72°" },
-            new LatitudeBand { Key = "D", Value = "-72° to -64°" },
-            new LatitudeBand { Key = "E", Value = "-64° to -56°" },
-            new LatitudeBand { Key = "F", Value = "-56° to -48°" },
-            new LatitudeBand { Key = "G", Value = "-48° to -40°" },
-            new LatitudeBand { Key = "H", Value = "-40° to -32°" },
-            new LatitudeBand { Key = "J", Value = "-32° to -24°" },
-            new LatitudeBand { Key = "K", Value = "-24° to -16°" },
-            new LatitudeBand { Key = "L", Value = "-16° to -8°" },
-            new LatitudeBand { Key = "M", Value = "-8° to 0°" },
-            new LatitudeBand { Key = "N", Value = "0° to 8°" },
-            new LatitudeBand { Key = "P", Value = "8° to 16°" },
-            new LatitudeBand { Key = "Q", Value = "16° to 24°" },
-            new LatitudeBand { Key = "R", Value = "24° to 32°" },
-            new LatitudeBand { Key = "S", Value = "32° to 40°" },
-            new LatitudeBand { Key = "T", Value = "40° to 48°" },
-            new LatitudeBand { Key = "U", Value = "48° to 56°" },
-            new LatitudeBand { Key = "V", Value = "56° to 64°" },
-            new LatitudeBand { Key = "W", Value = "64° to 72°" },
-            new LatitudeBand { Key = "X", Value = "72° to 84°" } // X spans 12 degrees instead of 8 degrees like the rest.
+            new LatitudeBand { Key = "C", Value = "-80° to -72°", OppositeHemisphereKey = "X" },
+            new LatitudeBand { Key = "D", Value = "-72° to -64°", OppositeHemisphereKey = "W" },
+            new LatitudeBand { Key = "E", Value = "-64° to -56°", OppositeHemisphereKey = "V" },
+            new LatitudeBand { Key = "F", Value = "-56° to -48°", OppositeHemisphereKey = "U" },
+            new LatitudeBand { Key = "G", Value = "-48° to -40°", OppositeHemisphereKey = "T" },
+            new LatitudeBand { Key = "H", Value = "-40° to -32°", OppositeHemisphereKey = "S" },
+            new LatitudeBand { Key = "J", Value = "-32° to -24°", OppositeHemisphereKey = "R" },
+            new LatitudeBand { Key = "K", Value = "-24° to -16°", OppositeHemisphereKey = "Q" },
+            new LatitudeBand { Key = "L", Value = "-16° to -8°", OppositeHemisphereKey = "P" },
+            new LatitudeBand { Key = "M", Value = "-8° to 0°", OppositeHemisphereKey = "N" },
+            new LatitudeBand { Key = "N", Value = "0° to 8°", OppositeHemisphereKey = "M" },
+            new LatitudeBand { Key = "P", Value = "8° to 16°", OppositeHemisphereKey = "L" },
+            new LatitudeBand { Key = "Q", Value = "16° to 24°", OppositeHemisphereKey = "K" },
+            new LatitudeBand { Key = "R", Value = "24° to 32°", OppositeHemisphereKey = "J" },
+            new LatitudeBand { Key = "S", Value = "32° to 40°", OppositeHemisphereKey = "H" },
+            new LatitudeBand { Key = "T", Value = "40° to 48°", OppositeHemisphereKey = "G" },
+            new LatitudeBand { Key = "U", Value = "48° to 56°", OppositeHemisphereKey = "F" },
+            new LatitudeBand { Key = "V", Value = "56° to 64°", OppositeHemisphereKey = "E" },
+            new LatitudeBand { Key = "W", Value = "64° to 72°", OppositeHemisphereKey = "D" },
+            new LatitudeBand { Key = "X", Value = "72° to 84°", OppositeHemisphereKey = "C" } // X spans 12 degrees instead of 8 degrees like the rest.
         ];
 
     public bool EnableLatitudeBands
@@ -214,7 +219,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         set
         {
             if (_selectedUTMZone == value) return;
-            
+
             SetProperty(ref _selectedUTMZone, value);
             if (_xCoordinateValidated && _yCoordinateValidated)
             {
@@ -241,7 +246,25 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 
                 UpdateMapPoint();
                 UpdateDisplay();
-            }   
+            }
+        }
+    }
+
+    /// <summary>
+    ///     The Selected Hemisphere updates the Latitude band.
+    /// </summary>
+    public string SelectedHemisphere
+    {
+        get => _selectedHemisphere;
+        set
+        {
+            if (_selectedHemisphere == value) return;
+
+            SetProperty(ref _selectedHemisphere, value);
+
+            // Get the current Latitude Band's "OppositeHemisphereKey" and then update to it.
+            string newKey = _selectedLatitudeBandItem.OppositeHemisphereKey;
+            SelectedLatitudeBandItem = LatitudeBands.FirstOrDefault(b => b.Key == newKey)!;
         }
     }
 
@@ -323,10 +346,11 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
         {
             if (_xCoordinateString == value) return;
 
-            _xCoordinateValidated = ValidateCoordinate(value, CoordinateAxis.X);
+            SetProperty(ref _xCoordinateString, value);
+            _xCoordinateValidated = ValidateCoordinate(_xCoordinateString, CoordinateAxis.X);
             if (_xCoordinateValidated)
             {
-                SetProperty(ref _xCoordinateString, value);
+                XErrorMessage = "";
                 if (_yCoordinateValidated)
                 {
                     switch (SelectedFormat)
@@ -350,27 +374,38 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
 
                     UpdateMapPoint();
                     UpdateDisplay();
-                }
+                } 
+            }
+            else
+            {
+                XErrorMessage = CreateErrorMessage(CoordinateAxis.X);
             }
         }
+    }
+
+    public string XErrorMessage
+    {
+        get => _xErrorMessage;
+        set => SetProperty(ref _xErrorMessage, value);
     }
 
     /// <summary>
     ///     The Latitude value for DD/DDM/DMS or Northing value for UTM/MGRS.
     /// </summary>
     public override string YCoordinateString
-	{
-		get => _yCoordinateString;
-		set
-		{
+    {
+        get => _yCoordinateString;
+        set
+        {
             if (_yCoordinateString == value) return;
 
+            SetProperty(ref _yCoordinateString, value);
             _yCoordinateValidated = ValidateCoordinate(value, CoordinateAxis.Y);
-			if (_yCoordinateValidated)
-			{
-                SetProperty(ref _yCoordinateString, value);
-				if (_xCoordinateValidated)
-				{
+            if (_yCoordinateValidated)
+            {
+                YErrorMessage = "";
+                if (_xCoordinateValidated)
+                {
                     switch (SelectedFormat)
                     {
                         case CoordinateFormat.DecimalDegrees:
@@ -384,7 +419,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                             break;
 
                         case CoordinateFormat.UTM:
-                            _utm.Northing= int.Parse(_yCoordinateString);
+                            _utm.Northing = int.Parse(_yCoordinateString);
                             break;
                         default:
                             break;
@@ -394,22 +429,32 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
                     UpdateDisplay();
                 }
             }
-		}
-	}
+            else
+            {
+                YErrorMessage = CreateErrorMessage(CoordinateAxis.Y);
+            }
+        }
+    }
+
+    public string YErrorMessage
+    {
+        get => _yErrorMessage;
+        set => SetProperty(ref _yErrorMessage, value);
+    }
 
     public string XCoordinateToolTip =>
         SelectedFormat switch
         {
-            CoordinateFormat.MGRS or CoordinateFormat.UTM => 
+            CoordinateFormat.MGRS or CoordinateFormat.UTM =>
                 "Easting coordinate in meters. Automatically adjusts and may change UTM zones when crossing zone boundaries.",
 
-            CoordinateFormat.DecimalDegrees => 
+            CoordinateFormat.DecimalDegrees =>
                 "Longitude coordinate in decimal degrees (e.g., -120.5 or 120.5 W)",
 
-            CoordinateFormat.DegreesMinutesSeconds => 
+            CoordinateFormat.DegreesMinutesSeconds =>
                 "Longitude coordinate in degrees minutes seconds (e.g., -120° 30' 15\" W)",
 
-            CoordinateFormat.DegreesDecimalMinutes => 
+            CoordinateFormat.DegreesDecimalMinutes =>
                 "Longitude coordinate in degrees decimal minutes (e.g., -120° 30.5' W)",
 
             _ => "X coordinate value."  // Default case to ensure a return value
@@ -446,10 +491,116 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     ///     The scale controls how far in the zoom occurs.
     /// </summary>
 	public double Scale
-	{
-		get => _scale;
-		set => SetProperty(ref _scale, value);
-	}
+    {
+        get => _scale;
+        set => SetProperty(ref _scale, value);
+    }
+
+    /// <summary>
+    ///     (IDataErrorInfo interface)
+    /// </summary>
+    public string Error => null;  // not used
+
+    /// <summary>
+    ///     (IDataErrorInfo interface)
+    /// </summary>
+    /// <param name="columnName"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public string? this[string columnName]
+    {
+        get
+        {
+            if (columnName == nameof(XCoordinateString))
+            {
+                return string.IsNullOrEmpty(XErrorMessage) ? null : XErrorMessage;
+            }
+            else if (columnName == nameof(YCoordinateString))
+            {
+                return string.IsNullOrEmpty(YErrorMessage) ? null : YErrorMessage;
+            }
+            return null;
+        }
+    }
+
+    private string CreateErrorMessage(CoordinateAxis axis)
+    {
+        string errorMessage = "";
+
+        switch (SelectedFormat)
+        {
+            case CoordinateFormat.DecimalDegrees:
+                if (axis == CoordinateAxis.X)
+                {
+                    errorMessage = ShowFormattedCoordinates
+                        ? "Invalid longitude value. Valid example: -107.23433° or -107.23433"
+                        : "Invalid longitude value. Valid example: -107.23433";
+                }
+                else
+                {
+                    errorMessage = ShowFormattedCoordinates
+                        ? "Invalid latitude value. Valid example: 43.23433° or 43.23433"
+                        : "Invalid latitude value. Valid example: 43.23433";
+                }
+                break;
+
+            case CoordinateFormat.DegreesMinutesSeconds:
+                if (axis == CoordinateAxis.X)
+                {
+                    errorMessage = ShowFormattedCoordinates
+                        ? "Invalid longitude (DMS) value. Valid example: 107° 14' 3\"W or 107 14 3"
+                        : "Invalid longitude (DMS) value. Valid example: 107 14 3";
+                }
+                else
+                {
+                    errorMessage = ShowFormattedCoordinates
+                        ? "Invalid latitude (DMS) value. Valid example: 43° 12' 5\"N or 43 12 5"
+                        : "Invalid latitude (DMS) value. Valid example: 43 12 5";
+                }
+                break;
+
+            case CoordinateFormat.DegreesDecimalMinutes:
+                if (axis == CoordinateAxis.X)
+                {
+                    errorMessage = ShowFormattedCoordinates
+                        ? "Invalid longitude (DDM) value. Valid example: 107° 14.050'W or 107 14.050"
+                        : "Invalid longitude (DDM) value. Valid example: 107 14.050";
+                }
+                else
+                {
+                    errorMessage = ShowFormattedCoordinates
+                        ? "Invalid latitude (DDM) value. Valid example: 43° 12.567'N or 43 12.567"
+                        : "Invalid latitude (DDM) value. Valid example: 43 12.567";
+                }
+                break;
+
+            case CoordinateFormat.MGRS:
+                if (axis == CoordinateAxis.X)
+                {
+                    errorMessage = "Invalid MGRS Easting. Valid example: 44825";
+                }
+                else
+                {
+                    errorMessage = "Invalid MGRS Northing. Valid example: 44825";
+                }
+                break;
+
+            case CoordinateFormat.UTM:
+                if (axis == CoordinateAxis.X)
+                {
+                    errorMessage = "Invalid UTM Easting. Valid example: 448251";
+                }
+                else
+                {
+                    errorMessage = "Invalid UTM Northing. Valid example: 5412345";
+                }
+                break;
+
+            default:
+                break;
+        }
+        return errorMessage;
+    }
 
     /// <summary>
     ///     Updates the MapPoint in the ZoomCoordinatesViewModel from the MapPoint from the various coordinate classes (LongLatItem, MGRS or UTM).
@@ -568,19 +719,18 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             return false;
 
         // Only DD/DDM/DDS allow non-numeric characters
-        bool isNegative = false;
-        string cleanedLatLongValue = LongLatItem.CleanLatLongCoordinateString(coordinateValue, axis, ref isNegative);
+        string cleanedLatLongValue = LongLatItem.CleanLatLongCoordinateString(coordinateValue, axis);
 
         switch (SelectedFormat)
         {
             case CoordinateFormat.DecimalDegrees:
-                return ValidateDecimalDegrees(cleanedLatLongValue, axis, isNegative);
+                return ValidateDecimalDegrees(cleanedLatLongValue, axis);
 
             case CoordinateFormat.DegreesDecimalMinutes:
-                return ValidateDegreesDecimalMinutes(cleanedLatLongValue, axis, isNegative);
+                return ValidateDegreesDecimalMinutes(cleanedLatLongValue, axis);
 
             case CoordinateFormat.DegreesMinutesSeconds:
-                return ValidateDegreesMinutesSeconds(cleanedLatLongValue, axis, isNegative);
+                return ValidateDegreesMinutesSeconds(cleanedLatLongValue, axis);
 
             case CoordinateFormat.MGRS:
                 if (double.TryParse(coordinateValue, out double x))
@@ -613,15 +763,11 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     /// </summary>
     /// <param name="value">The latitude or longitude value as a string.</param>
     /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
-    /// <param name="isNegative">If <c>true</c>, the value is converted to a negative number.</param>
     /// <returns></returns>
-    private bool ValidateDecimalDegrees(string value, CoordinateAxis axis, bool isNegative)
+    private bool ValidateDecimalDegrees(string value, CoordinateAxis axis)
     {
         if (!double.TryParse(value, out double degrees))
             return false;
-
-        if (isNegative)
-            degrees *= -1;
 
         if (!LongLatItem.IsValidDecimalDegree(degrees, axis))
             return false;
@@ -639,9 +785,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     /// </summary>
     /// <param name="value">The latitude or longitude value as a string.</param>
     /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
-    /// <param name="isNegative">If <c>true</c>, the value is converted to a negative number.</param>
     /// <returns></returns>
-    private bool ValidateDegreesDecimalMinutes(string value, CoordinateAxis axis, bool isNegative)
+    private bool ValidateDegreesDecimalMinutes(string value, CoordinateAxis axis)
     {
         string[] parts = value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length != 2)
@@ -655,8 +800,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             return false;
 
         double decimalDegrees = degrees + (decimalMinutes / 60);
-        if (isNegative)
-            decimalDegrees *= -1;
 
         if (!LongLatItem.IsValidDecimalDegree(decimalDegrees, axis))
             return false;
@@ -674,8 +817,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
     /// </summary>
     /// <param name="value">The latitude or longitude value as a string.</param>
     /// <param name="axis">"X" or "Y" for Longitude and Latitude respectively.</param>
-    /// <param name="isNegative">If <c>true</c>, the value is converted to a negative number.</param>
-    private bool ValidateDegreesMinutesSeconds(string value, CoordinateAxis axis, bool isNegative)
+    private bool ValidateDegreesMinutesSeconds(string value, CoordinateAxis axis)
     {
         string[] parts = value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length != 3)
@@ -690,9 +832,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel
             return false;
 
         double decimalDegrees = degrees + (minutes / 60) + (seconds / 3600);
-        if (isNegative)
-            decimalDegrees *= -1;
-
         if (!LongLatItem.IsValidDecimalDegree(decimalDegrees, axis))
             return false;
 
