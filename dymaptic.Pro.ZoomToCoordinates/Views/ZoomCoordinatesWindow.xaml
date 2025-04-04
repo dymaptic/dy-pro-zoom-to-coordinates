@@ -86,12 +86,12 @@
                               ToolTip="Select a UTM Zone, and note that UTM Zone will also automatically update as the Easting changes.">
                     </ComboBox>
 
-                    <Label Grid.Row="0" Grid.Column="2" Margin="5" Content="Hemisphere:" />
+                    <!--<Label Grid.Row="0" Grid.Column="2" Margin="5" Content="Hemisphere:" />
                     <ComboBox Grid.Row="0" Grid.Column="3" Margin="5,5,10,5"
                               ItemsSource="{Binding Hemispheres}"
                               SelectedItem="{Binding SelectedHemisphere}"
                               ToolTip="Selecting a hemisphere will automatically update the latitude band.">
-                    </ComboBox>
+                    </ComboBox>-->
                 </Grid>
 
                 <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="Latitude Band:" />
@@ -124,9 +124,9 @@
         </StackPanel>
 
         <!-- Coordinate text boxes -->
-        <Label Grid.Row="3" Grid.Column="0" Margin="5" Content="{Binding XCoordinateLabel}" />
+        <Label Grid.Row="3" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
         <TextBox Grid.Row="3" Grid.Column="1" Margin="5,5,10,5"
-                 Text="{Binding XCoordinateString, 
+                 Text="{Binding YCoordinateString, 
                                 UpdateSourceTrigger=PropertyChanged, 
                                 ValidatesOnDataErrors=True, 
                                 NotifyOnValidationError=True}">
@@ -142,9 +142,9 @@
             </TextBox.Style>
         </TextBox>
 
-        <Label Grid.Row="4" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
+        <Label Grid.Row="4" Grid.Column="0" Margin="5" Content="{Binding XCoordinateLabel}" />
         <TextBox Grid.Row="4" Grid.Column="1" Margin="5,5,10,5"
-                 Text="{Binding YCoordinateString, 
+                 Text="{Binding XCoordinateString, 
                                 UpdateSourceTrigger=PropertyChanged, 
                                 ValidatesOnDataErrors=True, 
                                 NotifyOnValidationError=True}">

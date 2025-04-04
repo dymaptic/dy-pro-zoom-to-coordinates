@@ -15,5 +15,11 @@ public class LatitudeBand
     /// </summary>
     public string Value { get; set; } = "";
 
+    /// <summary>
+    ///     Latitude bands occur in the northern and southern hemisphere. If the latitude band is 32 to 40 degrees northern hemisphere,
+    ///     the OppositeHemisphereKey is the Key that corresponds to the -32 to -40 degrees latitude band in the southern hemisphere.
+    /// </summary>
+    public string OppositeHemisphereKey { get; set; } = "";
+
     public string DisplayText => $"{Key}: {Value}";  // Format for View
 }

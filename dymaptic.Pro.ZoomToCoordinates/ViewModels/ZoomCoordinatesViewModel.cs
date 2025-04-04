@@ -169,7 +169,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
 
             // MGRS builds upon UTM by also including 100 km grid zone designations
             ShowMgrsControl = SelectedFormat == CoordinateFormat.MGRS;
-            EnableLatitudeBands = SelectedFormat == CoordinateFormat.MGRS;
+            EnableLatitudeBands = SelectedFormat == CoordinateFormat.MGRS || SelectedFormat == CoordinateFormat.UTM;  // TODO - would be simpler to always have enabled and do away with hemispheres, if code gets dialed in handling it for UTM
 
             // Automatic formatting conversions!
             switch (SelectedFormat)
