@@ -100,15 +100,15 @@ public class LongLatItem
         string latMinutes = parts[1].TrimStart('0');
         string latSeconds = parts[2][..^1].TrimStart('0');
 
-        string lonDegrees = parts[3].TrimStart('0');
-        string lonMinutes = parts[4].TrimStart('0');
-        string lonSeconds = parts[5][..^1].TrimStart('0');
+        string longDegrees = parts[3].TrimStart('0');
+        string longMinutes = parts[4].TrimStart('0');
+        string longSeconds = parts[5][..^1].TrimStart('0');
 
         LatitudeDMS = $"{latDegrees} {latMinutes} {latSeconds} {latitudeLabel}";
-        LongitudeDMS = $"{lonDegrees} {lonMinutes} {lonSeconds} {longitudeLabel}";
+        LongitudeDMS = $"{longDegrees} {longMinutes} {longSeconds} {longitudeLabel}";
 
         LatitudeDMSFormatted = $"{latDegrees}° {latMinutes}' {latSeconds}'' {latitudeLabel}";
-        LongitudeDMSFormatted = $"{latDegrees}° {latMinutes}' {lonSeconds}'' {longitudeLabel}";
+        LongitudeDMSFormatted = $"{longDegrees}° {longMinutes}' {longSeconds}'' {longitudeLabel}";
     }
 
     /// <summary>
@@ -126,14 +126,14 @@ public class LongLatItem
         string latDegrees = parts[0].TrimStart('0');
         string latMinutes = parts[1][..^1].TrimStart('0');
 
-        string lonDegrees = parts[2].TrimStart('0');
-        string lonMinutes = parts[3][..^1].TrimStart('0');
+        string longDegrees = parts[2].TrimStart('0');
+        string longMinutes = parts[3][..^1].TrimStart('0');
 
         LatitudeDDM = $"{latDegrees} {latMinutes} {latitudeLabel}";
-        LongitudeDDM = $"{lonDegrees} {lonMinutes} {longitudeLabel}";
+        LongitudeDDM = $"{longDegrees} {longMinutes} {longitudeLabel}";
 
         LatitudeDDMFormatted = $"{latDegrees}° {latMinutes}' {latitudeLabel}";
-        LongitudeDDMFormatted = $"{lonDegrees}° {lonMinutes}' {longitudeLabel}";
+        LongitudeDDMFormatted = $"{longDegrees}° {longMinutes}' {longitudeLabel}";
     }
 
     /// <summary>
