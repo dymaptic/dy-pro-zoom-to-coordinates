@@ -9,7 +9,7 @@
         xmlns:viewmodels="clr-namespace:dymaptic.Pro.ZoomToCoordinates.ViewModels" 
         d:DataContext="{d:DesignInstance Type=viewmodels:ZoomCoordinatesViewModel}"
         mc:Ignorable="d"
-        Title="Zoom To Coordinates" Height="430" Width="325"
+        Title="Zoom To Coordinates" Height="400" Width="350"
         WindowStartupLocation="CenterOwner">
     <controls:ProWindow.Resources>
         <ResourceDictionary>
@@ -61,46 +61,27 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="75"/>
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
-                    <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0" Grid.ColumnSpan="2">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="50"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="auto"/>
-                    </Grid.RowDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="Zone:" />
+                <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5"
+                       ItemsSource="{Binding UTMZones}"
+                       SelectedItem="{Binding SelectedUTMZone}"
+                       ToolTip="Select a UTM Zone, and note that UTM Zone will also automatically update as the Easting changes.">
+                </ComboBox>
 
-                    <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="Zone:" />
-                    <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5"
-                              ItemsSource="{Binding UTMZones}"
-                              SelectedItem="{Binding SelectedUTMZone}"
-                              ToolTip="Select a UTM Zone, and note that UTM Zone will also automatically update as the Easting changes.">
-                    </ComboBox>
-
-                    <!--<Label Grid.Row="0" Grid.Column="2" Margin="5" Content="Hemisphere:" />
-                    <ComboBox Grid.Row="0" Grid.Column="3" Margin="5,5,10,5"
-                              ItemsSource="{Binding Hemispheres}"
-                              SelectedItem="{Binding SelectedHemisphere}"
-                              ToolTip="Selecting a hemisphere will automatically update the latitude band.">
-                    </ComboBox>-->
-                </Grid>
-
-                <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="Latitude Band:" />
-                <ComboBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5"
+                <Label Grid.Row="1" Grid.Column="2" Margin="5" Content="Latitude Band:" HorizontalAlignment="Right" />
+                <ComboBox Grid.Row="1" Grid.Column="3" Margin="5,5,10,5"
                           ItemsSource="{Binding LatitudeBands}"
                           SelectedItem="{Binding SelectedLatitudeBandItem}"
-                          IsEnabled="{Binding EnableLatitudeBands}"
                           DisplayMemberPath="DisplayText"
-                          ToolTip="Latitude band automatically updates as the Northing changes."/>
+                          ToolTip="Latitude band automatically updates the Northing value and vice versa."/>
             </Grid>
         </StackPanel>
 
@@ -124,8 +105,8 @@
         </StackPanel>
 
         <!-- Coordinate text boxes -->
-        <Label Grid.Row="3" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
-        <TextBox Grid.Row="3" Grid.Column="1" Margin="5,5,10,5"
+        <Label Grid.Row="{Binding YRowIndex}" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
+        <TextBox Grid.Row="{Binding YRowIndex}" Grid.Column="1" Margin="5,5,10,5"
                  Text="{Binding YCoordinateString, 
                                 UpdateSourceTrigger=PropertyChanged, 
                                 ValidatesOnDataErrors=True, 
@@ -142,8 +123,8 @@
             </TextBox.Style>
         </TextBox>
 
-        <Label Grid.Row="4" Grid.Column="0" Margin="5" Content="{Binding XCoordinateLabel}" />
-        <TextBox Grid.Row="4" Grid.Column="1" Margin="5,5,10,5"
+        <Label Grid.Row="{Binding XRowIndex}" Grid.Column="0" Margin="5" Content="{Binding XCoordinateLabel}" />
+        <TextBox Grid.Row="{Binding XRowIndex}" Grid.Column="1" Margin="5,5,10,5"
                  Text="{Binding XCoordinateString, 
                                 UpdateSourceTrigger=PropertyChanged, 
                                 ValidatesOnDataErrors=True, 

@@ -18,36 +18,11 @@ public abstract class GridBaseItem(int zone, string latitudeBand, int easting, i
     ///     The UTM zone.
     /// </summary>
     public abstract int Zone { get; set; }
-    //{
-    //    get => _zone;
-    //    set
-    //    {
-    //        if (_zone != value)
-    //        {
-    //            _zone = value;
-    //            UpdateGeoCoordinateString();
-    //        }
-    //    }
-    //}
 
     /// <summary>
-    ///     UTM and MGRS stores latitude band, one of "CDEFGHJKLMNPQRSTUVWXX" Excludes 'I' and 'O' (1 character total) 
+    ///     UTM and MGRS stores latitude band, one of "CDEFGHJKLMNPQRSTUVWX" Excludes 'I' and 'O' (1 character total) 
     /// </summary>
     public abstract string LatitudeBand { get; set; }
-    //{
-    //    get => _latitudeBand;
-    //    set
-    //    {
-    //        if (_latitudeBand != value)
-    //        {
-    //            int updatedNorthing = LatitudeBandHelper.AdjustNorthing(_northing, fromBand: _latitudeBand.ToCharArray()[0], toBand: value.ToCharArray()[0]);
-    //            _northing = updatedNorthing;
-
-    //            _latitudeBand = value;
-    //            UpdateGeoCoordinateString();
-    //        }
-    //    }
-    //}
 
     /// <summary>
     ///     The Easting (X-coordinate value) which is a positive number with a maximum of 6 digits when UTM (5 max for MGRS).

@@ -21,7 +21,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
     private string _yErrorMessage = "";
     private string _errorMessage = "";
     private int _selectedUTMZone;
-    private string _selectedHemisphere = "Northern";
     private LatitudeBand _selectedLatitudeBandItem;
     private string _selectedLatitudeBand = "";
     private string _oneHundredKMGridID = "";
@@ -29,7 +28,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
     private bool _showMgrsControl;
     private double _scale = _settings.Scale;
     private bool _isUpdatingGridIds = false;
-    private bool _enableLatitudeBands = false;
 
     /// <summary>
     ///     Regardless of selected coordinate format, we ALWAYS store a longitude value in decimal degrees.
@@ -84,33 +82,27 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
     /// </summary>
     public ObservableCollection<LatitudeBand> LatitudeBands { get; } =
         [
-            new LatitudeBand { Key = "C", Value = "-80° to -72°", OppositeHemisphereKey = "X" },
-            new LatitudeBand { Key = "D", Value = "-72° to -64°", OppositeHemisphereKey = "W" },
-            new LatitudeBand { Key = "E", Value = "-64° to -56°", OppositeHemisphereKey = "V" },
-            new LatitudeBand { Key = "F", Value = "-56° to -48°", OppositeHemisphereKey = "U" },
-            new LatitudeBand { Key = "G", Value = "-48° to -40°", OppositeHemisphereKey = "T" },
-            new LatitudeBand { Key = "H", Value = "-40° to -32°", OppositeHemisphereKey = "S" },
-            new LatitudeBand { Key = "J", Value = "-32° to -24°", OppositeHemisphereKey = "R" },
-            new LatitudeBand { Key = "K", Value = "-24° to -16°", OppositeHemisphereKey = "Q" },
-            new LatitudeBand { Key = "L", Value = "-16° to -8°", OppositeHemisphereKey = "P" },
-            new LatitudeBand { Key = "M", Value = "-8° to 0°", OppositeHemisphereKey = "N" },
-            new LatitudeBand { Key = "N", Value = "0° to 8°", OppositeHemisphereKey = "M" },
-            new LatitudeBand { Key = "P", Value = "8° to 16°", OppositeHemisphereKey = "L" },
-            new LatitudeBand { Key = "Q", Value = "16° to 24°", OppositeHemisphereKey = "K" },
-            new LatitudeBand { Key = "R", Value = "24° to 32°", OppositeHemisphereKey = "J" },
-            new LatitudeBand { Key = "S", Value = "32° to 40°", OppositeHemisphereKey = "H" },
-            new LatitudeBand { Key = "T", Value = "40° to 48°", OppositeHemisphereKey = "G" },
-            new LatitudeBand { Key = "U", Value = "48° to 56°", OppositeHemisphereKey = "F" },
-            new LatitudeBand { Key = "V", Value = "56° to 64°", OppositeHemisphereKey = "E" },
-            new LatitudeBand { Key = "W", Value = "64° to 72°", OppositeHemisphereKey = "D" },
-            new LatitudeBand { Key = "X", Value = "72° to 84°", OppositeHemisphereKey = "C" } // X spans 12 degrees instead of 8 degrees like the rest.
+            new LatitudeBand { Key = "C", Value = "-80° to -72°" },
+            new LatitudeBand { Key = "D", Value = "-72° to -64°" },
+            new LatitudeBand { Key = "E", Value = "-64° to -56°" },
+            new LatitudeBand { Key = "F", Value = "-56° to -48°" },
+            new LatitudeBand { Key = "G", Value = "-48° to -40°" },
+            new LatitudeBand { Key = "H", Value = "-40° to -32°" },
+            new LatitudeBand { Key = "J", Value = "-32° to -24°" },
+            new LatitudeBand { Key = "K", Value = "-24° to -16°" },
+            new LatitudeBand { Key = "L", Value = "-16° to -8°" },
+            new LatitudeBand { Key = "M", Value = "-8° to 0°" },
+            new LatitudeBand { Key = "N", Value = "0° to 8°" },
+            new LatitudeBand { Key = "P", Value = "8° to 16°" },
+            new LatitudeBand { Key = "Q", Value = "16° to 24°" },
+            new LatitudeBand { Key = "R", Value = "24° to 32°" },
+            new LatitudeBand { Key = "S", Value = "32° to 40°" },
+            new LatitudeBand { Key = "T", Value = "40° to 48°" },
+            new LatitudeBand { Key = "U", Value = "48° to 56°" },
+            new LatitudeBand { Key = "V", Value = "56° to 64°" },
+            new LatitudeBand { Key = "W", Value = "64° to 72°" },
+            new LatitudeBand { Key = "X", Value = "72° to 84°" } // X spans 12 degrees instead of 8 degrees like the rest.
         ];
-
-    public bool EnableLatitudeBands
-    {
-        get => _enableLatitudeBands;
-        set => SetProperty(ref _enableLatitudeBands, value);
-    }
 
     /// <summary>
     ///     The MapPoint of the current coordinates. 
@@ -169,7 +161,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
 
             // MGRS builds upon UTM by also including 100 km grid zone designations
             ShowMgrsControl = SelectedFormat == CoordinateFormat.MGRS;
-            EnableLatitudeBands = SelectedFormat == CoordinateFormat.MGRS || SelectedFormat == CoordinateFormat.UTM;  // TODO - would be simpler to always have enabled and do away with hemispheres, if code gets dialed in handling it for UTM
 
             // Automatic formatting conversions!
             switch (SelectedFormat)
@@ -178,6 +169,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                 case CoordinateFormat.DegreesMinutesSeconds:
                 case CoordinateFormat.DegreesDecimalMinutes:
                     _longLatItem.Update(_mapPoint!);
+                    
+                    // Display Latitude above Longitude to follow convention folks are used to
+                    XRowIndex = 4;
+                    YRowIndex = 3;
                     break;
 
                 case CoordinateFormat.MGRS:
@@ -187,6 +182,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                     _selectedLatitudeBandItem = LatitudeBands.First(band => band.Key == _selectedLatitudeBand);
                     _oneHundredKMGridID = _mgrs.OneHundredKMGridID;
                     UpdateMgrsGridIds();
+                    NotifyPropertyChanged(nameof(OneHundredKMGridID));
+
+                    XRowIndex = 3;
+                    YRowIndex = 4;
                     break;
 
                 case CoordinateFormat.UTM:
@@ -194,6 +193,9 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                     _selectedUTMZone = _utm.Zone;
                     _selectedLatitudeBand = _utm.LatitudeBand;
                     _selectedLatitudeBandItem = LatitudeBands.First(band => band.Key == _selectedLatitudeBand);
+
+                    XRowIndex = 3;
+                    YRowIndex = 4;
                     break;
 
                 default:
@@ -247,24 +249,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                 UpdateMapPoint();
                 UpdateDisplay();
             }
-        }
-    }
-
-    /// <summary>
-    ///     The Selected Hemisphere updates the Latitude band.
-    /// </summary>
-    public string SelectedHemisphere
-    {
-        get => _selectedHemisphere;
-        set
-        {
-            if (_selectedHemisphere == value) return;
-
-            SetProperty(ref _selectedHemisphere, value);
-
-            // Get the current Latitude Band's "OppositeHemisphereKey" and then update to it.
-            string newKey = _selectedLatitudeBandItem.OppositeHemisphereKey;
-            SelectedLatitudeBandItem = LatitudeBands.FirstOrDefault(b => b.Key == newKey)!;
         }
     }
 
@@ -494,6 +478,20 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
     {
         get => _scale;
         set => SetProperty(ref _scale, value);
+    }
+
+    private int _xRowIndex = 4;
+    public int XRowIndex
+    {
+        get => _xRowIndex;
+        set => SetProperty(ref _xRowIndex, value);
+    }
+
+    private int _yRowIndex = 3;
+    public int YRowIndex
+    {
+        get => _yRowIndex;
+        set => SetProperty(ref _yRowIndex, value);
     }
 
     /// <summary>

@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace dymaptic.Pro.ZoomToCoordinates;
-using System;
-
-
 public class LatitudeBandHelper
 {
     // Approximate number of meters per latitude band (8 degrees latitude)
