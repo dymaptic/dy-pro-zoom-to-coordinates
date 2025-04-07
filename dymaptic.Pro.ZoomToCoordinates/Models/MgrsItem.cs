@@ -51,7 +51,9 @@ public class MgrsItem : GridBaseItem
         }
     }
 
-
+    /// <summary>
+    ///     One of "CDEFGHJKLMNPQRSTUVWXX" Excludes 'I' and 'O' (1 character total) 
+    /// </summary>
     public override string LatitudeBand
     {
         get => _latitudeBand;

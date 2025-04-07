@@ -17,6 +17,42 @@ public class UtmItem : GridBaseItem
     }
 
     /// <summary>
+    ///     The UTM zone.
+    /// </summary>
+    public override int Zone
+    {
+        get => _zone;
+        set
+        {
+            if (_zone != value)
+            {
+                _zone = value;
+                UpdateGeoCoordinateString();
+            }
+        }
+    }
+
+
+    /// <summary>
+    ///     One of "CDEFGHJKLMNPQRSTUVWXX" Excludes 'I' and 'O' (1 character total) 
+    /// </summary>
+    public override string LatitudeBand
+    {
+        get => _latitudeBand;
+        set
+        {
+            if (_latitudeBand != value)
+            {
+                int updatedNorthing = LatitudeBandHelper.AdjustNorthing(_northing, fromBand: _latitudeBand.ToCharArray()[0], toBand: value.ToCharArray()[0]);
+                _northing = updatedNorthing;
+
+                _latitudeBand = value;
+                UpdateGeoCoordinateString();
+            }
+        }
+    }
+
+    /// <summary>
     ///     A friendly view of the UtmItem that includes spaces.
     /// </summary>
     public string Display => $"{Zone}{LatitudeBand} {Easting:D6} {Northing:D7}";
