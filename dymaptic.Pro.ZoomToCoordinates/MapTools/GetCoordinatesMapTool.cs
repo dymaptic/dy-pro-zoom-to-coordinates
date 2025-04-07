@@ -59,8 +59,12 @@ internal class GetCoordinatesMapTool : MapTool
 
         if (mapPoint == null) { return; }
 
-        viewModel.MapPoint = mapPoint;
-        viewModel.UpdateCoordinates();
+        // Guard that user scrolled over the map
+        if (mapPoint.X >= -180 && mapPoint.X <= 180 && mapPoint.Y >= -90 && mapPoint.Y <= 90)
+        {
+            viewModel.MapPoint = mapPoint;
+            viewModel.UpdateCoordinates();
+        }
     }
 
     /// <summary>
