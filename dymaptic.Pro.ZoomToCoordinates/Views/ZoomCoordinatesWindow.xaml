@@ -9,7 +9,7 @@
         xmlns:viewmodels="clr-namespace:dymaptic.Pro.ZoomToCoordinates.ViewModels" 
         d:DataContext="{d:DesignInstance Type=viewmodels:ZoomCoordinatesViewModel}"
         mc:Ignorable="d"
-        Title="Zoom To Coordinates" Height="400" Width="350"
+        Title="Zoom To Coordinates" Height="400" Width="400"
         WindowStartupLocation="CenterOwner">
     <controls:ProWindow.Resources>
         <ResourceDictionary>
@@ -33,7 +33,6 @@
     </controls:ProWindow.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
@@ -141,37 +140,47 @@
             </TextBox.Style>
         </TextBox>
 
-        <!-- Format and Create Graphic Control -->
-        <Grid Grid.Row="5" Grid.ColumnSpan="2">
+        <!-- Display -->
+        <Button Grid.Row="5" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}" Style="{DynamicResource Esri_Button}"/>
+        <TextBox Grid.Row="5" Grid.Column="1" Margin="5,5,10,5" Text="{Binding Display, Mode=OneWay}" IsReadOnly="True"/>
+
+        <Grid Grid.Row="6" Grid.ColumnSpan="2" Margin="5">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto"/> <!-- Label -->
+                <ColumnDefinition Width="*"/> <!-- Radio Buttons -->
+                <ColumnDefinition Width="Auto"/>    <!-- Nested Grid -->
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="5">
-                <Label Content="Format?" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                <CheckBox IsChecked="{Binding ShowFormattedCoordinates}" VerticalAlignment="Center"/>
+            <!-- Zoom Scale Label -->
+            <Label Grid.Column="0" Content="Zoom Scale:" VerticalAlignment="Top" Margin="0,0,25,0"/>
+
+            <!-- Radio Button Group -->
+            <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,8,0,0">
+                <RadioButton Content="5,000,000 - State" IsChecked="{Binding Scale, Converter={StaticResource scaleToBoolConverterKey}, ConverterParameter=5000000}" Margin="0,0,0,5"/>
+                <RadioButton Content="1,000,000 - County" IsChecked="{Binding Scale, Converter={StaticResource scaleToBoolConverterKey}, ConverterParameter=1000000}" Margin="0,0,0,5"/>
+                <RadioButton Content="100,000 - City" IsChecked="{Binding Scale, Converter={StaticResource scaleToBoolConverterKey}, ConverterParameter=100000}" Margin="0,0,0,5"/>
+                <RadioButton Content="10,000 - Block" IsChecked="{Binding Scale, Converter={StaticResource scaleToBoolConverterKey}, ConverterParameter=10000}" Margin="0,0,0,5"/>
+                <RadioButton Content="1,000 - Street" IsChecked="{Binding Scale, Converter={StaticResource scaleToBoolConverterKey}, ConverterParameter=1000}" Margin="0,0,0,5"/>
             </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="5">
-                <Label Content="Create Graphic?" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                <CheckBox IsChecked="{Binding ShowGraphic}" VerticalAlignment="Center"/>
-            </StackPanel>
+            <!-- Nested 2x2 Grid -->
+            <Grid Grid.Column="2" Margin="0,0,5,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0" Content="Format?" VerticalAlignment="Center" Margin="0,0,5,5" HorizontalAlignment="Right"/>
+                <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowFormattedCoordinates}" VerticalAlignment="Center" Margin="0,0,0,5"/>
+
+                <Label Grid.Row="1" Grid.Column="0" Content="Create Graphic?" VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Right"/>
+                <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowGraphic}" VerticalAlignment="Center" ToolTip="Create a coordinates graphic when you click zoom."/>
+            </Grid>
         </Grid>
-
-        <!-- Display -->
-        <Button Grid.Row="6" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}" Style="{DynamicResource Esri_Button}"/>
-        <TextBox Grid.Row="6" Grid.Column="1" Margin="5,5,10,5" Text="{Binding Display, Mode=OneWay}" IsReadOnly="True"/>
-
-        <!-- Radio Button Group -->
-        <Label Grid.Row="7" Grid.Column="0" Content="Zoom Scale:" Margin="5"/>
-        <StackPanel Orientation="Vertical" Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="2" Margin="5,8,0,0">
-            <RadioButton Content="5,000,000 - State" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=5000000}" Margin="0,0,0,5"/>
-            <RadioButton Content="1,000,000 - County" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=1000000}" Margin="0,0,0,5"/>
-            <RadioButton Content="100,000 - City" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=100000}" Margin="0,0,0,5"/>
-            <RadioButton Content="10,000 - Block" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=10000}"  Margin="0,0,0,5"/>
-            <RadioButton Content="1,000 - Street" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=1000}" Margin="0,0,0,5"/>
-        </StackPanel>
 
         <!-- Buttons -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2">
