@@ -71,12 +71,19 @@ public class UtmItem : GridBaseItem
     {
         string geoCoordString = mapPoint.ToGeoCoordinateString(utmParam);
 
-        string[] parts = geoCoordString.Split(" ");
-        _zone = int.Parse(parts[0][..2]);
-        _latitudeBand = parts[0][2..3];
-        _easting = int.Parse(parts[1]);
-        _northing = int.Parse(parts[2]);
-        _geoCoordinateString = geoCoordString.Replace(" ", "");
+        try
+        {
+            string[] parts = geoCoordString.Split(" ");
+            _zone = int.Parse(parts[0][..2]);
+            _latitudeBand = parts[0][2..3];
+            _easting = int.Parse(parts[1]);
+            _northing = int.Parse(parts[2]);
+            _geoCoordinateString = geoCoordString.Replace(" ", "");
+        }
+        catch
+        {
+            ErrorMessage = $"Zone value doesn't exist for this polar coordinate: {geoCoordString}";
+        }
     }
 
     protected override void UpdateGeoCoordinateString()

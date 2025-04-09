@@ -96,8 +96,6 @@ public class MgrsItem : GridBaseItem
         }
     }
 
-    public string ErrorMessage { get; set; } = "";
-
     /// <summary>
     ///     A friendly view of the MgrsItem that includes spaces.
     /// </summary>
@@ -321,7 +319,8 @@ public class MgrsItem : GridBaseItem
         catch
         {
             ErrorMessage = $"GeoCoordinateString error! tried to create a MapPoint from this string: {initialGeoCoordinateString}";
-
+            
+            // If an exception is thrown, change the Northing and Easting values to 0 and recreate the MapPoint.
             try
             {
                 initialGeoCoordinateString = $"{Zone}{LatitudeBand}{OneHundredKMGridID}{0:D5}{0:D5}";
@@ -330,10 +329,11 @@ public class MgrsItem : GridBaseItem
                                                                       geoCoordType: GeoCoordinateType.MGRS,
                                                                       geoCoordMode: FromGeoCoordinateMode.MgrsNewStyle);
                 Update(MapPoint);
+                ErrorMessage = string.Empty;
             }
             catch
             {
-                string test = $"GeoCoordinateString error! tried to create a MapPoint from this string: {initialGeoCoordinateString}";
+                ErrorMessage = $"GeoCoordinateString error! tried to create a MapPoint from this string: {initialGeoCoordinateString}";
             }
         }
     }

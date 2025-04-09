@@ -75,8 +75,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
     /// </summary>
     public ObservableCollection<int> UTMZones { get; } = [.. Enumerable.Range(1, 60)];
 
-    public ObservableCollection<string> Hemispheres { get; } = ["Northern", "Southern"];
-
     /// <summary>
     ///     A collection of all the latitude bands which span 8° latitude except for X, which spans 12° (UTM/MGRS omit the letters O and I).
     /// </summary>
@@ -213,6 +211,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
             // Ensure UI updates without calling the setter logic for any of these
             NotifyPropertyChanged(nameof(SelectedUTMZone));
             NotifyPropertyChanged(nameof(SelectedLatitudeBandItem));
+            NotifyPropertyChanged(nameof(OneHundredKMGridID));
             NotifyPropertyChanged(nameof(XCoordinateToolTip));
             NotifyPropertyChanged(nameof(YCoordinateToolTip));
             UpdateDisplay();
