@@ -41,7 +41,7 @@
           <tooltip heading="Setting">Customize startup and graphic settings if graphic requested.<disabledText /></tooltip>
         </button>
         <button id="dymaptic_Pro_ZoomToCoordinates_Views_About" caption="About" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowAbout" loadOnClick="true" smallImage="Images/dymaptic-logo---circle.png" largeImage="Images/dymaptic-logo---circle.png">
-          <tooltip heading="About">This is an open-source Add-In developed by dymaptic, an Esri Silver Partner.<disabledText /></tooltip>
+          <tooltip heading="About">This is an open-source Add-In developed by dymaptic, an Esri Gold Partner.<disabledText /></tooltip>
         </button>
       </controls>
     </insertModule>
