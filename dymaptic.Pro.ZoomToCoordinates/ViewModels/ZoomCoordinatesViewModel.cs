@@ -169,7 +169,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                 case CoordinateFormat.DegreesMinutesSeconds:
                 case CoordinateFormat.DegreesDecimalMinutes:
                     _longLatItem.Update(_mapPoint!);
-                    
+
                     // Display Latitude above Longitude to follow convention folks are used to
                     XRowIndex = 4;
                     YRowIndex = 3;
@@ -185,7 +185,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                     _selectedLatitudeBand = _mgrs.LatitudeBand;
                     _selectedLatitudeBandItem = LatitudeBands.First(band => band.Key == _selectedLatitudeBand);
                     _oneHundredKMGridID = _mgrs.OneHundredKMGridID;
-                    
+
                     // If OneHundredKMGridID changed, we know we need to update the possibilities
                     if (initialOneHundredKMGridId != _oneHundredKMGridID)
                     {
@@ -210,12 +210,11 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                     break;
             }
 
-            // Don't call the setter logic for any of these
+            // Ensure UI updates without calling the setter logic for any of these
             NotifyPropertyChanged(nameof(SelectedUTMZone));
             NotifyPropertyChanged(nameof(SelectedLatitudeBandItem));
             NotifyPropertyChanged(nameof(XCoordinateToolTip));
             NotifyPropertyChanged(nameof(YCoordinateToolTip));
-
             UpdateDisplay();
         }
     }
@@ -366,7 +365,7 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
 
                     UpdateMapPoint();
                     UpdateDisplay();
-                } 
+                }
             }
             else
             {
@@ -705,9 +704,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
             {
                 _mgrsGridIds.Add(id);
             }
-
             // Set selected value back to what it was (combobox will now be updated with valid possibilities).
-            _oneHundredKMGridID = _mgrs.OneHundredKMGridID;
+            _oneHundredKMGridID = _mgrsGridIds.FirstOrDefault(x => x.Equals(_mgrs.OneHundredKMGridID)) ?? "";
             _isUpdatingGridIds = false;
         }
         NotifyPropertyChanged(nameof(OneHundredKMGridID));
@@ -850,33 +848,33 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
     }
 
     private async Task ZoomToCoordinates()
-	{
-		await QueuedTask.Run(() =>
-		{
-			MapView mapView = MapView.Active;
-			Camera camera = mapView.Camera;
-			SpatialReference sr = camera.SpatialReference;
+    {
+        await QueuedTask.Run(() =>
+        {
+            MapView mapView = MapView.Active;
+            Camera camera = mapView.Camera;
+            SpatialReference sr = camera.SpatialReference;
 
-			// Create new camera & spatial reference objects, if active map isn't WGS84
-			if (sr.Wkid != 4326)
-			{
-				Camera newCamera = new(x: _longitude, y: _latitude, scale: Scale, heading: 0, spatialReference: SpatialReferences.WGS84);
-				mapView.ZoomTo(newCamera, TimeSpan.Zero);
-			}
+            // Create new camera & spatial reference objects, if active map isn't WGS84
+            if (sr.Wkid != 4326)
+            {
+                Camera newCamera = new(x: _longitude, y: _latitude, scale: Scale, heading: 0, spatialReference: SpatialReferences.WGS84);
+                mapView.ZoomTo(newCamera, TimeSpan.Zero);
+            }
 
-			// Otherwise, just update the coordinates & scale of the existing camera
-			else
-			{
-				camera.X = _longitude;
-				camera.Y = _latitude;
-				camera.Scale = _scale;
-				mapView.ZoomTo(camera, TimeSpan.Zero);
-			}
+            // Otherwise, just update the coordinates & scale of the existing camera
+            else
+            {
+                camera.X = _longitude;
+                camera.Y = _latitude;
+                camera.Scale = _scale;
+                mapView.ZoomTo(camera, TimeSpan.Zero);
+            }
 
-			if (ShowGraphic)
-			{
+            if (ShowGraphic)
+            {
                 CreateGraphic();
-			}
-		});
-	}
+            }
+        });
+    }
 }
