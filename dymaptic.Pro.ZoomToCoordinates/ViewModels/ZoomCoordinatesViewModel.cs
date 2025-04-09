@@ -177,12 +177,20 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
 
                 case CoordinateFormat.MGRS:
                     _mgrs.Update(_mapPoint!);
+
+                    // Track initial value
+                    string initialOneHundredKMGridId = _oneHundredKMGridID;
+
                     _selectedUTMZone = _mgrs.Zone;
                     _selectedLatitudeBand = _mgrs.LatitudeBand;
                     _selectedLatitudeBandItem = LatitudeBands.First(band => band.Key == _selectedLatitudeBand);
                     _oneHundredKMGridID = _mgrs.OneHundredKMGridID;
-                    UpdateMgrsGridIds();
-                    NotifyPropertyChanged(nameof(OneHundredKMGridID));
+                    
+                    // If OneHundredKMGridID changed, we know we need to update the possibilities
+                    if (initialOneHundredKMGridId != _oneHundredKMGridID)
+                    {
+                        UpdateMgrsGridIds();
+                    }
 
                     XRowIndex = 3;
                     YRowIndex = 4;
