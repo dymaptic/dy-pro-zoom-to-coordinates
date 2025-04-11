@@ -179,45 +179,45 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
             case CoordinateFormat.DecimalDegrees:
                 if (_showFormattedCoordinates)
                 {
-                    _xCoordinateString = _longLatItem.LongitudeDDFormatted;
-                    _yCoordinateString = _longLatItem.LatitudeDDFormatted;
-                    Display = _longLatItem.DecimalDegreesFormatted;
+                    _xCoordinateString = _longLatDD.LongitudeDDFormatted;
+                    _yCoordinateString = _longLatDD.LatitudeDDFormatted;
+                    Display = _longLatDD.DecimalDegreesFormatted;
                 }
                 else
                 {
-                    _xCoordinateString = _longLatItem.Longitude.ToString("F6");
-                    _yCoordinateString = _longLatItem.Latitude.ToString("F6");
-                    Display = _longLatItem.DecimalDegrees;
+                    _xCoordinateString = _longLatDD.Longitude.ToString("F6");
+                    _yCoordinateString = _longLatDD.Latitude.ToString("F6");
+                    Display = _longLatDD.DecimalDegrees;
                 }
                 break;
 
             case CoordinateFormat.DegreesMinutesSeconds:
                 if (_showFormattedCoordinates)
                 {
-                    _xCoordinateString = _longLatItem.LongitudeDMSFormatted;
-                    _yCoordinateString = _longLatItem.LatitudeDMSFormatted;
-                    Display = _longLatItem.DegreesMinutesSecondsFormatted;
+                    _xCoordinateString = _longLatDMS.LongitudeDMSFormatted;
+                    _yCoordinateString = _longLatDMS.LatitudeDMSFormatted;
+                    Display = _longLatDMS.DegreesMinutesSecondsFormatted;
                 }
                 else
                 {
-                    _xCoordinateString = _longLatItem.LongitudeDMS;
-                    _yCoordinateString = _longLatItem.LatitudeDMS;
-                    Display = _longLatItem.DegreesMinutesSeconds;
+                    _xCoordinateString = _longLatDMS.LongitudeDMS;
+                    _yCoordinateString = _longLatDMS.LatitudeDMS;
+                    Display = _longLatDMS.DegreesMinutesSeconds;
                 }
                 break;
 
             case CoordinateFormat.DegreesDecimalMinutes:
                 if (_showFormattedCoordinates)
                 {
-                    _xCoordinateString = _longLatItem.LongitudeDDMFormatted;
-                    _yCoordinateString = _longLatItem.LatitudeDDMFormatted;
-                    Display = _longLatItem.DegreesDecimalMinutesFormatted;
+                    _xCoordinateString = _longLatDDM.LongitudeDDMFormatted;
+                    _yCoordinateString = _longLatDDM.LatitudeDDMFormatted;
+                    Display = _longLatDDM.DegreesDecimalMinutesFormatted;
                 }
                 else
                 {
-                    _xCoordinateString = _longLatItem.LongitudeDDM;
-                    _yCoordinateString = _longLatItem.LatitudeDDM;
-                    Display = _longLatItem.DegreesDecimalMinutes;
+                    _xCoordinateString = _longLatDDM.LongitudeDDM;
+                    _yCoordinateString = _longLatDDM.LatitudeDDM;
+                    Display = _longLatDDM.DegreesDecimalMinutes;
                 }
                 break;
 
@@ -374,7 +374,9 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
     protected string _display = "";
     protected MapPoint? _mapPoint;
     protected CoordinateFormatItem _selectedFormatItem = CoordinateFormats.First(f => f.Format == _settings.CoordinateFormat);
-    protected LongLatItem _longLatItem = new();
+    protected LongLatDecimalDegrees _longLatDD = new();
+    protected LongLatDegreesMinutesSeconds _longLatDMS = new();
+    protected LongLatDegreesDecimalMinutes _longLatDDM = new();
     protected MgrsItem _mgrs = new();
     protected UtmItem _utm = new();
     protected bool _showFormattedCoordinates = _settings.ShowFormattedCoordinates;

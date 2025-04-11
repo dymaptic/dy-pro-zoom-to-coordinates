@@ -84,11 +84,16 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         switch (SelectedFormat)
         {
             case CoordinateFormat.DecimalDegrees:
-            case CoordinateFormat.DegreesMinutesSeconds:
-            case CoordinateFormat.DegreesDecimalMinutes:
-                _longLatItem.Update(_mapPoint);
+                _longLatDD.Update(_mapPoint);
                 break;
 
+            case CoordinateFormat.DegreesMinutesSeconds:
+                _longLatDMS.Update(_mapPoint); 
+                break;
+
+            case CoordinateFormat.DegreesDecimalMinutes:
+                _longLatDDM.Update(_mapPoint);
+                break;
 
             case CoordinateFormat.MGRS:
                 _mgrs.Update(_mapPoint);

@@ -18,12 +18,12 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
     public ZoomCoordinatesViewModel()
     {
         // Create a MapPoint right off the bat with the default coordinates
-        _longLatItem.Update(_longitude, _latitude);
-        _mapPoint = _longLatItem.MapPoint;
+        _longLatDD.Update(_longitude, _latitude);
+        _mapPoint = _longLatDD.MapPoint;
 
         // Set initially for the Display
-        _xCoordinateString = _longLatItem.Longitude.ToString("F6");
-        _yCoordinateString = _longLatItem.Latitude.ToString("F6");
+        _xCoordinateString = _longLatDD.Longitude.ToString("F6");
+        _yCoordinateString = _longLatDD.Latitude.ToString("F6");
 
         // Prevent null reference
         _selectedLatitudeBandItem = LatitudeBands.First(band => band.Key == "C");
@@ -140,11 +140,21 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
             switch (SelectedFormat)
             {
                 case CoordinateFormat.DecimalDegrees:
-                case CoordinateFormat.DegreesMinutesSeconds:
-                case CoordinateFormat.DegreesDecimalMinutes:
-                    _longLatItem.Update(_mapPoint!);
+                    _longLatDD.Update(_mapPoint!);
 
                     // Display Latitude above Longitude to follow convention folks are used to
+                    XRowIndex = 4;
+                    YRowIndex = 3;
+                    break;
+
+                case CoordinateFormat.DegreesMinutesSeconds:
+                    _longLatDMS.Update(_mapPoint!);
+                    XRowIndex = 4;
+                    YRowIndex = 3;
+                    break;
+
+                case CoordinateFormat.DegreesDecimalMinutes:
+                    _longLatDDM.Update(_mapPoint!);
                     XRowIndex = 4;
                     YRowIndex = 3;
                     break;
@@ -322,9 +332,15 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                     switch (SelectedFormat)
                     {
                         case CoordinateFormat.DecimalDegrees:
+                            _longLatDD.Update(_longitude, _latitude);
+                            break;
+
                         case CoordinateFormat.DegreesMinutesSeconds:
+                            _longLatDMS.Update(_longitude, _latitude);
+                            break;
+
                         case CoordinateFormat.DegreesDecimalMinutes:
-                            _longLatItem.Update(_longitude, _latitude);
+                            _longLatDDM.Update(_longitude, _latitude);
                             break;
 
                         case CoordinateFormat.MGRS:
@@ -375,9 +391,15 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                     switch (SelectedFormat)
                     {
                         case CoordinateFormat.DecimalDegrees:
+                            _longLatDD.Update(_longitude, _latitude); 
+                            break;
+
                         case CoordinateFormat.DegreesMinutesSeconds:
+                            _longLatDMS.Update(_longitude, _latitude);
+                            break;
+
                         case CoordinateFormat.DegreesDecimalMinutes:
-                            _longLatItem.Update(_longitude, _latitude);
+                            _longLatDDM.Update(_longitude, _latitude);
                             break;
 
                         case CoordinateFormat.MGRS:
@@ -590,9 +612,15 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
         switch (SelectedFormat)
         {
             case CoordinateFormat.DecimalDegrees:
+                MapPoint = _longLatDD.MapPoint; 
+                break;
+
             case CoordinateFormat.DegreesMinutesSeconds:
+                MapPoint = _longLatDMS.MapPoint; 
+                break;
+
             case CoordinateFormat.DegreesDecimalMinutes:
-                MapPoint = _longLatItem.MapPoint;
+                MapPoint = _longLatDDM.MapPoint;
                 break;
 
             case CoordinateFormat.MGRS:
