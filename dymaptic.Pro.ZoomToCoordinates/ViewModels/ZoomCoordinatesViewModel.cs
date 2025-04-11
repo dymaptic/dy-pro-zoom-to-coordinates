@@ -467,15 +467,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
         };
 
     /// <summary>
-    ///     Provide an informative error message for invalid input.
-    /// </summary>
-    public string ErrorMessage
-    {
-        get => _errorMessage;
-        set => SetProperty(ref _errorMessage, value);
-    }
-
-    /// <summary>
     ///     The scale controls how far in the zoom occurs.
     /// </summary>
 	public double Scale
@@ -519,6 +510,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
             else if (columnName == nameof(YCoordinateString))
             {
                 return string.IsNullOrEmpty(YErrorMessage) ? null : YErrorMessage;
+            }
+            else if (columnName == nameof(Display))
+            {
+                return string.IsNullOrEmpty(ErrorMessage) ? null : ErrorMessage;
             }
             return null;
         }
@@ -885,7 +880,6 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
     private bool _yCoordinateValidated = true;
     private string _xErrorMessage = "";
     private string _yErrorMessage = "";
-    private string _errorMessage = "";
     private int _selectedUTMZone;
     private LatitudeBand _selectedLatitudeBandItem;
     private string _selectedLatitudeBand = "";

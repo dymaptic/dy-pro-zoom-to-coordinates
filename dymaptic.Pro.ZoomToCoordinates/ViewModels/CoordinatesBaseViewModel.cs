@@ -86,6 +86,22 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
     public abstract string YCoordinateString { get; set; }
 
     /// <summary>
+    ///     Provide an informative error message for invalid input or non-implemented coordinate values.
+    /// </summary>
+    public string ErrorMessage
+    {
+        get => _errorMessage;
+        set
+        {
+            if (SetProperty(ref _errorMessage, value))
+            {
+                // Force re-evaluation of validation for Display
+                NotifyPropertyChanged(nameof(Display));
+            }
+        }
+    }
+
+    /// <summary>
     ///     Allows text to be copied.
     /// </summary>
     public void CopyText()
@@ -222,29 +238,26 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
                 break;
 
             case CoordinateFormat.MGRS:
+                if (!string.IsNullOrEmpty(_mgrs.ErrorMessage))
+                {
+                    ErrorMessage = _mgrs.ErrorMessage;
+                    break;
+                }
+
                 _xCoordinateString = _mgrs.Easting.ToString();
                 _yCoordinateString = _mgrs.Northing.ToString();
-                if (_showFormattedCoordinates)
-                {
-                    Display = _mgrs.Display;
-                }
-                else
-                {
-                    Display = _mgrs.GeoCoordinateString;
-                }
+                Display = _showFormattedCoordinates ? _mgrs.Display : _mgrs.GeoCoordinateString;
                 break;
 
             case CoordinateFormat.UTM:
+                if (!string.IsNullOrEmpty(_mgrs.ErrorMessage))
+                {
+                    ErrorMessage = _mgrs.ErrorMessage;
+                    break;
+                }
                 _xCoordinateString = _utm.Easting.ToString();
                 _yCoordinateString = _utm.Northing.ToString();
-                if (_showFormattedCoordinates)
-                {
-                    Display = _utm.Display;
-                }
-                else
-                {
-                    Display = _utm.GeoCoordinateString;
-                }
+                Display = _showFormattedCoordinates ? _utm.Display : _utm.GeoCoordinateString;
                 break;
         }
 
@@ -372,6 +385,7 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
     protected string _xCoordinateString = "";
     protected string _yCoordinateString = "";
     protected string _display = "";
+    private string _errorMessage = "";
     protected MapPoint? _mapPoint;
     protected CoordinateFormatItem _selectedFormatItem = CoordinateFormats.First(f => f.Format == _settings.CoordinateFormat);
     protected LongLatDecimalDegrees _longLatDD = new();

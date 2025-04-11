@@ -140,9 +140,23 @@
             </TextBox.Style>
         </TextBox>
 
-        <!-- Display -->
+        <!-- Display  Mode=OneWay  -->
         <Button Grid.Row="5" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}" Style="{DynamicResource Esri_Button}"/>
-        <TextBox Grid.Row="5" Grid.Column="1" Margin="5,5,10,5" Text="{Binding Display, Mode=OneWay}" IsReadOnly="True"/>
+        <TextBox Grid.Row="5" Grid.Column="1" Margin="5,5,10,5" 
+                 Text="{Binding Display, ValidatesOnDataErrors=True, 
+                        NotifyOnValidationError=True}" 
+                 IsReadOnly="True">
+            <TextBox.Style>
+                <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                    <Style.Triggers>
+                        <Trigger Property="Validation.HasError" Value="True">
+                            <Setter Property="ToolTip"
+                Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBox.Style>
+        </TextBox>
 
         <Grid Grid.Row="6" Grid.ColumnSpan="2" Margin="5">
             <Grid.ColumnDefinitions>

@@ -233,12 +233,18 @@ public class MgrsItem : GridBaseItem
     {
         string geoCoordString = mapPoint.ToGeoCoordinateString(mgrsParam);
 
-        _zone = int.Parse(geoCoordString[..2]);
+        // Near pole, there isn't a numeric UTM Zone, it's a letter. 
+        if (!int.TryParse(geoCoordString[..2], out _zone))
+        {
+            ErrorMessage = $"Polar coordinate - MGRS logic not implemented for {geoCoordString}. Choose a different latitude band.";
+            return;
+        }
         _latitudeBand = geoCoordString[2..3];
         _oneHundredKMGridID = geoCoordString[3..5];
         _easting = int.Parse(geoCoordString[5..10]);
         _northing = int.Parse(geoCoordString[10..]);
         _geoCoordinateString = geoCoordString;
+        ErrorMessage = string.Empty;
     }
 
     /// <summary>
@@ -257,10 +263,8 @@ public class MgrsItem : GridBaseItem
             ErrorMessage = string.Empty;
         }
         catch
-        {
-            ErrorMessage = $"GeoCoordinateString error! tried to create a MapPoint from this string: {initialGeoCoordinateString}";
-            
-            // If an exception is thrown, change the Northing and Easting values to 0 and recreate the MapPoint.
+        {            
+            // If an exception is thrown, change the Northing and Easting values to 0 and try to recreate the MapPoint.
             try
             {
                 initialGeoCoordinateString = $"{Zone}{LatitudeBand}{OneHundredKMGridID}{0:D5}{0:D5}";
@@ -273,7 +277,7 @@ public class MgrsItem : GridBaseItem
             }
             catch
             {
-                ErrorMessage = $"GeoCoordinateString error! tried to create a MapPoint from this string: {initialGeoCoordinateString}";
+                ErrorMessage = $"Polar coordinate - MGRS logic not implemented for {initialGeoCoordinateString}. Choose a different latitude band.";
             }
         }
     }
