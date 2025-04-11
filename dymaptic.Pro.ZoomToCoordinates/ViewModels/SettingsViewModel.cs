@@ -8,7 +8,7 @@ internal class SettingsViewModel : Page
 	public SettingsViewModel()
 	{
 		ZoomToCoordinatesModule.Current.SettingsLoaded += Current_SettingsLoaded;
-	}
+    }
 
 	public string[] MarkerSchemes { get; set; } = ["Circle", "Cross", "Diamond", "Square", "X", "Triangle", "Pushpin", "Star", "RoundedSquare", "RoundedTriangle", "Rod", "Rectangle", "RoundedRectangle", "Hexagon", "StretchedHexagon", "RaceTrack", "HalfCircle", "Cloud"];
 
@@ -49,7 +49,7 @@ internal class SettingsViewModel : Page
 	public double Scale
 	{
 		get => _settings.Scale;
-		set
+        set
 		{
 			if (_settings.Scale != value)
 			{
@@ -189,11 +189,22 @@ internal class SettingsViewModel : Page
 	private void Current_SettingsLoaded(object sender, EventArgs e)
 	{
 		_settings = ZoomToCoordinatesModule.GetSettings();
+
+		// Location-related
+		NotifyPropertyChanged(nameof(Latitude));
+		NotifyPropertyChanged(nameof(Longitude));
+		NotifyPropertyChanged(nameof(Scale));
+		NotifyPropertyChanged(nameof(ShowFormattedCoordinates));
+
+		// Graphic-related
 		NotifyPropertyChanged(nameof(Marker));
 		NotifyPropertyChanged(nameof(MarkerColor));
+		NotifyPropertyChanged(nameof(MarkerSize));
 		NotifyPropertyChanged(nameof(FontFamily));
+		NotifyPropertyChanged(nameof(FontSize));
 		NotifyPropertyChanged(nameof(FontStyle));
 		NotifyPropertyChanged(nameof(FontColor));
+		NotifyPropertyChanged(nameof(ShowGraphic));
 	}
 
 	private Settings _settings = ZoomToCoordinatesModule.GetSettings();
