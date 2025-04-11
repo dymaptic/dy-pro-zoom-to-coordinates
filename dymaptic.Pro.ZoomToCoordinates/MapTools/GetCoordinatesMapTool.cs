@@ -11,16 +11,12 @@ using System.Threading.Tasks;
 namespace dymaptic.Pro.ZoomToCoordinates.MapTools;
 internal class GetCoordinatesMapTool : MapTool
 {
-    private GetCoordinatesWindow? _getCoordinatesWindow = null;
-    private readonly Stopwatch _throttleTimer = Stopwatch.StartNew();
-    private readonly TimeSpan _throttleDelay = TimeSpan.FromMilliseconds(50);
-
     protected override Task OnToolActivateAsync(bool active)
     {
         // Always ensure the ProWindow opens when the MapTool is activated.
         if (_getCoordinatesWindow == null)
         {
-            _getCoordinatesWindow = new()
+            _getCoordinatesWindow = new GetCoordinatesWindow()
             {
                 Owner = FrameworkApplication.Current.MainWindow
             };
@@ -117,4 +113,8 @@ internal class GetCoordinatesMapTool : MapTool
                 : (MapPoint)GeometryEngine.Instance.Project(point, SpatialReferences.WGS84);
         });
     }
+
+    private GetCoordinatesWindow? _getCoordinatesWindow = null;
+    private readonly Stopwatch _throttleTimer = Stopwatch.StartNew();
+    private readonly TimeSpan _throttleDelay = TimeSpan.FromMilliseconds(50);
 }

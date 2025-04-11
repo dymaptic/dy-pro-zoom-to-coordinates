@@ -7,8 +7,6 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
 public class GetCoordinatesViewModel : CoordinatesBaseViewModel
 {
-    private bool _enableFormatting;
-
     // Constructor
     public GetCoordinatesViewModel()
     {
@@ -102,4 +100,6 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         }
         UpdateDisplay();
     }
+
+    private bool _enableFormatting;
 }

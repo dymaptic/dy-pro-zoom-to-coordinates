@@ -7,11 +7,6 @@ namespace dymaptic.Pro.ZoomToCoordinates.Models;
 /// </summary>
 public abstract class GridBaseItem(int zone, string latitudeBand, int easting, int northing)
 {
-    protected int _zone = zone;
-    protected string _latitudeBand = latitudeBand;
-    protected int _easting = easting;
-    protected int _northing = northing;
-    protected string _geoCoordinateString = "";
     public MapPoint MapPoint { get; protected set;} = MapPointBuilderEx.CreateMapPoint(0, 0, SpatialReferences.WGS84);
     public string ErrorMessage { get; set; } = "";
 
@@ -66,4 +61,10 @@ public abstract class GridBaseItem(int zone, string latitudeBand, int easting, i
     ///     The GeoCoordinateString needs to be kept updated b/c it's how the MapPoint is kept updated.
     /// </summary>
     protected abstract void UpdateGeoCoordinateString();
+
+    protected int _zone = zone;
+    protected string _latitudeBand = latitudeBand;
+    protected int _easting = easting;
+    protected int _northing = northing;
+    protected string _geoCoordinateString = "";
 }

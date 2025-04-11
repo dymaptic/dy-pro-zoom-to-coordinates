@@ -14,33 +14,6 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 
 public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
 {
-    private static readonly char[] separator = [' '];
-    private bool _xCoordinateValidated = true;  // when tool loads, valid coordinates are put into the text boxes
-    private bool _yCoordinateValidated = true;
-    private string _xErrorMessage = "";
-    private string _yErrorMessage = "";
-    private string _errorMessage = "";
-    private int _selectedUTMZone;
-    private LatitudeBand _selectedLatitudeBandItem;
-    private string _selectedLatitudeBand = "";
-    private string _oneHundredKMGridID = "";
-    private bool _showUtmControls;
-    private bool _showMgrsControl;
-    private double _scale = _settings.Scale;
-    private bool _isUpdatingGridIds = false;
-
-    /// <summary>
-    ///     Regardless of selected coordinate format, we ALWAYS store a longitude value in decimal degrees.
-    /// </summary>
-    private double _longitude = _settings.Longitude;
-
-    /// <summary>
-    ///     Regardless of selected coordinate format, we ALWAYS store a latitude value in decimal degrees.
-    /// </summary>
-    private double _latitude = _settings.Latitude;
-
-    public ICommand ZoomCommand { get; }
-
     // Constructor
     public ZoomCoordinatesViewModel()
     {
@@ -69,16 +42,17 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
             CopyText();
         });
     }
+    public ICommand ZoomCommand { get; }
 
     /// <summary>
     ///     UTM Zones 1-60.
     /// </summary>
-    public ObservableCollection<int> UTMZones { get; } = [.. Enumerable.Range(1, 60)];
+    public int[] UTMZones { get; } = [.. Enumerable.Range(1, 60)];
 
     /// <summary>
     ///     A collection of all the latitude bands which span 8° latitude except for X, which spans 12° (UTM/MGRS omit the letters O and I).
     /// </summary>
-    public ObservableCollection<LatitudeBand> LatitudeBands { get; } =
+    public LatitudeBand[] LatitudeBands { get; } =
         [
             new LatitudeBand { Key = "C", Value = "-80° to -72°" },
             new LatitudeBand { Key = "D", Value = "-72° to -64°" },
@@ -117,7 +91,9 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
         }
     }
 
-    private ObservableCollection<string> _mgrsGridIds = [];
+    /// <summary>
+    ///     The Military Grid Reference System (MGRS) 100 KM Grid ID possibilities will need to be updated as both UTM Zone and Latitude Band change.
+    /// </summary>
     public ObservableCollection<string> MgrsGridIds
     {
         get => _mgrsGridIds;
@@ -486,14 +462,12 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
         set => SetProperty(ref _scale, value);
     }
 
-    private int _xRowIndex = 4;
     public int XRowIndex
     {
         get => _xRowIndex;
         set => SetProperty(ref _xRowIndex, value);
     }
 
-    private int _yRowIndex = 3;
     public int YRowIndex
     {
         get => _yRowIndex;
@@ -501,7 +475,8 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
     }
 
     /// <summary>
-    ///     (IDataErrorInfo interface)
+    ///     This property is required to implement the IDataErrorInfo interface, but not used b/c we're using different error messages 
+    ///     (properties) for the XCoordinateString and YCoordinateString (rather than this Error property - see property below).
     /// </summary>
     public string Error => null;  // not used
 
@@ -876,4 +851,32 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
             }
         });
     }
+
+    private static readonly char[] separator = [' '];
+    private bool _xCoordinateValidated = true;  // when tool loads, valid coordinates are put into the text boxes
+    private bool _yCoordinateValidated = true;
+    private string _xErrorMessage = "";
+    private string _yErrorMessage = "";
+    private string _errorMessage = "";
+    private int _selectedUTMZone;
+    private LatitudeBand _selectedLatitudeBandItem;
+    private string _selectedLatitudeBand = "";
+    private string _oneHundredKMGridID = "";
+    private bool _showUtmControls;
+    private bool _showMgrsControl;
+    private double _scale = _settings.Scale;
+    private bool _isUpdatingGridIds = false;
+    private ObservableCollection<string> _mgrsGridIds = [];
+    private int _xRowIndex = 4;
+    private int _yRowIndex = 3;
+
+    /// <summary>
+    ///     Regardless of selected coordinate format, we ALWAYS store a longitude value in decimal degrees.
+    /// </summary>
+    private double _longitude = _settings.Longitude;
+
+    /// <summary>
+    ///     Regardless of selected coordinate format, we ALWAYS store a latitude value in decimal degrees.
+    /// </summary>
+    private double _latitude = _settings.Latitude;
 }

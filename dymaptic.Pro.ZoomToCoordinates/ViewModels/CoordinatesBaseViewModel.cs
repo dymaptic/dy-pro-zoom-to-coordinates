@@ -4,7 +4,6 @@ using ArcGIS.Desktop.Framework.Contracts;
 using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
 using dymaptic.Pro.ZoomToCoordinates.Models;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -12,24 +11,8 @@ using System.Windows.Input;
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public abstract class CoordinatesBaseViewModel : PropertyChangedBase
 {
-    protected static readonly Settings _settings = ZoomToCoordinatesModule.GetSettings();
-    protected string _xCoordinateString = "";
-    protected string _yCoordinateString = "";
-    protected string _display = "";
-    protected MapPoint? _mapPoint;
-    protected CoordinateFormatItem _selectedFormatItem = CoordinateFormats.First(f => f.Format == _settings.CoordinateFormat);
-    protected LongLatItem _longLatItem = new();
-    protected MgrsItem _mgrs = new();
-    protected UtmItem _utm = new();
-    protected bool _showFormattedCoordinates = _settings.ShowFormattedCoordinates;
-    private CoordinateFormat _selectedFormat = _settings.CoordinateFormat;
-    private string _xCoordinateLabel = "Longitude:";
-    private string _yCoordinateLabel = "Latitude:";
-    private bool _showGraphic = _settings.ShowGraphic;
-
     public ICommand? CopyTextCommand { get; set; }
-
-    public static ObservableCollection<CoordinateFormatItem> CoordinateFormats { get; } =
+    public static CoordinateFormatItem[] CoordinateFormats { get; } =
     [
         new CoordinateFormatItem { Format = CoordinateFormat.DecimalDegrees, DisplayName = "Decimal Degrees" },
         new CoordinateFormatItem { Format = CoordinateFormat.DegreesDecimalMinutes, DisplayName = "Degrees Decimal Minutes" },
@@ -169,6 +152,108 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
         }
     }
 
+    /// <summary>
+    ///     Updates the View's labels depending on the selected coordinates.
+    /// </summary>
+    protected void UpdateCoordinateLabels()
+    {
+        if (SelectedFormat == CoordinateFormat.UTM || SelectedFormat == CoordinateFormat.MGRS)
+        {
+            XCoordinateLabel = "Easting:";
+            YCoordinateLabel = "Northing:";
+        }
+        else
+        {
+            XCoordinateLabel = "Longitude:";
+            YCoordinateLabel = "Latitude:";
+        }
+    }
+
+    /// <summary>
+    ///     Updates the Display property with the formatted X and Y coordinate information.
+    /// </summary>
+    protected void UpdateDisplay()
+    {
+        switch (SelectedFormat)
+        {
+            case CoordinateFormat.DecimalDegrees:
+                if (_showFormattedCoordinates)
+                {
+                    _xCoordinateString = _longLatItem.LongitudeDDFormatted;
+                    _yCoordinateString = _longLatItem.LatitudeDDFormatted;
+                    Display = _longLatItem.DecimalDegreesFormatted;
+                }
+                else
+                {
+                    _xCoordinateString = _longLatItem.Longitude.ToString("F6");
+                    _yCoordinateString = _longLatItem.Latitude.ToString("F6");
+                    Display = _longLatItem.DecimalDegrees;
+                }
+                break;
+
+            case CoordinateFormat.DegreesMinutesSeconds:
+                if (_showFormattedCoordinates)
+                {
+                    _xCoordinateString = _longLatItem.LongitudeDMSFormatted;
+                    _yCoordinateString = _longLatItem.LatitudeDMSFormatted;
+                    Display = _longLatItem.DegreesMinutesSecondsFormatted;
+                }
+                else
+                {
+                    _xCoordinateString = _longLatItem.LongitudeDMS;
+                    _yCoordinateString = _longLatItem.LatitudeDMS;
+                    Display = _longLatItem.DegreesMinutesSeconds;
+                }
+                break;
+
+            case CoordinateFormat.DegreesDecimalMinutes:
+                if (_showFormattedCoordinates)
+                {
+                    _xCoordinateString = _longLatItem.LongitudeDDMFormatted;
+                    _yCoordinateString = _longLatItem.LatitudeDDMFormatted;
+                    Display = _longLatItem.DegreesDecimalMinutesFormatted;
+                }
+                else
+                {
+                    _xCoordinateString = _longLatItem.LongitudeDDM;
+                    _yCoordinateString = _longLatItem.LatitudeDDM;
+                    Display = _longLatItem.DegreesDecimalMinutes;
+                }
+                break;
+
+            case CoordinateFormat.MGRS:
+                _xCoordinateString = _mgrs.Easting.ToString();
+                _yCoordinateString = _mgrs.Northing.ToString();
+                if (_showFormattedCoordinates)
+                {
+                    Display = _mgrs.Display;
+                }
+                else
+                {
+                    Display = _mgrs.GeoCoordinateString;
+                }
+                break;
+
+            case CoordinateFormat.UTM:
+                _xCoordinateString = _utm.Easting.ToString();
+                _yCoordinateString = _utm.Northing.ToString();
+                if (_showFormattedCoordinates)
+                {
+                    Display = _utm.Display;
+                }
+                else
+                {
+                    Display = _utm.GeoCoordinateString;
+                }
+                break;
+        }
+
+        // Send UI update withtout triggering any setter logic
+        // (extensive setter logic for these properties in the derived ZoomCoordinateViewModel class)
+        NotifyPropertyChanged(nameof(XCoordinateString));
+        NotifyPropertyChanged(nameof(YCoordinateString));
+    }
+
     private static CIMColor GetColor(string selectedColor)
     {
         CIMColor color = ColorFactory.Instance.BlackRGB;
@@ -283,105 +368,19 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
         return marker;
     }
 
-    /// <summary>
-    ///     Updates the View's labels depending on the selected coordinates.
-    /// </summary>
-    protected void UpdateCoordinateLabels()
-    {
-        if (SelectedFormat == CoordinateFormat.UTM || SelectedFormat == CoordinateFormat.MGRS)
-        {
-            XCoordinateLabel = "Easting:";
-            YCoordinateLabel = "Northing:";
-        }
-        else
-        {
-            XCoordinateLabel = "Longitude:";
-            YCoordinateLabel = "Latitude:";
-        }
-    }
+    protected static readonly Settings _settings = ZoomToCoordinatesModule.GetSettings();
+    protected string _xCoordinateString = "";
+    protected string _yCoordinateString = "";
+    protected string _display = "";
+    protected MapPoint? _mapPoint;
+    protected CoordinateFormatItem _selectedFormatItem = CoordinateFormats.First(f => f.Format == _settings.CoordinateFormat);
+    protected LongLatItem _longLatItem = new();
+    protected MgrsItem _mgrs = new();
+    protected UtmItem _utm = new();
+    protected bool _showFormattedCoordinates = _settings.ShowFormattedCoordinates;
 
-    /// <summary>
-    ///     Updates the Display property with the formatted X and Y coordinate information.
-    /// </summary>
-    protected void UpdateDisplay()
-    {
-        switch (SelectedFormat)
-        {
-            case CoordinateFormat.DecimalDegrees:
-                if (_showFormattedCoordinates)
-                {
-                    _xCoordinateString = _longLatItem.LongitudeDDFormatted;
-                    _yCoordinateString = _longLatItem.LatitudeDDFormatted;
-                    Display = _longLatItem.DecimalDegreesFormatted;
-                }
-                else
-                {
-                    _xCoordinateString = _longLatItem.Longitude.ToString("F6");
-                    _yCoordinateString = _longLatItem.Latitude.ToString("F6");
-                    Display = _longLatItem.DecimalDegrees;
-                }
-                break;
-
-            case CoordinateFormat.DegreesMinutesSeconds:
-                if (_showFormattedCoordinates)
-                {
-                    _xCoordinateString = _longLatItem.LongitudeDMSFormatted;
-                    _yCoordinateString = _longLatItem.LatitudeDMSFormatted;
-                    Display = _longLatItem.DegreesMinutesSecondsFormatted;
-                }
-                else
-                {
-                    _xCoordinateString = _longLatItem.LongitudeDMS;
-                    _yCoordinateString = _longLatItem.LatitudeDMS;
-                    Display = _longLatItem.DegreesMinutesSeconds;
-                }
-                break;
-
-            case CoordinateFormat.DegreesDecimalMinutes:
-                if (_showFormattedCoordinates)
-                {
-                    _xCoordinateString = _longLatItem.LongitudeDDMFormatted;
-                    _yCoordinateString = _longLatItem.LatitudeDDMFormatted;
-                    Display = _longLatItem.DegreesDecimalMinutesFormatted;
-                }
-                else
-                {
-                    _xCoordinateString = _longLatItem.LongitudeDDM;
-                    _yCoordinateString = _longLatItem.LatitudeDDM;
-                    Display = _longLatItem.DegreesDecimalMinutes;
-                }
-                break;
-
-            case CoordinateFormat.MGRS:
-                _xCoordinateString = _mgrs.Easting.ToString();
-                _yCoordinateString = _mgrs.Northing.ToString();
-                if (_showFormattedCoordinates)
-                {
-                    Display = _mgrs.Display;
-                }
-                else
-                {
-                    Display = _mgrs.GeoCoordinateString;
-                }
-                break;
-
-            case CoordinateFormat.UTM:
-                _xCoordinateString = _utm.Easting.ToString();
-                _yCoordinateString = _utm.Northing.ToString();
-                if (_showFormattedCoordinates)
-                {
-                    Display = _utm.Display;
-                }
-                else
-                {
-                    Display = _utm.GeoCoordinateString;
-                }
-                break;
-        }
-
-        // Send UI update withtout triggering any setter logic
-        // (extensive setter logic for these properties in the derived ZoomCoordinateViewModel class)
-        NotifyPropertyChanged(nameof(XCoordinateString));
-        NotifyPropertyChanged(nameof(YCoordinateString));
-    }
+    private CoordinateFormat _selectedFormat = _settings.CoordinateFormat;
+    private string _xCoordinateLabel = "Longitude:";
+    private string _yCoordinateLabel = "Latitude:";
+    private bool _showGraphic = _settings.ShowGraphic;
 }

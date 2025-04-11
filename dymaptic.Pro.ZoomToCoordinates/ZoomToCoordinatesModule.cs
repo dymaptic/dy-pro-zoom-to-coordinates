@@ -30,9 +30,6 @@ internal class ZoomToCoordinatesModule : Module
 		Current.SettingsUpdated?.Invoke(Current, EventArgs.Empty);
 	}
 
-	private static ZoomToCoordinatesModule? _this;
-	private static Settings? _settings;
-
 	#region Overrides
 	/// <summary>
 	/// Called by Framework when ArcGIS Pro is closing
@@ -59,5 +56,8 @@ internal class ZoomToCoordinatesModule : Module
 
 		return Task.FromResult(0);
 	}
-	#endregion Overrides
+    #endregion Overrides
+
+    private static ZoomToCoordinatesModule? _this;
+    private static Settings? _settings;
 }

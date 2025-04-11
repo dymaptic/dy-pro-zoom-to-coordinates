@@ -6,9 +6,6 @@ using System.Collections.ObjectModel;
 namespace dymaptic.Pro.ZoomToCoordinates.Models;
 public class MgrsItem : GridBaseItem
 {
-    // Create MGRS coordinate using truncation, rather than rounding
-    private readonly ToGeoCoordinateParameter mgrsParam = new(geoCoordType: GeoCoordinateType.MGRS, geoCoordMode: ToGeoCoordinateMode.MgrsNewStyle, numDigits: 5, rounding: false, addSpaces: false);
-
     // Default Constructor
     public MgrsItem()
         : base(1, "C", 0, 0)
@@ -82,7 +79,6 @@ public class MgrsItem : GridBaseItem
     /// <summary>
     ///     The 100 KM Square ID (2 characters total)
     /// </summary>
-    private string _oneHundredKMGridID = "";
     public string OneHundredKMGridID 
     {
         get => _oneHundredKMGridID;
@@ -106,7 +102,6 @@ public class MgrsItem : GridBaseItem
         get => _geoCoordinateString;
         set => _geoCoordinateString = value;
     }
-
 
     /// <summary>
     ///     MGRS 100 KM square identification row possiblities alternate odd/even for UTM zone and vary by latitude band.
@@ -219,61 +214,6 @@ public class MgrsItem : GridBaseItem
     };
 
     /// <summary>
-    ///     Creates the 100 KM Square Grid ID based on UTM Zone and Latitude band.
-    /// </summary>
-    /// <typeparam name="TCollection">Generic type placeholder for flexibility to return different types of ICollection<string>.</typeparam>
-    /// <param name="utmZone">The UTM zone.</param>
-    /// <param name="latitudeBand">The Latitude band.</param>
-    /// <param name="collectionFactory"></param>
-    /// <returns>Returns a generic </returns>
-    /// <exception cref="ArgumentException"></exception>
-    private static TCollection BuildMgrsGridIds<TCollection>(int utmZone, string latitudeBand, Func<TCollection> collectionFactory)
-    where TCollection : ICollection<string>
-    {
-        string[] columnSets = ["ABCDEFGH", "JKLMNPQR", "STUVWXYZ"];
-        int setIndex = (utmZone - 1) % 3;
-        string columnSet = columnSets[setIndex];
-
-        bool isUtmZoneOdd = utmZone % 2 == 1;
-        string oddEvenRowKey = isUtmZoneOdd ? "Odd" : "Even";
-
-        var gridIds = collectionFactory();
-
-        if (RowsByLatitudeBand.TryGetValue(latitudeBand, out var zoneParityDict) &&
-            zoneParityDict.TryGetValue(oddEvenRowKey, out List<string> rowSet))
-        {
-            foreach (char col in columnSet)
-            {
-                foreach (string rowString in rowSet)
-                {
-                    foreach (char rowChar in rowString)
-                    {
-                        gridIds.Add($"{col}{rowChar}");
-                    }
-                }
-            }
-        }
-        else
-        {
-            throw new ArgumentException($"Invalid latitude band: {latitudeBand}");
-        }
-
-        return gridIds;
-    }
-
-    /// <summary>
-    ///     Gets the 100KM MGRS Grid ID possibilities and puts them into List<string>.
-    /// </summary>
-    /// <param name="utmZone">The UTM Zone value of 1-60.</param>
-    /// <param name="latitudeBand">The Latitude Band letter, C-X excluding I and O.</param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    private static List<string> GetMgrsGridIds(int utmZone, string latitudeBand)
-    {
-        return BuildMgrsGridIds(utmZone, latitudeBand, () => new List<string>());
-    }
-
-    /// <summary>
     ///     Gets the 100KM MGRS Grid ID possibilities and puts them into ObservableCollection<string>.
     /// </summary>
     /// <param name="utmZone">The UTM Zone value of 1-60.</param>
@@ -337,4 +277,63 @@ public class MgrsItem : GridBaseItem
             }
         }
     }
+
+    /// <summary>
+    ///     Creates the 100 KM Square Grid ID based on UTM Zone and Latitude band.
+    /// </summary>
+    /// <typeparam name="TCollection">Generic type placeholder for flexibility to return different types of ICollection<string>.</typeparam>
+    /// <param name="utmZone">The UTM zone.</param>
+    /// <param name="latitudeBand">The Latitude band.</param>
+    /// <param name="collectionFactory"></param>
+    /// <returns>Returns a generic </returns>
+    /// <exception cref="ArgumentException"></exception>
+    private static TCollection BuildMgrsGridIds<TCollection>(int utmZone, string latitudeBand, Func<TCollection> collectionFactory)
+    where TCollection : ICollection<string>
+    {
+        string[] columnSets = ["ABCDEFGH", "JKLMNPQR", "STUVWXYZ"];
+        int setIndex = (utmZone - 1) % 3;
+        string columnSet = columnSets[setIndex];
+
+        bool isUtmZoneOdd = utmZone % 2 == 1;
+        string oddEvenRowKey = isUtmZoneOdd ? "Odd" : "Even";
+
+        var gridIds = collectionFactory();
+
+        if (RowsByLatitudeBand.TryGetValue(latitudeBand, out var zoneParityDict) &&
+            zoneParityDict.TryGetValue(oddEvenRowKey, out List<string> rowSet))
+        {
+            foreach (char col in columnSet)
+            {
+                foreach (string rowString in rowSet)
+                {
+                    foreach (char rowChar in rowString)
+                    {
+                        gridIds.Add($"{col}{rowChar}");
+                    }
+                }
+            }
+        }
+        else
+        {
+            throw new ArgumentException($"Invalid latitude band: {latitudeBand}");
+        }
+
+        return gridIds;
+    }
+
+    /// <summary>
+    ///     Gets the 100KM MGRS Grid ID possibilities and puts them into List<string>.
+    /// </summary>
+    /// <param name="utmZone">The UTM Zone value of 1-60.</param>
+    /// <param name="latitudeBand">The Latitude Band letter, C-X excluding I and O.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    private static List<string> GetMgrsGridIds(int utmZone, string latitudeBand)
+    {
+        return BuildMgrsGridIds(utmZone, latitudeBand, () => new List<string>());
+    }
+
+    // Create MGRS coordinate using truncation, rather than rounding
+    private readonly ToGeoCoordinateParameter mgrsParam = new(geoCoordType: GeoCoordinateType.MGRS, geoCoordMode: ToGeoCoordinateMode.MgrsNewStyle, numDigits: 5, rounding: false, addSpaces: false);
+    private string _oneHundredKMGridID = "";
 }

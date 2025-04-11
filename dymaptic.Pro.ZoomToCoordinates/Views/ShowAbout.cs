@@ -6,9 +6,6 @@ namespace dymaptic.Pro.ZoomToCoordinates.Views;
 
 internal class ShowAbout : Button
 {
-
-    private About? _about = null;
-
     protected override void OnClick()
     {
         //already open?
@@ -20,8 +17,6 @@ internal class ShowAbout : Button
         };
         _about.Closed += OnAboutClosed;
         _about.Show();
-        //uncomment for modal
-        //_about.ShowDialog();
     }
 
     private void OnAboutClosed(object? o, EventArgs e)
@@ -33,4 +28,5 @@ internal class ShowAbout : Button
             _about = null;
         }
     }
+    private About? _about = null;
 }

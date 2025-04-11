@@ -4,23 +4,18 @@ using System;
 
 namespace dymaptic.Pro.ZoomToCoordinates.Views;
 
-	internal class ShowZoomCoordinatesWindow : Button
+internal class ShowZoomCoordinatesWindow : Button
+{
+	protected override void OnClick()
 	{
-
-		private ZoomCoordinatesWindow? _zoomCoordinatesWindow = null;
-
-		protected override void OnClick()
-		{
-			//already open?
-			if (_zoomCoordinatesWindow != null)
-				return;
-			_zoomCoordinatesWindow = new ZoomCoordinatesWindow();
-			_zoomCoordinatesWindow.Owner = FrameworkApplication.Current.MainWindow;
-			_zoomCoordinatesWindow.Closed += OnZoomClosed;
-			_zoomCoordinatesWindow.Show();
-			//uncomment for modal
-			//_zoomCoordinatesWindow.ShowDialog();
-		}
+		//already open?
+		if (_zoomCoordinatesWindow != null)
+			return;
+		_zoomCoordinatesWindow = new ZoomCoordinatesWindow();
+		_zoomCoordinatesWindow.Owner = FrameworkApplication.Current.MainWindow;
+		_zoomCoordinatesWindow.Closed += OnZoomClosed;
+		_zoomCoordinatesWindow.Show();
+	}
 
     private void OnZoomClosed(object? o, EventArgs e)
     {
@@ -30,4 +25,5 @@ namespace dymaptic.Pro.ZoomToCoordinates.Views;
             _zoomCoordinatesWindow = null;
         }
     }
+    private ZoomCoordinatesWindow? _zoomCoordinatesWindow = null;
 }
