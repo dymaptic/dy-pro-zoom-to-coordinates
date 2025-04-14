@@ -1,29 +1,28 @@
 ﻿using System.Diagnostics;
 using System.Windows.Navigation;
 
-namespace dymaptic.Pro.ZoomToCoordinates.Views
+namespace dymaptic.Pro.ZoomToCoordinates.Views;
+
+/// <summary>
+/// Interaction logic for About.xaml
+/// </summary>
+public partial class About : ArcGIS.Desktop.Framework.Controls.ProWindow
 {
-    /// <summary>
-    /// Interaction logic for About.xaml
-    /// </summary>
-    public partial class About : ArcGIS.Desktop.Framework.Controls.ProWindow
+    public About()
     {
-        public About()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+    }
 
-        // Opens hyperlink in user's default web browser
-        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+    // Opens hyperlink in user's default web browser
+    private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+    {
+        var psi = new ProcessStartInfo
         {
-            var psi = new ProcessStartInfo
-            {
-                FileName = e.Uri.AbsoluteUri,
-                UseShellExecute = true
-            };
-            Process.Start(psi);
+            FileName = e.Uri.AbsoluteUri,
+            UseShellExecute = true
+        };
+        Process.Start(psi);
 
-            e.Handled = true;
-        }
+        e.Handled = true;
     }
 }

@@ -1,8 +1,8 @@
 ﻿using dymaptic.Pro.ZoomToCoordinates.ViewModels;
 using System.Windows.Controls;
 
-namespace dymaptic.Pro.ZoomToCoordinates.Views
-{
+namespace dymaptic.Pro.ZoomToCoordinates.Views;
+
 	/// <summary>
 	/// Interaction logic for SettingsView.xaml
 	/// </summary>
@@ -14,4 +14,3 @@ namespace dymaptic.Pro.ZoomToCoordinates.Views
 			DataContext = new SettingsViewModel();
 		}
 	}
-}

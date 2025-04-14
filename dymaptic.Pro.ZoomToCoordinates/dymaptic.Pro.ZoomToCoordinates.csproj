@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -9,6 +9,12 @@
     <NoWarn>CA1416</NoWarn>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="DarkImages\**" />
+    <EmbeddedResource Remove="DarkImages\**" />
+    <None Remove="DarkImages\**" />
+    <Page Remove="DarkImages\**" />
+  </ItemGroup>
   <ItemGroup>
     <None Remove="Images\dymaptic-logo---circle.png" />
     <None Remove="Images\dymaptic-logo-300x86.png" />
@@ -96,9 +102,6 @@
       <CopyLocal>False</CopyLocal>
       <Private>False</Private>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="DarkImages\" />
   </ItemGroup>
   <Import Project="C:\Program Files\ArcGIS\Pro\bin\Esri.ProApp.SDK.Desktop.targets" Condition="Exists('C:\Program Files\ArcGIS\Pro\bin\Esri.ProApp.SDK.Desktop.targets') AND !Exists('Esri.ArcGISPro.Extensions.targets')" />
 </Project>

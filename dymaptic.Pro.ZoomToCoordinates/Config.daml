@@ -1,11 +1,11 @@
 ﻿<ArcGIS defaultAssembly="dymaptic.Pro.ZoomToCoordinates.dll" defaultNamespace="dymaptic.Pro.ZoomToCoordinates" xmlns="http://schemas.esri.com/DADF/Registry" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.esri.com/DADF/Registry file:///C:/Program%20Files/ArcGIS/Pro/bin/ArcGIS.Desktop.Framework.xsd">
-  <AddInInfo id="{c3985968-87f0-4fd7-adkl-159710c61ac2}" version="1.1" desktopVersion="3.0.36057">
+  <AddInInfo id="{c3985968-87f0-4fd7-adkl-159710c61ac2}" version="1.2" desktopVersion="3.3">
     <Name>dymaptic.Pro.ZoomToCoordinates</Name>
-    <Description>The Zoom to Coordinates Add-In, created by dymaptic, is an open-source solution for ArcGIS Pro, fully compatible with version 3.x. It is released under the permissive MIT license, and its source code can be accessed on GitHub. Dymaptic is a leading woman-owned GIS software development company and an Esri Silver Partner that specializes in providing innovative and tailored GIS solutions including custom Add-In development. To learn more about dymaptic and explore our cutting-edge solutions, visit our homepage at dymaptic.com</Description>
+    <Description>The Zoom to Coordinates Add-In, created by dymaptic, is an open-source solution for ArcGIS Pro, fully compatible with version 3.3 and above. It is released under the permissive MIT license, and its source code can be accessed on GitHub. Dymaptic is a leading woman-owned GIS software development company and an Esri Gold Partner that specializes in providing innovative and tailored GIS solutions including custom Add-In development. To learn more about dymaptic and explore our cutting-edge solutions, visit our homepage at dymaptic.com</Description>
     <Image>Images\dymaptic-logo---circle.png</Image>
     <Author>dymaptic</Author>
     <Company>dymaptic</Company>
-    <Date>5/31/2023</Date>
+    <Date>4/14/2025</Date>
     <Subject>Map Exploration</Subject>
     <!-- Note subject can be one or more of these topics:
                     Content, Framework, Editing, Geodatabase, Geometry, Geoprocessing, Layouts, Map Authoring, Map Exploration -->
@@ -14,29 +14,34 @@
     <insertModule id="ZoomToCoordinates_Module" className="ZoomToCoordinatesModule" autoLoad="false" caption="Zoom To Coordinates">
       <!-- uncomment to have the control hosted on a separate tab-->
       <tabs>
-        <!--<tab id="dymaptic.Pro.ZoomToCoordinates_Tab1" caption="New Tab">
-          <group refID="dymaptic.Pro.ZoomToCoordinates_Group1"/>
-        </tab>-->
+        <tab id="dymaptic_tab" caption="dymaptic">
+          <group refID="ZoomToCoordinates_Group1"/>
+        </tab>
       </tabs>
       <groups>
         <!-- comment this out if you have no controls on the Addin tab to avoid an empty group-->
-        <group id="ZoomToCoordinates_Group1" caption="Zoom To Coordinates" appearsOnAddInTab="true">
+        <group id="ZoomToCoordinates_Group1" caption="dymaptic Coordinates" appearsOnAddInTab="false">
           <!-- host controls within groups -->
-          <button refID="ZoomToCoordinates_Views_LatLongZoomWindow" size="large" />
-          <button refID="dymaptic_Pro_ZoomToCoordinates_Views_SettingsView" size="middle" />
-          <button refID="dymaptic_Pro_ZoomToCoordinates_Views_About" size="middle" />
+          <button refID="ZoomToCoordinates_Views_ZoomCoordinatesWindow" size="large" />
+          <tool refID="dymaptic_Pro_ZoomToCoordinates_GetCoordinates" size="large" />
+          <button refID="dymaptic_Pro_ZoomToCoordinates_Views_SettingsView" size="large" />
+          <button refID="dymaptic_Pro_ZoomToCoordinates_Views_About" size="large" />
         </group>
       </groups>
       <controls>
         <!-- add your controls here -->
-        <button id="ZoomToCoordinates_Views_LatLongZoomWindow" caption="Zoom" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowLatLongZoomWindow" loadOnClick="true" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/ZoomIn16.png" largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/ZoomIn32.png" condition="esri_mapping_mapPane">
+        <button id="ZoomToCoordinates_Views_ZoomCoordinatesWindow" caption="Zoom To" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowZoomCoordinatesWindow" loadOnClick="true" smallImage="ZoomIn16" largeImage="ZoomIn32" condition="esri_mapping_mapPane">
           <tooltip heading="Zoom">Zoom to coordinates.<disabledText /></tooltip>
         </button>
-        <button id="dymaptic_Pro_ZoomToCoordinates_Views_SettingsView" caption="Settings" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowSettingsView" loadOnClick="true" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/CogWheel16" largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/CogWheel32.png">
+        <tool id="dymaptic_Pro_ZoomToCoordinates_GetCoordinates" caption="Get Coordinates" className="dymaptic.Pro.ZoomToCoordinates.MapTools.GetCoordinatesMapTool" loadOnClick="true" smallImage="GoToXY16" largeImage="GoToXY32" condition="esri_mapping_mapPane">
+          <tooltip heading="Get Coordinates">
+				  Click the map to get coordinates in your chosen coordinate format.<disabledText /></tooltip>
+        </tool>
+        <button id="dymaptic_Pro_ZoomToCoordinates_Views_SettingsView" caption="Settings" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowSettingsButton" loadOnClick="true" smallImage="CogWheel16" largeImage="CogWheel32">
           <tooltip heading="Setting">Customize startup and graphic settings if graphic requested.<disabledText /></tooltip>
         </button>
         <button id="dymaptic_Pro_ZoomToCoordinates_Views_About" caption="About" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowAbout" loadOnClick="true" smallImage="Images/dymaptic-logo---circle.png" largeImage="Images/dymaptic-logo---circle.png">
-          <tooltip heading="About">This is an open-source Add-In developed by dymaptic, an Esri Silver Partner.<disabledText /></tooltip>
+          <tooltip heading="About">This is an open-source Add-In developed by dymaptic, an Esri Gold Partner.<disabledText /></tooltip>
         </button>
       </controls>
     </insertModule>
