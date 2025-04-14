@@ -12,9 +12,9 @@ internal class SettingsViewModel : Page
 
 	public string[] MarkerSchemes { get; set; } = ["Circle", "Cross", "Diamond", "Square", "X", "Triangle", "Pushpin", "Star", "RoundedSquare", "RoundedTriangle", "Rod", "Rectangle", "RoundedRectangle", "Hexagon", "StretchedHexagon", "RaceTrack", "HalfCircle", "Cloud"];
 
-	public string[] ColorSchemes { get; set; } = ["Black", "Gray", "White", "Red", "Green", "Blue"];
+	public string[] ColorSchemes { get; set; } = ["Black", "Gray", "White", "Red", "Green", "Blue", "Pink", "Orange", "Yellow", "Purple"];
 
-	public string[] FontFamilySchemes { get; set; } = ["Arial", "Broadway", "Papyrus", "Tahoma", "Times New Roman"];
+	public string[] FontFamilySchemes { get; set; } = ["Arial", "Broadway", "Papyrus", "Tahoma", "Times New Roman", "Comic Sans MS"];
 
 	public string[] FontStyleSchemes { get; set; } = ["Regular", "Bold", "Italic"];
 

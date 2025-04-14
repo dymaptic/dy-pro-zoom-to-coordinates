@@ -294,6 +294,22 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
                 break;
             case "Blue":
                 color = ColorFactory.Instance.BlueRGB;
+                
+                break;
+            case "Pink":
+                color = ColorFactory.Instance.CreateRGBColor(255, 115, 223);
+                
+                break;
+            case "Orange":
+                color = ColorFactory.Instance.CreateRGBColor(255, 128, 0);
+
+                break;
+            case "Yellow":
+                color = ColorFactory.Instance.CreateRGBColor(255, 255, 0);
+
+                break;
+            case "Purple":
+                color = ColorFactory.Instance.CreateRGBColor(153, 0, 153);
 
                 break;
         }
