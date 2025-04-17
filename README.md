@@ -1,8 +1,8 @@
 # dy-pro-zoom-to-coordinates
 An open-source repository of an ArcGIS Pro v3.3+ Add-In.
 
-## 📍 Coordinates Add-In for ArcGIS Pro
-The Coordinates Add-In enhances your ArcGIS Pro experience by enabling precise coordinate input, dynamic coordinate retrieval, and highly customizable map graphics—all with support for multiple coordinate formats. Whether you’re zooming to a location or extracting coordinates on the fly, this add-in offers accuracy, flexibility, and ease of use.
+## 📍 Dymaptic Coordinates Add-In for ArcGIS Pro
+The Dymaptic Coordinates Add-In enhances your ArcGIS Pro experience by enabling precise coordinate input, dynamic coordinate retrieval, and highly customizable map graphics—all with support for multiple coordinate formats. Whether you’re zooming to a location or extracting coordinates on the fly, this add-in offers accuracy, flexibility, and ease of use.
 
 ### 🔍 Zoom To Coordinates
 Navigate directly to a location by entering coordinates in your preferred format:
@@ -44,7 +44,7 @@ Customize the tool to match your preferences and workflow:
 Settings are saved with your ArcGIS Pro project and persist across sessions as long as the project is saved.
 
 ### 🏢 About dymaptic
-The Coordinates Add-In is developed by [dymaptic](https://dymaptic.com) —a leading, woman-owned GIS software development company and proud Esri Gold Partner.
+The Dymaptic Coordinates Add-In is developed by [dymaptic](https://dymaptic.com) —a leading, woman-owned GIS software development company and proud Esri Gold Partner.
 
 We specialize in crafting innovative, tailored GIS solutions, including custom Add-In development for ArcGIS Pro and ArcGIS Enterprise.
 
@@ -54,18 +54,18 @@ We specialize in crafting innovative, tailored GIS solutions, including custom A
 ---
 
 
-##### Screenshot of AddIn in ArcGIS Pro
+##### Screenshot of Add-In in ArcGIS Pro
 <img width="899" alt="Coordinates Addin" src="https://github.com/user-attachments/assets/b6f806b4-4449-4fe5-8ba8-b75bffdc98b4" />
 
 ---
 
-##### Esri AddIn Install Documentation
+##### Esri Add-In Install Documentation
 https://support.esri.com/en/technical-article/000026259
 
 ##### Install Instructions
 - Download and unzip directory with the GUID as a name.
 - Open the directory with the GUID as name and double-click dymaptic.Pro.ZoomToCoordinates.esriAddinX.
-	- Double-clicking .esriAddinX will copy the AddIn to your default ArcGIS Pro AddIn directory (C:\[user profile]\Documents\ArcGIS\AddIns\ArcGISPro)
-	- The installed AddIn is also visible from ArcGIS Pro (ArcGIS Pro Project tab -> Add-In Manager -> My Add-Ins)
+	- Double-clicking .esriAddinX will copy the AddIn to your default ArcGIS Pro Add-In directory (C:\[user profile]\Documents\ArcGIS\AddIns\ArcGISPro)
+	- The installed Add-In is also visible from ArcGIS Pro (ArcGIS Pro Project tab -> Add-In Manager -> My Add-Ins)
 	- Ensure that ArcGIS Pro is configured to find your Add-In directory after double-clicking .esriAddinX (ArcGIS Pro Project tab -> Add-In Manager -> Options)
-- The ZoomToCoordinates AddIn is now available for use from the ArcGIS Pro AddIn tab.
+- The Dymaptic Coordinates Add-In is now available for use from the dymaptic ArcGIS Pro tab.
