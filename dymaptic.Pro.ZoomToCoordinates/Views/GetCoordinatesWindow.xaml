@@ -9,7 +9,7 @@
         xmlns:converters="clr-namespace:dymaptic.Pro.ZoomToCoordinates.Converters" 
         d:DataContext="{d:DesignInstance Type=viewmodels:GetCoordinatesViewModel}"
         mc:Ignorable="d"
-        Title="Get Coordinates" Height="210" Width="300"
+        Title="Get Coordinates" Height="250" Width="300"
         WindowStartupLocation="CenterOwner">
     <controls:ProWindow.Resources>
         <ResourceDictionary>
@@ -19,60 +19,61 @@
             <converters:BooleanToVisibilityConverter x:Key="boolToVisibilityConverterKey"/>
         </ResourceDictionary>
     </controls:ProWindow.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
-        </Grid.RowDefinitions>
+    <Border ToolTip="{Binding Tooltip}" Background="Transparent">
+        <Grid IsEnabled="{Binding Activated}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="100"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        
-        <!-- Coordinate Format -->
-        <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="Format:" />
-        <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5" 
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Coordinate Format -->
+            <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="Format:" />
+            <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5" 
                   ItemsSource="{Binding CoordinateFormats}"
                   SelectedItem="{Binding SelectedFormatItem}" />
 
-        <!-- Coordinate text boxes -->
-        <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="{Binding XCoordinateLabel}" />
-        <TextBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5" Text="{Binding XCoordinateString, Mode=OneWay}" IsReadOnly="True"/>
-        <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
-        <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding YCoordinateString, Mode=OneWay}" IsReadOnly="True" />
+            <!-- Coordinate text boxes -->
+            <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="{Binding XCoordinateLabel}" />
+            <TextBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5" Text="{Binding XCoordinateString, Mode=OneWay}" IsReadOnly="True"/>
+            <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="{Binding YCoordinateLabel}" />
+            <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding YCoordinateString, Mode=OneWay}" IsReadOnly="True" />
 
-        <!-- Display -->
-        <Button Style="{DynamicResource Esri_Button}" Grid.Row="3" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}"/>
-        <TextBox Grid.Row="3" Grid.Column="1" Margin="5,5,10,5" Text="{Binding Display, Mode=OneWay}"
-                 IsReadOnly="True"/>
+            <!-- Display -->
+            <Button Style="{DynamicResource Esri_Button}" Grid.Row="3" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}"/>
+            <TextBox Grid.Row="3" Grid.Column="1" Margin="5,5,10,5" Text="{Binding Display, Mode=OneWay}" IsReadOnly="True"/>
 
-        <!-- Format and Create Graphic Control -->
-        <Grid Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Right">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+            <!-- Format and Create Graphic Control -->
+            <Grid Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Right">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="5">
-                <Label Content="Format?" VerticalAlignment="Center"/>
-                <CheckBox IsChecked="{Binding ShowFormattedCoordinates}" VerticalAlignment="Center"
+                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="5">
+                    <Label Content="Format?" VerticalAlignment="Center"/>
+                    <CheckBox IsChecked="{Binding ShowFormattedCoordinates}" VerticalAlignment="Center"
                           IsEnabled="{Binding EnableFormatting}"/>
-            </StackPanel>
+                </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,10,5">
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,10,5">
                 <Label Content="Create Graphic?" VerticalAlignment="Center" ToolTip="Create a coordinates graphic when you click the map."/>
-                <CheckBox IsChecked="{Binding ShowGraphic}" VerticalAlignment="Center"/>
-            </StackPanel>
-        </Grid>
+                    <CheckBox IsChecked="{Binding ShowGraphic}" VerticalAlignment="Center" ToolTip="Create a coordinates graphic when you click the map."/>
+                </StackPanel>
+            </Grid>
 
-        <!-- Instructions -->
-        <TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="5,10,5,5" 
-                   Text="Click on the map to get coordinates"
+            <!-- Instructions -->
+            <TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="5,0,5,5" 
+                   Text="{Binding Tooltip}" TextWrapping="Wrap" MinHeight="45"
                    HorizontalAlignment="Center"/>
-    </Grid>
+        </Grid>
+    </Border>
 </controls:ProWindow>
