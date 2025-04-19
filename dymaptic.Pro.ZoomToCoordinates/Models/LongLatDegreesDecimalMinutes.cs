@@ -51,6 +51,10 @@ public class LongLatDegreesDecimalMinutes : LongLatItem
         string longDegrees = parts[2].TrimStart('0');
         string longMinutes = parts[3][..^1].TrimStart('0');
 
+        // Normalize empty minutes strings
+        latMinutes = latMinutes == ".0000" ? "0" : latMinutes;
+        longMinutes = longMinutes == ".0000" ? "0" : longMinutes;
+
         LatitudeDDM = $"{latDegrees} {latMinutes} {latitudeLabel}";
         LongitudeDDM = $"{longDegrees} {longMinutes} {longitudeLabel}";
 

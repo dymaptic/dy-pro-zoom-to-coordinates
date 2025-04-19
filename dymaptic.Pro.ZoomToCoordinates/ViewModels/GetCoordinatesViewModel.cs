@@ -36,6 +36,32 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
     }
 
     /// <summary>
+    ///     A tooltip is only provided for the GetCoordinates window if the MapTool is deactivated, providing instructions to the user how to reactivaate it.
+    /// </summary>
+    public string Tooltip
+    {
+        get => _tooltip;
+        set => SetProperty(ref _tooltip, value);
+    }
+
+    /// <summary>
+    ///     Tracks whether the MapTool is activated or not.
+    /// </summary>
+    public bool Activated
+    {
+        get => _activated;
+        set
+        {
+            if (SetProperty(ref _activated, value))
+            {
+                Tooltip = _activated
+                      ? "Move the cursor to get coordinates."
+                      : "Tool is deactivated. To reactivate it, go to the dymaptic tab and click the \"Get Coordinates\" button on the toolbar.";
+            } 
+        }
+    }
+
+    /// <summary>
     ///     Formatting isn't enabled until the user has clicked the map to avoid the settings Lat/Long values being 
     ///     populated if user clicks the format checkbox prior to clicking the map.
     /// </summary>
@@ -107,4 +133,6 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
     }
 
     private bool _enableFormatting;
+    private bool _activated;
+    private string _tooltip = "";
 }
