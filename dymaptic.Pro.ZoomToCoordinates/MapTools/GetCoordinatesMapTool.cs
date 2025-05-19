@@ -1,4 +1,5 @@
 ﻿using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Editing.Controls;
 using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
@@ -14,7 +15,7 @@ internal class GetCoordinatesMapTool : MapTool
     /// <summary>
     ///     Defines the ViewModel as a property since we're accessing it a bunch.
     /// </summary>
-    private GetCoordinatesViewModel? ViewModel => _getCoordinatesWindow?.DataContext as GetCoordinatesViewModel;
+    private GetCoordinatesViewModel? ViewModel;
 
     protected override Task OnToolActivateAsync(bool active)
     {
@@ -33,10 +34,17 @@ internal class GetCoordinatesMapTool : MapTool
             });
         }
 
-        if (ViewModel is not null)
+        // Access the WPF UI thread to safely retrieve the ViewModel from the DataContext.
+        // WPF elements (like DataContext) are bound to the UI thread and cannot be accessed from background threads.
+        // This ensures thread-safe interaction from within the MapTool code.
+        System.Windows.Application.Current.Dispatcher.Invoke(() =>
         {
-            ViewModel.Activated = true;
-        }
+            ViewModel = _getCoordinatesWindow?.DataContext as GetCoordinatesViewModel;
+            if (ViewModel is not null)
+            {
+                ViewModel.Activated = true;
+            }
+        });
 
         return base.OnToolActivateAsync(active);
     }
