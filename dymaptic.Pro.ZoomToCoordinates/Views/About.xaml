@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="About" Height="380" Width="350"
         WindowStartupLocation="CenterOwner"
-    >
+        ResizeMode="NoResize">
     <controls:ProWindow.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

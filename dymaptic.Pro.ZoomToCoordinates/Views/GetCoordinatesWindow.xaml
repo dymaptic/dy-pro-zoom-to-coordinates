@@ -10,7 +10,8 @@
         d:DataContext="{d:DesignInstance Type=viewmodels:GetCoordinatesViewModel}"
         mc:Ignorable="d"
         Title="Get Coordinates" Height="250" Width="300"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
     <controls:ProWindow.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

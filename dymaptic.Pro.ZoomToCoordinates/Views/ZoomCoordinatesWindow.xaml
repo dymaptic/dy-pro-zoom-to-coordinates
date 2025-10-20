@@ -10,7 +10,8 @@
         d:DataContext="{d:DesignInstance Type=viewmodels:ZoomCoordinatesViewModel}"
         mc:Ignorable="d"
         Title="Zoom To Coordinates" Height="400" Width="400"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
     <controls:ProWindow.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
