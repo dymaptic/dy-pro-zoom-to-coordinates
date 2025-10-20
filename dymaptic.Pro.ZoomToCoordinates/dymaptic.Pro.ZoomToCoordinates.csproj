@@ -24,9 +24,9 @@
     <Content Include="Images\dymaptic-logo---circle.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\dymaptic-logo-300x86.png">
+    <Resource Include="Images\dymaptic-logo-300x86.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
+    </Resource>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
