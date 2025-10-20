@@ -44,6 +44,8 @@
 			  <button refID="esri_geoprocessing_toolsButton" size="large" />
 			  <button refID="esri_core_showContentsDockPane" size="middle" />
 			  <button refID="esri_core_showProjectDockPane" size="middle" />
+			  <button refID="esri_mapping_prevExtentButton" size="small" />
+			  <button refID="esri_mapping_nextExtentButton" size="small" />
 		  </group>
       </groups>
       <controls>
