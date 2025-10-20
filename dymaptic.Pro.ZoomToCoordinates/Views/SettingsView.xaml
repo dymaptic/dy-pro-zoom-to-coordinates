@@ -9,7 +9,7 @@
         xmlns:converters="clr-namespace:dymaptic.Pro.ZoomToCoordinates.Converters" 
         d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
         mc:Ignorable="d"
-        Title="Settings" Height="300" Width="500"
+        Title="Settings" Height="305" Width="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
     <controls:ProWindow.Resources>
@@ -37,7 +37,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <GroupBox Grid.Column="0" Margin="5" Header="Location-Related">
+        <GroupBox Grid.Column="0" Margin="5" Header="Default Location">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
@@ -74,7 +74,7 @@
             </Grid>
         </GroupBox>
 
-        <GroupBox Grid.Column="1" Margin="5" Header="Graphic-Related">
+        <GroupBox Grid.Column="1" Margin="5" Header="Graphic Settings">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
