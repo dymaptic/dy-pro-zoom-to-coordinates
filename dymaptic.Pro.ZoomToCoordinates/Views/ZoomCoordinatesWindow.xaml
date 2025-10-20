@@ -187,26 +187,25 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <Label Grid.Row="0" Grid.Column="0" Content="Format?" VerticalAlignment="Center" Margin="0,0,5,5" HorizontalAlignment="Right"/>
                 <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowFormattedCoordinates}" VerticalAlignment="Center" Margin="0,0,0,5"/>
 
-                <Label Grid.Row="1" Grid.Column="0" Content="Create Graphic?" VerticalAlignment="Center" Margin="0,0,5,5" HorizontalAlignment="Right"/>
-                <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowGraphic}" VerticalAlignment="Center" Margin="0,0,0,5" ToolTip="Create a coordinates graphic when you click zoom."/>
-
-                <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
-                        Style="{DynamicResource Esri_Button}"
-                        Command="{Binding OpenSettingsCommand}"
-                        HorizontalAlignment="Center"
-                        Margin="5,5,0,0"
-                        Width="32"
-                        Height="32"
-                        ToolTip="Open Settings">
-                    <Image Source="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/CogWheel16.png"
-                           Width="16" Height="16"/>
-                </Button>
+                <Label Grid.Row="1" Grid.Column="0" Content="Create Graphic?" VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Right"/>
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <CheckBox IsChecked="{Binding ShowGraphic}" VerticalAlignment="Center" Margin="0,0,5,0" ToolTip="Create a coordinates graphic when you click zoom."/>
+                    <!-- Settings Button -->
+                    <Button Style="{DynamicResource Esri_Button}"
+                            Command="{Binding OpenSettingsCommand}"
+                            Width="15"
+                            Height="15"
+                            Padding="0"
+                            ToolTip="Open Settings">
+                        <Image Source="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/CogWheel16.png"
+                               Width="12" Height="12"/>
+                    </Button>
+                </StackPanel>
             </Grid>
         </Grid>
 

@@ -66,24 +66,21 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,10,5">
-                <Label Content="Create Graphic?" VerticalAlignment="Center" ToolTip="Create a coordinates graphic when you click the map."/>
-                    <CheckBox IsChecked="{Binding ShowGraphic}" VerticalAlignment="Center" ToolTip="Create a coordinates graphic when you click the map."/>
+                    <Label Content="Create Graphic?" VerticalAlignment="Center" ToolTip="Create a coordinates graphic when you click the map."/>
+                    <CheckBox IsChecked="{Binding ShowGraphic}" VerticalAlignment="Center" Margin="0,0,5,0" ToolTip="Create a coordinates graphic when you click the map."/>
+                    <!-- Settings Button -->
+                    <Button Style="{DynamicResource Esri_Button}"
+                            Command="{Binding OpenSettingsCommand}"
+                            Width="15"
+                            Height="15"
+                            Padding="0"
+                            IsEnabled="True"
+                            ToolTip="Open Settings">
+                        <Image Source="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/CogWheel16.png"
+                               Width="12" Height="12"/>
+                    </Button>
                 </StackPanel>
             </Grid>
-
-            <!-- Settings Button -->
-            <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
-                    Style="{DynamicResource Esri_Button}"
-                    Command="{Binding OpenSettingsCommand}"
-                    HorizontalAlignment="Center"
-                    Margin="5"
-                    Width="32"
-                    Height="32"
-                    IsEnabled="True"
-                    ToolTip="Open Settings">
-                <Image Source="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/CogWheel16.png"
-                       Width="16" Height="16"/>
-            </Button>
 
             <!-- Instructions -->
             <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Margin="5,0,5,5"
