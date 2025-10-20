@@ -74,12 +74,16 @@
             <!-- Settings Button -->
             <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
                     Style="{DynamicResource Esri_Button}"
-                    Content="⚙ Settings"
                     Command="{Binding OpenSettingsCommand}"
                     HorizontalAlignment="Center"
                     Margin="5"
-                    Width="100"
-                    ToolTip="Open Settings"/>
+                    Width="32"
+                    Height="32"
+                    IsEnabled="True"
+                    ToolTip="Open Settings">
+                <Image Source="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/CogWheel16.png"
+                       Width="16" Height="16"/>
+            </Button>
 
             <!-- Instructions -->
             <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Margin="5,0,5,5"

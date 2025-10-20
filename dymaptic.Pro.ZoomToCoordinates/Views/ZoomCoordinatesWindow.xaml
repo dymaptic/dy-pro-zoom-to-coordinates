@@ -9,7 +9,7 @@
         xmlns:viewmodels="clr-namespace:dymaptic.Pro.ZoomToCoordinates.ViewModels" 
         d:DataContext="{d:DesignInstance Type=viewmodels:ZoomCoordinatesViewModel}"
         mc:Ignorable="d"
-        Title="Zoom To Coordinates" Height="400" Width="400"
+        Title="Zoom To Coordinates" Height="320" Width="400"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
     <controls:ProWindow.Resources>
@@ -198,11 +198,15 @@
 
                 <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
                         Style="{DynamicResource Esri_Button}"
-                        Content="⚙ Settings"
                         Command="{Binding OpenSettingsCommand}"
                         HorizontalAlignment="Center"
                         Margin="5,5,0,0"
-                        ToolTip="Open Settings"/>
+                        Width="32"
+                        Height="32"
+                        ToolTip="Open Settings">
+                    <Image Source="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/CogWheel16.png"
+                           Width="16" Height="16"/>
+                </Button>
             </Grid>
         </Grid>
 
