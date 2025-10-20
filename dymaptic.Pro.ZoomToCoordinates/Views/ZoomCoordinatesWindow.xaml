@@ -213,7 +213,7 @@
                                 </Border>
                             </ControlTemplate>
                         </Button.Template>
-                        <Image Source="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/CogWheel16.png"
+                        <Image Source="{Binding SettingsImageSource}"
                                Width="16" Height="16"/>
                     </Button>
                 </StackPanel>

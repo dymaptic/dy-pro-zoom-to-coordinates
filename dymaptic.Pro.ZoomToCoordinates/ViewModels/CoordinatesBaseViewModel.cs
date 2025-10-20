@@ -10,12 +10,28 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public abstract class CoordinatesBaseViewModel : PropertyChangedBase
 {
     public ICommand? CopyTextCommand { get; set; }
     public ICommand? OpenSettingsCommand { get; set; }
+
+    private ImageSource? _settingsImageSource = null;
+
+    /// <summary>
+    ///     Gets the settings icon image source from ArcGIS Pro resources.
+    /// </summary>
+    public ImageSource SettingsImageSource
+    {
+        get
+        {
+            if (_settingsImageSource == null)
+                _settingsImageSource = System.Windows.Application.Current.Resources["CogWheel16"] as ImageSource;
+            return _settingsImageSource;
+        }
+    }
     public static CoordinateFormatItem[] CoordinateFormats { get; } =
     [
         new CoordinateFormatItem { Format = CoordinateFormat.DecimalDegrees, DisplayName = "Decimal Degrees" },
