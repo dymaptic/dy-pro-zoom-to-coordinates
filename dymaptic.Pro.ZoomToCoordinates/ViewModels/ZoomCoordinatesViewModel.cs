@@ -41,6 +41,11 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
         {
             CopyText();
         });
+
+        OpenSettingsCommand = new RelayCommand(() =>
+        {
+            OpenSettings();
+        });
     }
     public ICommand ZoomCommand { get; }
 

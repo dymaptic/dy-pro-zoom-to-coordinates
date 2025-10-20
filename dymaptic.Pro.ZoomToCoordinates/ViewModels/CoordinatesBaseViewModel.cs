@@ -1,9 +1,12 @@
 ﻿using ArcGIS.Core.CIM;
 using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Contracts;
 using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
 using dymaptic.Pro.ZoomToCoordinates.Models;
+using dymaptic.Pro.ZoomToCoordinates.Views;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -12,6 +15,7 @@ namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public abstract class CoordinatesBaseViewModel : PropertyChangedBase
 {
     public ICommand? CopyTextCommand { get; set; }
+    public ICommand? OpenSettingsCommand { get; set; }
     public static CoordinateFormatItem[] CoordinateFormats { get; } =
     [
         new CoordinateFormatItem { Format = CoordinateFormat.DecimalDegrees, DisplayName = "Decimal Degrees" },
@@ -109,6 +113,32 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
         if (!string.IsNullOrEmpty(Display))
         {
             Clipboard.SetText(Display);
+        }
+    }
+
+    /// <summary>
+    ///     Opens the Settings window.
+    /// </summary>
+    public void OpenSettings()
+    {
+        // Already open?
+        if (_settingsView != null)
+            return;
+
+        _settingsView = new SettingsView
+        {
+            Owner = FrameworkApplication.Current.MainWindow
+        };
+        _settingsView.Closed += OnSettingsClosed;
+        _settingsView.Show();
+    }
+
+    private void OnSettingsClosed(object? o, EventArgs e)
+    {
+        if (_settingsView != null)
+        {
+            _settingsView.Closed -= OnSettingsClosed;
+            _settingsView = null;
         }
     }
 
@@ -415,4 +445,5 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
     private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
     private bool _showGraphic = _settings.ShowGraphic;
+    private SettingsView? _settingsView = null;
 }

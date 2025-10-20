@@ -20,6 +20,11 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         {
             CopyText();
         });
+
+        OpenSettingsCommand = new RelayCommand(() =>
+        {
+            OpenSettings();
+        });
     }
 
     public CoordinateFormatItem SelectedFormatItem
