@@ -251,6 +251,7 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
                     _yCoordinateString = _longLatDD.Latitude.ToString("F6");
                     Display = _longLatDD.DecimalDegrees;
                 }
+                ErrorMessage = string.Empty;
                 break;
 
             case CoordinateFormat.DegreesMinutesSeconds:
@@ -266,6 +267,7 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
                     _yCoordinateString = _longLatDMS.LatitudeDMS;
                     Display = _longLatDMS.DegreesMinutesSeconds;
                 }
+                ErrorMessage = string.Empty;
                 break;
 
             case CoordinateFormat.DegreesDecimalMinutes:
@@ -281,29 +283,41 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
                     _yCoordinateString = _longLatDDM.LatitudeDDM;
                     Display = _longLatDDM.DegreesDecimalMinutes;
                 }
+                ErrorMessage = string.Empty;
                 break;
 
             case CoordinateFormat.MGRS:
                 if (!string.IsNullOrEmpty(_mgrs.ErrorMessage))
                 {
                     ErrorMessage = _mgrs.ErrorMessage;
-                    break;
+                    _xCoordinateString = "";
+                    _yCoordinateString = "";
+                    Display = ErrorMessage;
                 }
-
-                _xCoordinateString = _mgrs.Easting.ToString();
-                _yCoordinateString = _mgrs.Northing.ToString();
-                Display = _showFormattedCoordinates ? _mgrs.Display : _mgrs.GeoCoordinateString;
+                else
+                {
+                    _xCoordinateString = _mgrs.Easting.ToString();
+                    _yCoordinateString = _mgrs.Northing.ToString();
+                    Display = _showFormattedCoordinates ? _mgrs.Display : _mgrs.GeoCoordinateString;
+                    ErrorMessage = string.Empty;
+                }
                 break;
 
             case CoordinateFormat.UTM:
-                if (!string.IsNullOrEmpty(_mgrs.ErrorMessage))
+                if (!string.IsNullOrEmpty(_utm.ErrorMessage))
                 {
-                    ErrorMessage = _mgrs.ErrorMessage;
-                    break;
+                    ErrorMessage = _utm.ErrorMessage;
+                    _xCoordinateString = "";
+                    _yCoordinateString = "";
+                    Display = ErrorMessage;
                 }
-                _xCoordinateString = _utm.Easting.ToString();
-                _yCoordinateString = _utm.Northing.ToString();
-                Display = _showFormattedCoordinates ? _utm.Display : _utm.GeoCoordinateString;
+                else
+                {
+                    _xCoordinateString = _utm.Easting.ToString();
+                    _yCoordinateString = _utm.Northing.ToString();
+                    Display = _showFormattedCoordinates ? _utm.Display : _utm.GeoCoordinateString;
+                    ErrorMessage = string.Empty;
+                }
                 break;
         }
 
