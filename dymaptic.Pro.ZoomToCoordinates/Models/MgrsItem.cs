@@ -406,23 +406,9 @@ public class MgrsItem : GridBaseItem
             ErrorMessage = string.Empty;
         }
         catch
-        {            
-            // If an exception is thrown, change the Northing and Easting values to 0 and try to recreate the MapPoint.
-            // (as lines of longitude converge at the poles, some 100 KM Grid IDs become super skinny).
-            try
-            {
-                initialGeoCoordinateString = $"{Zone}{LatitudeBand}{OneHundredKMGridID}{0:D5}{0:D5}";
-                MapPoint = MapPointBuilderEx.FromGeoCoordinateString(geoCoordString: initialGeoCoordinateString,
-                                                                      spatialReference: SpatialReferences.WGS84,
-                                                                      geoCoordType: GeoCoordinateType.MGRS,
-                                                                      geoCoordMode: FromGeoCoordinateMode.MgrsNewStyle);
-                Update(MapPoint);
-                ErrorMessage = string.Empty;
-            }
-            catch
-            {
-                ErrorMessage = $"Polar coordinate - MGRS logic not implemented for {initialGeoCoordinateString}. Choose a different latitude band.";
-            }
+        {
+            // If an exception is thrown, the coordinate is invalid (e.g., as lines of longitude converge at the poles, some 100 KM Grid IDs become super skinny).
+            ErrorMessage = $"Invalid MGRS coordinate - {initialGeoCoordinateString}. Easting/Northing values exceed valid range for this zone/grid. Choose a different latitude band or reduce values.";
         }
     }
 
