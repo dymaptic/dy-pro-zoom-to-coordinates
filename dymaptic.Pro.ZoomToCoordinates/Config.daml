@@ -34,19 +34,17 @@
 		<!-- Existing Esri buttons-->
           <group id="esri_map_tools" caption="Map Tools" appearsOnAddInTab="false">
               <splitButton refID="esri_mapping_exploreSplitButton" size="large" />
-			  <button refID="esri_mapping_prevExtentButton" size="middle" />
-			  <button refID="esri_mapping_nextExtentButton" size="middle" />
               <gallery refID="esri_mapping_basemapGallery" inline="false" size="large" />
               <button refID="esri_mapping_newMapButton" size="large" />
-          <splitButton refID="esri_mapping_addDataSplitButton" />
-          
+              <splitButton refID="esri_mapping_addDataSplitButton" />
+			  <button refID="esri_mapping_prevExtentButton" size="middle" />
+			  <button refID="esri_mapping_nextExtentButton" size="middle" />
         </group>
 		  <group id="esri_miscellaneous" caption="Miscellaneous" appearsOnAddInTab="false">
 			  <splitButton refID="esri_core_monitorBtn" size="large" />
 			  <button refID="esri_geoprocessing_toolsButton" size="large" />
 			  <button refID="esri_core_showContentsDockPane" size="middle" />
 			  <button refID="esri_core_showProjectDockPane" size="middle" />
-
 		  </group>
       </groups>
       <controls>
