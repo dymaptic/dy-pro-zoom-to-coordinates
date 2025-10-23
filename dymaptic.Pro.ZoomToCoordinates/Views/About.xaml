@@ -45,7 +45,7 @@
         </StackPanel>
 
         <!-- dymaptic Company Logo -->
-        <Image Grid.Row="2" HorizontalAlignment="Center" Width="300" Height="86" 
+        <Image Grid.Row="2" HorizontalAlignment="Center" Width="300" Height="86"
             Source="/dymaptic.Pro.ZoomToCoordinates;component/Images/dymaptic-logo-300x86.png" />
     </Grid>
 </controls:ProWindow>
