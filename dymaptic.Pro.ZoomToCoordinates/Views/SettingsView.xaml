@@ -9,7 +9,7 @@
         xmlns:converters="clr-namespace:dymaptic.Pro.ZoomToCoordinates.Converters" 
         d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
         mc:Ignorable="d"
-        Title="Settings" Height="305" Width="500"
+        Title="Settings" Height="340" MinHeight="340" Width="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
     <controls:ProWindow.Resources>
