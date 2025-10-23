@@ -138,23 +138,30 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
     public void OpenSettings()
     {
         // Already open?
-        if (_settingsView != null)
+        var existingWindow = ZoomToCoordinatesModule.GetOpenSettingsWindow();
+        if (existingWindow != null)
+        {
+            // Bring existing window to front
+            existingWindow.Activate();
             return;
+        }
 
-        _settingsView = new SettingsView
+        var settingsView = new SettingsView
         {
             Owner = FrameworkApplication.Current.MainWindow
         };
-        _settingsView.Closed += OnSettingsClosed;
-        _settingsView.Show();
+        settingsView.Closed += OnSettingsClosed;
+        ZoomToCoordinatesModule.SetOpenSettingsWindow(settingsView);
+        settingsView.Show();
     }
 
     private void OnSettingsClosed(object? o, EventArgs e)
     {
-        if (_settingsView != null)
+        var settingsView = ZoomToCoordinatesModule.GetOpenSettingsWindow();
+        if (settingsView != null)
         {
-            _settingsView.Closed -= OnSettingsClosed;
-            _settingsView = null;
+            settingsView.Closed -= OnSettingsClosed;
+            ZoomToCoordinatesModule.SetOpenSettingsWindow(null);
         }
     }
 
@@ -475,5 +482,4 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
     private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
     protected bool _showGraphic = _settings.ShowGraphic;
-    private SettingsView? _settingsView = null;
 }
