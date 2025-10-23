@@ -1,6 +1,7 @@
 using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Framework;
 using dymaptic.Pro.ZoomToCoordinates.Models;
+using System;
 using System.Linq;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
@@ -25,6 +26,9 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         {
             OpenSettings();
         });
+
+        // Subscribe to settings changes
+        ZoomToCoordinatesModule.Current.SettingsUpdated += OnSettingsUpdated;
     }
 
     public CoordinateFormatItem SelectedFormatItem
@@ -134,6 +138,20 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 _utm.Update(_mapPoint);
                 break;
         }
+        UpdateDisplay();
+    }
+
+    private void OnSettingsUpdated(object? sender, EventArgs e)
+    {
+        // Update backing fields from settings
+        _showFormattedCoordinates = _settings.ShowFormattedCoordinates;
+        _showGraphic = _settings.ShowGraphic;
+
+        // Notify UI of settings changes
+        NotifyPropertyChanged(nameof(ShowFormattedCoordinates));
+        NotifyPropertyChanged(nameof(ShowGraphic));
+
+        // Refresh display with new formatting settings
         UpdateDisplay();
     }
 

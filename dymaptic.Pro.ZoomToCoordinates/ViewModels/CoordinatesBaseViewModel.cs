@@ -474,6 +474,6 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
     private CoordinateFormat _selectedFormat = _settings.CoordinateFormat;
     private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
-    private bool _showGraphic = _settings.ShowGraphic;
+    protected bool _showGraphic = _settings.ShowGraphic;
     private SettingsView? _settingsView = null;
 }

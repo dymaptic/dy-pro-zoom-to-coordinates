@@ -46,6 +46,9 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
         {
             OpenSettings();
         });
+
+        // Subscribe to settings changes
+        ZoomToCoordinatesModule.Current.SettingsUpdated += OnSettingsUpdated;
     }
     public ICommand ZoomCommand { get; }
 
@@ -1000,6 +1003,22 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                 CreateGraphic();
             }
         });
+    }
+
+    private void OnSettingsUpdated(object? sender, EventArgs e)
+    {
+        // Update backing fields from settings
+        _showFormattedCoordinates = _settings.ShowFormattedCoordinates;
+        _showGraphic = _settings.ShowGraphic;
+        _scale = _settings.Scale;
+
+        // Notify UI of settings changes
+        NotifyPropertyChanged(nameof(ShowFormattedCoordinates));
+        NotifyPropertyChanged(nameof(ShowGraphic));
+        NotifyPropertyChanged(nameof(Scale));
+
+        // Refresh display with new formatting settings
+        UpdateDisplay();
     }
 
     private static readonly char[] separator = [' '];
