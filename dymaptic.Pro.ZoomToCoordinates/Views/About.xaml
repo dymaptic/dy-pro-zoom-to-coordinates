@@ -26,7 +26,7 @@
         <!-- Application Name and Version -->
         <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top">
             <TextBlock Text="dymaptic Coordinates" FontSize="24" FontWeight="Bold" />
-            <TextBlock Text="Version 1.2" FontSize="16" FontStyle="Italic" />
+            <TextBlock Text="Version 2.0" FontSize="16" FontStyle="Italic" />
         </StackPanel>
 
         <!-- Application and Company Description -->
