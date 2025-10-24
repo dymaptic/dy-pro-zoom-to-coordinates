@@ -9,7 +9,7 @@
         xmlns:converters="clr-namespace:dymaptic.Pro.ZoomToCoordinates.Converters" 
         d:DataContext="{d:DesignInstance Type=viewmodels:GetCoordinatesViewModel}"
         mc:Ignorable="d"
-        Title="Get Coordinates" Height="185" Width="300"
+        Title="Get Coordinates" Height="190" MinHeight="190" Width="300"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
     <controls:ProWindow.Resources>
@@ -49,7 +49,7 @@
             <TextBox Grid.Row="2" Grid.Column="1" Margin="5,5,10,5" Text="{Binding YCoordinateString, Mode=OneWay}" IsReadOnly="True" />
 
             <!-- Display -->
-            <Button Style="{DynamicResource Esri_Button}" Grid.Row="3" Grid.Column="0" Margin="5" Content="Copy" Command="{Binding CopyTextCommand}"/>
+            <Button Style="{DynamicResource Esri_Button}" Grid.Row="3" Grid.Column="0" Margin="5" Content="Copy" ToolTip="Copy coordinates to clipboard in the currently selected format." Command="{Binding CopyTextCommand}"/>
             <TextBox Grid.Row="3" Grid.Column="1" Margin="5,5,10,5" Text="{Binding Display, Mode=OneWay}" IsReadOnly="True"/>
 
             <!-- Format and Create Graphic Control -->
@@ -93,10 +93,11 @@
                 </StackPanel>
             </Grid>
 
-            <!-- Instructions -->
-            <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Margin="5,0,5,5"
-                   Text="{Binding Tooltip}" TextWrapping="Wrap" MinHeight="45"
-                   HorizontalAlignment="Center"/>
+            <!-- Frozen Status -->
+            <TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="5,5,5,5"
+                   Text="{Binding FrozenStatusText}" TextWrapping="Wrap"
+                   HorizontalAlignment="Center" FontWeight="SemiBold" FontSize="11"
+                   Foreground="{DynamicResource Esri_TextStyleDefaultBrush}"/>
         </Grid>
     </Border>
 </controls:ProWindow>

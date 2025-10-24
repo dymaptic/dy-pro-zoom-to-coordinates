@@ -66,8 +66,34 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
                 Tooltip = _activated
                       ? "Move the cursor to get coordinates."
                       : "Tool is deactivated. To reactivate it, go to the dymaptic tab and click the \"Get Coordinates\" button on the toolbar.";
-            } 
+            }
         }
+    }
+
+    /// <summary>
+    ///     Tracks whether coordinate updates are frozen (paused).
+    /// </summary>
+    public bool IsFrozen
+    {
+        get => _isFrozen;
+        set
+        {
+            if (SetProperty(ref _isFrozen, value))
+            {
+                FrozenStatusText = _isFrozen
+                    ? "Coordinates frozen (double-click map to unfreeze)"
+                    : "Coordinates updating (double-click map to freeze & copy)";
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Text indicating the frozen status to the user.
+    /// </summary>
+    public string FrozenStatusText
+    {
+        get => _frozenStatusText;
+        set => SetProperty(ref _frozenStatusText, value);
     }
 
     /// <summary>
@@ -158,4 +184,6 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
     private bool _enableFormatting;
     private bool _activated;
     private string _tooltip = "";
+    private bool _isFrozen = false;
+    private string _frozenStatusText = "Coordinates updating (double-click map to freeze & copy)";
 }

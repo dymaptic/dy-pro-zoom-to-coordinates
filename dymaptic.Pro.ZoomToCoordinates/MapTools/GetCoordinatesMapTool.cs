@@ -17,6 +17,11 @@ internal class GetCoordinatesMapTool : MapTool
     /// </summary>
     private GetCoordinatesViewModel? ViewModel;
 
+    /// <summary>
+    ///     Tracks whether coordinate updates are frozen (paused)
+    /// </summary>
+    private bool _isFrozen = false;
+
     protected override Task OnToolActivateAsync(bool active)
     {
         // Always ensure the ProWindow opens when the MapTool is activated.
@@ -71,13 +76,43 @@ internal class GetCoordinatesMapTool : MapTool
             e.Handled = true; //Handle the event args to get the call to the corresponding async method
     }
 
+    protected override void OnToolDoubleClick(MapViewMouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
+        {
+            // Toggle freeze state
+            _isFrozen = !_isFrozen;
+
+            // Update ViewModel with freeze state
+            if (ViewModel is not null)
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    ViewModel.IsFrozen = _isFrozen;
+
+                    // Copy coordinates to clipboard when freezing
+                    if (_isFrozen)
+                    {
+                        ViewModel.CopyText();
+                    }
+                });
+            }
+
+            e.Handled = true;
+        }
+    }
+
     /// <summary>
-    ///     As the user moves the mouse, update the coordinates.  
+    ///     As the user moves the mouse, update the coordinates.
     ///     Since this could trigger a ton, throttle it to improve performance.
     /// </summary>
     /// <param name="e"></param>
     protected async override void OnToolMouseMove(MapViewMouseEventArgs e)
     {
+        // Don't update if coordinates are frozen
+        if (_isFrozen)
+            return;
+
         if (_throttleTimer.Elapsed < _throttleDelay)
             return; // too soon, skip
 
