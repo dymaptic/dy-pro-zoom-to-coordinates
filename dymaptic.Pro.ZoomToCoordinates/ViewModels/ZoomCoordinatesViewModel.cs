@@ -17,18 +17,12 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
     // Constructor
     public ZoomCoordinatesViewModel()
     {
-        // Create a MapPoint right off the bat with the default coordinates
-        _longLatDD.Update(_longitude, _latitude);
-        _mapPoint = _longLatDD.MapPoint;
-
-        // Set initially for the Display
-        _xCoordinateString = _longLatDD.Longitude.ToString("F6");
-        _yCoordinateString = _longLatDD.Latitude.ToString("F6");
-
         // Prevent null reference
         _selectedLatitudeBandItem = LatitudeBands.First(band => band.Key == "C");
 
-        UpdateDisplay();
+        // Initialize with map center if available, otherwise use settings default
+        _ = InitializeWithMapCenterAsync();
+
         UpdateCoordinateLabels();
 
         // Command is grayed out if there isn't an active map view
@@ -49,6 +43,53 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
 
         // Subscribe to settings changes
         ZoomToCoordinatesModule.Current.SettingsUpdated += OnSettingsUpdated;
+    }
+
+    /// <summary>
+    /// Initializes the coordinate values with the current map view's center point.
+    /// Falls back to settings default if no active map view.
+    /// </summary>
+    private async Task InitializeWithMapCenterAsync()
+    {
+        MapPoint? centerPoint = null;
+
+        if (MapView.Active != null)
+        {
+            centerPoint = await QueuedTask.Run(() =>
+            {
+                var camera = MapView.Active?.Camera;
+                if (camera == null) return null;
+
+                // Get center point from camera
+                var point = MapPointBuilderEx.CreateMapPoint(camera.X, camera.Y, camera.SpatialReference);
+
+                // Convert to WGS84 if needed
+                if (point.SpatialReference?.Wkid != 4326)
+                {
+                    return (MapPoint)GeometryEngine.Instance.Project(point, SpatialReferences.WGS84);
+                }
+
+                return point;
+            });
+        }
+
+        // Use map center if available, otherwise fall back to settings default
+        if (centerPoint != null)
+        {
+            _longitude = centerPoint.X;
+            _latitude = centerPoint.Y;
+        }
+        // else: keep the settings defaults that were initialized in the field declarations
+
+        // Update the coordinate models and display
+        _longLatDD.Update(_longitude, _latitude);
+        _mapPoint = _longLatDD.MapPoint;
+
+        // Set initially for the Display
+        _xCoordinateString = _longLatDD.Longitude.ToString("F6");
+        _yCoordinateString = _longLatDD.Latitude.ToString("F6");
+
+        UpdateDisplay();
     }
     public ICommand ZoomCommand { get; }
 
@@ -1041,10 +1082,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
     /// <summary>
     ///     Regardless of selected coordinate format, we ALWAYS store a longitude value in decimal degrees.
     /// </summary>
-    private double _longitude = _settings.Longitude;
+    private double _longitude = 0.0;
 
     /// <summary>
     ///     Regardless of selected coordinate format, we ALWAYS store a latitude value in decimal degrees.
     /// </summary>
-    private double _latitude = _settings.Latitude;
+    private double _latitude = 0.0;
 }

@@ -18,34 +18,6 @@ internal class SettingsViewModel : Page
 
 	public string[] FontStyleSchemes { get; set; } = ["Regular", "Bold", "Italic"];
 
-	public double Longitude
-	{
-		get => _settings.Longitude;
-		set
-		{
-			if (_settings.Longitude != value)
-			{
-				_settings.Longitude = value;
-				ZoomToCoordinatesModule.SaveSettings(_settings);
-				NotifyPropertyChanged();
-			}
-		}
-	}
-
-	public double Latitude
-	{
-		get => _settings.Latitude;
-		set
-		{
-			if (_settings.Latitude != value)
-			{
-				_settings.Latitude = value;
-				ZoomToCoordinatesModule.SaveSettings(_settings);
-				NotifyPropertyChanged();
-			}
-		}
-	}
-
 	public double Scale
 	{
 		get => _settings.Scale;
@@ -190,9 +162,7 @@ internal class SettingsViewModel : Page
 	{
 		_settings = ZoomToCoordinatesModule.GetSettings();
 
-		// Location-related
-		NotifyPropertyChanged(nameof(Latitude));
-		NotifyPropertyChanged(nameof(Longitude));
+		// Default settings
 		NotifyPropertyChanged(nameof(Scale));
 		NotifyPropertyChanged(nameof(ShowFormattedCoordinates));
 

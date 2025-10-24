@@ -9,7 +9,7 @@
         xmlns:converters="clr-namespace:dymaptic.Pro.ZoomToCoordinates.Converters" 
         d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
         mc:Ignorable="d"
-        Title="Settings" Height="340" MinHeight="340" Width="500"
+        Title="Settings" Height="290" MinHeight="290" Width="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
     <controls:ProWindow.Resources>
@@ -42,24 +42,15 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
                     <RowDefinition Height="auto"/>
-                    <RowDefinition Height="auto"/>
-                    <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="90"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Label Grid.Row="0" Grid.Column="0" Content="Latitude:"/>
-                <TextBox Grid.Row="0" Grid.Column="1" Margin="5,5,10,5" Text="{Binding Latitude}"
-                         ToolTip="Starting Latitude when window opens."/>
 
-                <Label Grid.Row="1" Grid.Column="0" Content="Longitude:"/>
-                <TextBox Grid.Row="1" Grid.Column="1" Margin="5,5,10,5" Text="{Binding Longitude}"
-                         ToolTip="Starting Longitude when window opens."/>
-
-                <Label Grid.Row="2" Grid.Column="0" Content="Zoom Scale:"/>
-                <StackPanel Orientation="Vertical" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="5,8,0,0">
+                <Label Grid.Row="0" Grid.Column="0" Content="Zoom Scale:"/>
+                <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Margin="5,8,0,0">
                     <RadioButton Content="5,000,000 - State" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=5000000}" Margin="0,0,0,5"/>
                     <RadioButton Content="1,000,000 - County" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=1000000}" Margin="0,0,0,5"/>
                     <RadioButton Content="100,000 - City" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=100000}" Margin="0,0,0,5"/>
@@ -67,7 +58,7 @@
                     <RadioButton Content="1,000 - Street" IsChecked="{Binding Scale, Converter={StaticResource ResourceKey=scaleToBoolConverterKey}, ConverterParameter=1000}" Margin="0,0,0,5"/>
                 </StackPanel>
 
-                <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal">
+                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal">
                     <Label Content="Format Coordinates?"/>
                     <CheckBox Margin="5,5,0,0" IsChecked="{Binding ShowFormattedCoordinates}"/>
                 </StackPanel>
