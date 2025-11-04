@@ -163,6 +163,9 @@ internal class GetCoordinatesMapTool : MapTool
             _getCoordinatesWindow = null;
         }
 
+        // Reset frozen state when window is closed
+        _isFrozen = false;
+
         // Deactivate the map tool if user closes the Pro Window
         FrameworkApplication.SetCurrentToolAsync("esri_mapping_exploreTool");
     }
