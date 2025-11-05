@@ -1,4 +1,5 @@
 ﻿using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Editing.Controls;
 using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
@@ -11,6 +12,16 @@ using System.Threading.Tasks;
 namespace dymaptic.Pro.ZoomToCoordinates.MapTools;
 internal class GetCoordinatesMapTool : MapTool
 {
+    /// <summary>
+    ///     Defines the ViewModel as a property since we're accessing it a bunch.
+    /// </summary>
+    private GetCoordinatesViewModel? ViewModel;
+
+    /// <summary>
+    ///     Tracks whether coordinate updates are frozen (paused)
+    /// </summary>
+    private bool _isFrozen = false;
+
     protected override Task OnToolActivateAsync(bool active)
     {
         // Always ensure the ProWindow opens when the MapTool is activated.
@@ -27,7 +38,35 @@ internal class GetCoordinatesMapTool : MapTool
                 _getCoordinatesWindow.Show();
             });
         }
+
+        // Access the WPF UI thread to safely retrieve the ViewModel from the DataContext.
+        // WPF elements (like DataContext) are bound to the UI thread and cannot be accessed from background threads.
+        // This ensures thread-safe interaction from within the MapTool code.
+        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        {
+            ViewModel = _getCoordinatesWindow?.DataContext as GetCoordinatesViewModel;
+            if (ViewModel is not null)
+            {
+                ViewModel.Activated = true;
+            }
+        });
+
         return base.OnToolActivateAsync(active);
+    }
+
+    /// <summary>
+    ///     When the tool deactivates, notify the ViewModel so that we can provide instructions to the user how to reactivate it.
+    /// </summary>
+    /// <param name="hasMapViewChanged"></param>
+    /// <returns></returns>
+    protected override Task OnToolDeactivateAsync(bool hasMapViewChanged)
+    {
+        if (ViewModel is not null)
+        {
+            ViewModel.Activated = false;
+        }
+
+        return base.OnToolDeactivateAsync(hasMapViewChanged);
     }
 
 
@@ -37,13 +76,43 @@ internal class GetCoordinatesMapTool : MapTool
             e.Handled = true; //Handle the event args to get the call to the corresponding async method
     }
 
+    protected override void OnToolDoubleClick(MapViewMouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
+        {
+            // Toggle freeze state
+            _isFrozen = !_isFrozen;
+
+            // Update ViewModel with freeze state
+            if (ViewModel is not null)
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    ViewModel.IsFrozen = _isFrozen;
+
+                    // Copy coordinates to clipboard when freezing
+                    if (_isFrozen)
+                    {
+                        ViewModel.CopyText();
+                    }
+                });
+            }
+
+            e.Handled = true;
+        }
+    }
+
     /// <summary>
-    ///     As the user moves the mouse, update the coordinates.  
+    ///     As the user moves the mouse, update the coordinates.
     ///     Since this could trigger a ton, throttle it to improve performance.
     /// </summary>
     /// <param name="e"></param>
     protected async override void OnToolMouseMove(MapViewMouseEventArgs e)
     {
+        // Don't update if coordinates are frozen
+        if (_isFrozen)
+            return;
+
         if (_throttleTimer.Elapsed < _throttleDelay)
             return; // too soon, skip
 
@@ -69,17 +138,17 @@ internal class GetCoordinatesMapTool : MapTool
     /// <returns></returns>
     protected async override Task HandleMouseDownAsync(MapViewMouseButtonEventArgs e)
     {
-        if (_getCoordinatesWindow?.DataContext is not GetCoordinatesViewModel viewModel) { return; }
+        if (ViewModel is null) { return; }
 
         MapPoint? mapPoint = await ToWgs84Async(e.ClientPoint);
 
         if (mapPoint == null) { return; }
 
-        viewModel.MapPoint = mapPoint;
-        viewModel.UpdateCoordinates();
-        if (viewModel.ShowGraphic)
+        ViewModel.MapPoint = mapPoint;
+        ViewModel.UpdateCoordinates();
+        if (ViewModel.ShowGraphic)
         {
-            await QueuedTask.Run(() => viewModel.CreateGraphic());
+            await QueuedTask.Run(() => ViewModel.CreateGraphic());
         } 
     }
 
@@ -93,6 +162,9 @@ internal class GetCoordinatesMapTool : MapTool
             _getCoordinatesWindow.Closed -= OnGetCoordinatesWindowClosed;
             _getCoordinatesWindow = null;
         }
+
+        // Reset frozen state when window is closed
+        _isFrozen = false;
 
         // Deactivate the map tool if user closes the Pro Window
         FrameworkApplication.SetCurrentToolAsync("esri_mapping_exploreTool");

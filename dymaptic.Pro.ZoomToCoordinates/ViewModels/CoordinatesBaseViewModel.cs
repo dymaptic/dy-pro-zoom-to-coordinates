@@ -1,17 +1,37 @@
 ﻿using ArcGIS.Core.CIM;
 using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Contracts;
 using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
 using dymaptic.Pro.ZoomToCoordinates.Models;
+using dymaptic.Pro.ZoomToCoordinates.Views;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
 public abstract class CoordinatesBaseViewModel : PropertyChangedBase
 {
     public ICommand? CopyTextCommand { get; set; }
+    public ICommand? OpenSettingsCommand { get; set; }
+
+    private ImageSource? _settingsImageSource = null;
+
+    /// <summary>
+    ///     Gets the settings icon image source from ArcGIS Pro resources.
+    /// </summary>
+    public ImageSource SettingsImageSource
+    {
+        get
+        {
+            if (_settingsImageSource == null)
+                _settingsImageSource = System.Windows.Application.Current.Resources["CogWheel16"] as ImageSource;
+            return _settingsImageSource;
+        }
+    }
     public static CoordinateFormatItem[] CoordinateFormats { get; } =
     [
         new CoordinateFormatItem { Format = CoordinateFormat.DecimalDegrees, DisplayName = "Decimal Degrees" },
@@ -112,6 +132,39 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
         }
     }
 
+    /// <summary>
+    ///     Opens the Settings window.
+    /// </summary>
+    public void OpenSettings()
+    {
+        // Already open?
+        var existingWindow = ZoomToCoordinatesModule.GetOpenSettingsWindow();
+        if (existingWindow != null)
+        {
+            // Bring existing window to front
+            existingWindow.Activate();
+            return;
+        }
+
+        var settingsView = new SettingsView
+        {
+            Owner = FrameworkApplication.Current.MainWindow
+        };
+        settingsView.Closed += OnSettingsClosed;
+        ZoomToCoordinatesModule.SetOpenSettingsWindow(settingsView);
+        settingsView.Show();
+    }
+
+    private void OnSettingsClosed(object? o, EventArgs e)
+    {
+        var settingsView = ZoomToCoordinatesModule.GetOpenSettingsWindow();
+        if (settingsView != null)
+        {
+            settingsView.Closed -= OnSettingsClosed;
+            ZoomToCoordinatesModule.SetOpenSettingsWindow(null);
+        }
+    }
+
     public void CreateGraphic()
     {
         if (_mapPoint == null) { return; }
@@ -205,6 +258,7 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
                     _yCoordinateString = _longLatDD.Latitude.ToString("F6");
                     Display = _longLatDD.DecimalDegrees;
                 }
+                ErrorMessage = string.Empty;
                 break;
 
             case CoordinateFormat.DegreesMinutesSeconds:
@@ -220,6 +274,7 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
                     _yCoordinateString = _longLatDMS.LatitudeDMS;
                     Display = _longLatDMS.DegreesMinutesSeconds;
                 }
+                ErrorMessage = string.Empty;
                 break;
 
             case CoordinateFormat.DegreesDecimalMinutes:
@@ -235,29 +290,41 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
                     _yCoordinateString = _longLatDDM.LatitudeDDM;
                     Display = _longLatDDM.DegreesDecimalMinutes;
                 }
+                ErrorMessage = string.Empty;
                 break;
 
             case CoordinateFormat.MGRS:
                 if (!string.IsNullOrEmpty(_mgrs.ErrorMessage))
                 {
                     ErrorMessage = _mgrs.ErrorMessage;
-                    break;
+                    _xCoordinateString = "";
+                    _yCoordinateString = "";
+                    Display = ErrorMessage;
                 }
-
-                _xCoordinateString = _mgrs.Easting.ToString();
-                _yCoordinateString = _mgrs.Northing.ToString();
-                Display = _showFormattedCoordinates ? _mgrs.Display : _mgrs.GeoCoordinateString;
+                else
+                {
+                    _xCoordinateString = _mgrs.Easting.ToString();
+                    _yCoordinateString = _mgrs.Northing.ToString();
+                    Display = _showFormattedCoordinates ? _mgrs.Display : _mgrs.GeoCoordinateString;
+                    ErrorMessage = string.Empty;
+                }
                 break;
 
             case CoordinateFormat.UTM:
-                if (!string.IsNullOrEmpty(_mgrs.ErrorMessage))
+                if (!string.IsNullOrEmpty(_utm.ErrorMessage))
                 {
-                    ErrorMessage = _mgrs.ErrorMessage;
-                    break;
+                    ErrorMessage = _utm.ErrorMessage;
+                    _xCoordinateString = "";
+                    _yCoordinateString = "";
+                    Display = ErrorMessage;
                 }
-                _xCoordinateString = _utm.Easting.ToString();
-                _yCoordinateString = _utm.Northing.ToString();
-                Display = _showFormattedCoordinates ? _utm.Display : _utm.GeoCoordinateString;
+                else
+                {
+                    _xCoordinateString = _utm.Easting.ToString();
+                    _yCoordinateString = _utm.Northing.ToString();
+                    Display = _showFormattedCoordinates ? _utm.Display : _utm.GeoCoordinateString;
+                    ErrorMessage = string.Empty;
+                }
                 break;
         }
 
@@ -414,5 +481,5 @@ public abstract class CoordinatesBaseViewModel : PropertyChangedBase
     private CoordinateFormat _selectedFormat = _settings.CoordinateFormat;
     private string _xCoordinateLabel = "Longitude:";
     private string _yCoordinateLabel = "Latitude:";
-    private bool _showGraphic = _settings.ShowGraphic;
+    protected bool _showGraphic = _settings.ShowGraphic;
 }

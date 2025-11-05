@@ -9,8 +9,9 @@
         xmlns:viewmodels="clr-namespace:dymaptic.Pro.ZoomToCoordinates.ViewModels" 
         d:DataContext="{d:DesignInstance Type=viewmodels:ZoomCoordinatesViewModel}"
         mc:Ignorable="d"
-        Title="Zoom To Coordinates" Height="400" Width="400"
-        WindowStartupLocation="CenterOwner">
+        Title="Zoom To Coordinates" Height="320" Width="400"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
     <controls:ProWindow.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -177,7 +178,7 @@
                 <RadioButton Content="1,000 - Street" IsChecked="{Binding Scale, Converter={StaticResource scaleToBoolConverterKey}, ConverterParameter=1000}" Margin="0,0,0,5"/>
             </StackPanel>
 
-            <!-- Nested 2x2 Grid -->
+            <!-- Nested Grid -->
             <Grid Grid.Column="2" Margin="0,0,5,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -192,7 +193,30 @@
                 <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowFormattedCoordinates}" VerticalAlignment="Center" Margin="0,0,0,5"/>
 
                 <Label Grid.Row="1" Grid.Column="0" Content="Create Graphic?" VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Right"/>
-                <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowGraphic}" VerticalAlignment="Center" ToolTip="Create a coordinates graphic when you click zoom."/>
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <CheckBox IsChecked="{Binding ShowGraphic}" VerticalAlignment="Center" Margin="0,0,5,0" ToolTip="Create a coordinates graphic when you click zoom."/>
+                    <!-- Settings Button -->
+                    <Button Command="{Binding OpenSettingsCommand}"
+                            Width="16"
+                            Height="16"
+                            Padding="0"
+                            Margin="5,0,0,0"
+                            BorderThickness="0"
+                            Background="Transparent"
+                            ToolTip="Open Settings">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <Image Source="{Binding SettingsImageSource}"
+                               Width="16" Height="16"/>
+                    </Button>
+                </StackPanel>
             </Grid>
         </Grid>
 

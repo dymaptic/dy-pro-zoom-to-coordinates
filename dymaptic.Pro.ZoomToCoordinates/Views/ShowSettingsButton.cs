@@ -9,24 +9,30 @@ internal class ShowSettingsButton : Button
 	protected override void OnClick()
 	{
 		//already open?
-		if (_settingsview != null)
+		var existingWindow = ZoomToCoordinatesModule.GetOpenSettingsWindow();
+		if (existingWindow != null)
+		{
+			// Bring existing window to front
+			existingWindow.Activate();
 			return;
-        _settingsview = new SettingsView
+		}
+
+		var settingsView = new SettingsView
         {
             Owner = FrameworkApplication.Current.MainWindow
         };
-        _settingsview.Closed += OnSettingsClosed;
-		_settingsview.Show();
+        settingsView.Closed += OnSettingsClosed;
+		ZoomToCoordinatesModule.SetOpenSettingsWindow(settingsView);
+		settingsView.Show();
 	}
 
     private void OnSettingsClosed(object? o, EventArgs e)
     {
-        if (_settingsview != null)
+		var settingsView = ZoomToCoordinatesModule.GetOpenSettingsWindow();
+        if (settingsView != null)
         {
-            _settingsview.Closed -= OnSettingsClosed;
-            _settingsview = null;
+            settingsView.Closed -= OnSettingsClosed;
+			ZoomToCoordinatesModule.SetOpenSettingsWindow(null);
         }
     }
-
-    private SettingsView? _settingsview = null;
 }

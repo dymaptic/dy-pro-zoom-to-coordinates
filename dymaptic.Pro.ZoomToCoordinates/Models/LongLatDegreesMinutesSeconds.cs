@@ -55,6 +55,14 @@ public class LongLatDegreesMinutesSeconds : LongLatItem
         string longMinutes = parts[4].TrimStart('0');
         string longSeconds = parts[5][..^1].TrimStart('0');
 
+        // Normalize empty minutes strings
+        latMinutes = string.IsNullOrWhiteSpace(latMinutes) ? "0" : latMinutes;
+        longMinutes = string.IsNullOrWhiteSpace(longMinutes) ? "0" : longMinutes;
+
+        // Normalize empty seconds strings
+        latSeconds = latSeconds == ".00" ? "0" : latSeconds;
+        longSeconds = longSeconds == ".00" ? "0" : longSeconds;
+
         LatitudeDMS = $"{latDegrees} {latMinutes} {latSeconds} {latitudeLabel}";
         LongitudeDMS = $"{longDegrees} {longMinutes} {longSeconds} {longitudeLabel}";
 

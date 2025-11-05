@@ -1,6 +1,7 @@
 using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Framework;
 using dymaptic.Pro.ZoomToCoordinates.Models;
+using System;
 using System.Linq;
 
 namespace dymaptic.Pro.ZoomToCoordinates.ViewModels;
@@ -20,6 +21,14 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         {
             CopyText();
         });
+
+        OpenSettingsCommand = new RelayCommand(() =>
+        {
+            OpenSettings();
+        });
+
+        // Subscribe to settings changes
+        ZoomToCoordinatesModule.Current.SettingsUpdated += OnSettingsUpdated;
     }
 
     public CoordinateFormatItem SelectedFormatItem
@@ -33,6 +42,58 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
             UpdateCoordinateLabels();
             UpdateCoordinates();
         }
+    }
+
+    /// <summary>
+    ///     A tooltip is only provided for the GetCoordinates window if the MapTool is deactivated, providing instructions to the user how to reactivaate it.
+    /// </summary>
+    public string Tooltip
+    {
+        get => _tooltip;
+        set => SetProperty(ref _tooltip, value);
+    }
+
+    /// <summary>
+    ///     Tracks whether the MapTool is activated or not.
+    /// </summary>
+    public bool Activated
+    {
+        get => _activated;
+        set
+        {
+            if (SetProperty(ref _activated, value))
+            {
+                Tooltip = _activated
+                      ? "Move the cursor to get coordinates."
+                      : "Tool is deactivated. To reactivate it, go to the dymaptic tab and click the \"Get Coordinates\" button on the toolbar.";
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Tracks whether coordinate updates are frozen (paused).
+    /// </summary>
+    public bool IsFrozen
+    {
+        get => _isFrozen;
+        set
+        {
+            if (SetProperty(ref _isFrozen, value))
+            {
+                FrozenStatusText = _isFrozen
+                    ? "Coordinates frozen (double-click map to unfreeze)"
+                    : "Coordinates updating (double-click map to freeze & copy)";
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Text indicating the frozen status to the user.
+    /// </summary>
+    public string FrozenStatusText
+    {
+        get => _frozenStatusText;
+        set => SetProperty(ref _frozenStatusText, value);
     }
 
     /// <summary>
@@ -106,5 +167,23 @@ public class GetCoordinatesViewModel : CoordinatesBaseViewModel
         UpdateDisplay();
     }
 
+    private void OnSettingsUpdated(object? sender, EventArgs e)
+    {
+        // Update backing fields from settings
+        _showFormattedCoordinates = _settings.ShowFormattedCoordinates;
+        _showGraphic = _settings.ShowGraphic;
+
+        // Notify UI of settings changes
+        NotifyPropertyChanged(nameof(ShowFormattedCoordinates));
+        NotifyPropertyChanged(nameof(ShowGraphic));
+
+        // Refresh display with new formatting settings
+        UpdateDisplay();
+    }
+
     private bool _enableFormatting;
+    private bool _activated;
+    private string _tooltip = "";
+    private bool _isFrozen = false;
+    private string _frozenStatusText = "Coordinates updating (double-click map to freeze & copy)";
 }

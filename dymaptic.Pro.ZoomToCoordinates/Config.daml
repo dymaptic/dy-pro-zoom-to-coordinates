@@ -1,46 +1,64 @@
 ﻿<ArcGIS defaultAssembly="dymaptic.Pro.ZoomToCoordinates.dll" defaultNamespace="dymaptic.Pro.ZoomToCoordinates" xmlns="http://schemas.esri.com/DADF/Registry" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.esri.com/DADF/Registry file:///C:/Program%20Files/ArcGIS/Pro/bin/ArcGIS.Desktop.Framework.xsd">
-  <AddInInfo id="{c3985968-87f0-4fd7-adkl-159710c61ac2}" version="1.2" desktopVersion="3.3">
-    <Name>dymaptic.Pro.ZoomToCoordinates</Name>
-    <Description>The Zoom to Coordinates Add-In, created by dymaptic, is an open-source solution for ArcGIS Pro, fully compatible with version 3.3 and above. It is released under the permissive MIT license, and its source code can be accessed on GitHub. Dymaptic is a leading woman-owned GIS software development company and an Esri Gold Partner that specializes in providing innovative and tailored GIS solutions including custom Add-In development. To learn more about dymaptic and explore our cutting-edge solutions, visit our homepage at dymaptic.com</Description>
-    <Image>Images\dymaptic-logo---circle.png</Image>
+  <AddInInfo id="{c3985968-87f0-4fd7-adkl-159710c61ac2}" version="2.0" desktopVersion="3.3">
+    <Name>dymaptic Coordinates Add-In</Name>
+    <Description>The dymaptic Coordinates Add-In is an open-source solution for ArcGIS Pro, fully compatible with version 3.3 and above. It is released under the permissive MIT license, and its source code can be accessed on GitHub. dymaptic is a leading woman-owned GIS software development company and an Esri Gold Partner that specializes in providing innovative and tailored GIS solutions including custom Add-In development. To learn more about dymaptic and explore our cutting-edge solutions, visit our homepage at dymaptic.com</Description>
+    <Image>Images\dymaptic-logo.xaml</Image>
     <Author>dymaptic</Author>
     <Company>dymaptic</Company>
-    <Date>4/14/2025</Date>
+    <Date>11/5/2025</Date>
     <Subject>Map Exploration</Subject>
     <!-- Note subject can be one or more of these topics:
                     Content, Framework, Editing, Geodatabase, Geometry, Geoprocessing, Layouts, Map Authoring, Map Exploration -->
   </AddInInfo>
   <modules>
     <insertModule id="ZoomToCoordinates_Module" className="ZoomToCoordinatesModule" autoLoad="false" caption="Zoom To Coordinates">
-      <!-- uncomment to have the control hosted on a separate tab-->
       <tabs>
         <tab id="dymaptic_tab" caption="dymaptic">
-          <group refID="ZoomToCoordinates_Group1"/>
-        </tab>
+		  <group refID="dymaptic_group"/>
+		  <group refID="esri_map_tools"/>
+		  <group refID="esri_miscellaneous"/>
+
+		  <!-- Existing Esri Selection Group -->	
+   		  <group refID="esri_mapping_selectionGroup" />
+		</tab>
       </tabs>
       <groups>
-        <!-- comment this out if you have no controls on the Addin tab to avoid an empty group-->
-        <group id="ZoomToCoordinates_Group1" caption="dymaptic Coordinates" appearsOnAddInTab="false">
-          <!-- host controls within groups -->
-          <button refID="ZoomToCoordinates_Views_ZoomCoordinatesWindow" size="large" />
-          <tool refID="dymaptic_Pro_ZoomToCoordinates_GetCoordinates" size="large" />
-          <button refID="dymaptic_Pro_ZoomToCoordinates_Views_SettingsView" size="large" />
-          <button refID="dymaptic_Pro_ZoomToCoordinates_Views_About" size="large" />
+		  <!-- dymaptic Coordinates Tools -->
+		  <group id="dymaptic_group" caption="dymaptic Coordinates" appearsOnAddInTab="false">
+			  <button refID="dymaptic_Coordinates_ZoomToCoordinates" size="large" />
+			  <tool refID="dymaptic_Coordinates_GetCoordinates" size="large" />
+			  <button refID="dymaptic_Coordinates_Settings" size="large" />
+			  <button refID="dymaptic_Coordinates_About" size="large" />
+		  </group>  
+
+		<!-- Existing Esri buttons-->
+          <group id="esri_map_tools" caption="Map Tools" appearsOnAddInTab="false">
+              <splitButton refID="esri_mapping_exploreSplitButton" size="large" />
+              <gallery refID="esri_mapping_basemapGallery" inline="false" size="large" />
+              <button refID="esri_mapping_newMapButton" size="large" />
+              <splitButton refID="esri_mapping_addDataSplitButton" />
+			  <button refID="esri_mapping_prevExtentButton" size="middle" />
+			  <button refID="esri_mapping_nextExtentButton" size="middle" />
         </group>
+		  <group id="esri_miscellaneous" caption="Miscellaneous" appearsOnAddInTab="false">
+			  <splitButton refID="esri_core_monitorBtn" size="large" />
+			  <button refID="esri_geoprocessing_toolsButton" size="large" />
+			  <button refID="esri_core_showContentsDockPane" size="middle" />
+			  <button refID="esri_core_showProjectDockPane" size="middle" />
+		  </group>
       </groups>
       <controls>
         <!-- add your controls here -->
-        <button id="ZoomToCoordinates_Views_ZoomCoordinatesWindow" caption="Zoom To" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowZoomCoordinatesWindow" loadOnClick="true" smallImage="ZoomIn16" largeImage="ZoomIn32" condition="esri_mapping_mapPane">
-          <tooltip heading="Zoom">Zoom to coordinates.<disabledText /></tooltip>
+        <button id="dymaptic_Coordinates_ZoomToCoordinates" caption="Zoom To" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowZoomCoordinatesWindow" loadOnClick="true" smallImage="ZoomIn16" largeImage="ZoomIn32" condition="esri_mapping_mapPane">
+          <tooltip heading="Zoom">Zoom to coordinates in your chosen coordinate format.<disabledText /></tooltip>
         </button>
-        <tool id="dymaptic_Pro_ZoomToCoordinates_GetCoordinates" caption="Get Coordinates" className="dymaptic.Pro.ZoomToCoordinates.MapTools.GetCoordinatesMapTool" loadOnClick="true" smallImage="GoToXY16" largeImage="GoToXY32" condition="esri_mapping_mapPane">
-          <tooltip heading="Get Coordinates">
-				  Click the map to get coordinates in your chosen coordinate format.<disabledText /></tooltip>
+        <tool id="dymaptic_Coordinates_GetCoordinates" caption="Get Coordinates" className="dymaptic.Pro.ZoomToCoordinates.MapTools.GetCoordinatesMapTool" loadOnClick="true" smallImage="GoToXY16" largeImage="GoToXY32" condition="esri_mapping_mapPane">
+          <tooltip heading="Get Coordinates">Click the map to get coordinates in your chosen coordinate format.<disabledText /></tooltip>
         </tool>
-        <button id="dymaptic_Pro_ZoomToCoordinates_Views_SettingsView" caption="Settings" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowSettingsButton" loadOnClick="true" smallImage="CogWheel16" largeImage="CogWheel32">
-          <tooltip heading="Setting">Customize startup and graphic settings if graphic requested.<disabledText /></tooltip>
+        <button id="dymaptic_Coordinates_Settings" caption="Settings" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowSettingsButton" loadOnClick="true" smallImage="CogWheel16" largeImage="CogWheel32">
+          <tooltip heading="Setting">Customize startup and graphic settings.<disabledText /></tooltip>
         </button>
-        <button id="dymaptic_Pro_ZoomToCoordinates_Views_About" caption="About" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowAbout" loadOnClick="true" smallImage="Images/dymaptic-logo---circle.png" largeImage="Images/dymaptic-logo---circle.png">
+        <button id="dymaptic_Coordinates_About" caption="About" className="dymaptic.Pro.ZoomToCoordinates.Views.ShowAbout" loadOnClick="true" smallImage="Images\dymaptic-logo.xaml" largeImage="Images\dymaptic-logo.xaml">
           <tooltip heading="About">This is an open-source Add-In developed by dymaptic, an Esri Gold Partner.<disabledText /></tooltip>
         </button>
       </controls>

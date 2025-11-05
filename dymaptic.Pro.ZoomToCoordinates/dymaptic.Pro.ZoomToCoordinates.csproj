@@ -16,14 +16,14 @@
     <Page Remove="DarkImages\**" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Images\dymaptic-logo---circle.png" />
     <None Remove="Images\dymaptic-logo-300x86.png" />
   </ItemGroup>
   <ItemGroup>
+    <Page Remove="Images\dymaptic-logo.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="Config.daml" />
-    <Content Include="Images\dymaptic-logo---circle.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Images\dymaptic-logo.xaml" />
     <Resource Include="Images\dymaptic-logo-300x86.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>

@@ -30,6 +30,22 @@ internal class ZoomToCoordinatesModule : Module
 		Current.SettingsUpdated?.Invoke(Current, EventArgs.Empty);
 	}
 
+	/// <summary>
+	/// Gets the currently open Settings window, or null if not open
+	/// </summary>
+	public static Views.SettingsView? GetOpenSettingsWindow()
+	{
+		return _settingsWindow;
+	}
+
+	/// <summary>
+	/// Sets the currently open Settings window reference
+	/// </summary>
+	public static void SetOpenSettingsWindow(Views.SettingsView? settingsWindow)
+	{
+		_settingsWindow = settingsWindow;
+	}
+
 	#region Overrides
 	/// <summary>
 	/// Called by Framework when ArcGIS Pro is closing
@@ -60,4 +76,5 @@ internal class ZoomToCoordinatesModule : Module
 
     private static ZoomToCoordinatesModule? _this;
     private static Settings? _settings;
+	private static Views.SettingsView? _settingsWindow;
 }

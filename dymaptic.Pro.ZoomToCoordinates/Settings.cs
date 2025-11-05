@@ -4,9 +4,7 @@ namespace dymaptic.Pro.ZoomToCoordinates;
 
 public class Settings
 {
-    // Default settings when Add-In loaded for initial time; user's actual default choices as they modify the drop-downs get saved/updated by EventHandler in ZoomToCoordinatesModule.cs 
-    public double Longitude { get; set; } = -122.4774494;
-    public double Latitude { get; set; } = 37.8108275;
+    // Default settings when Add-In loaded for initial time; user's actual default choices as they modify the drop-downs get saved/updated by EventHandler in ZoomToCoordinatesModule.cs
     public bool ShowFormattedCoordinates { get; set; } = false;
     public double Scale { get; set; } = 10_000;
     public bool ShowGraphic { get; set; } = false;

@@ -17,18 +17,12 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
     // Constructor
     public ZoomCoordinatesViewModel()
     {
-        // Create a MapPoint right off the bat with the default coordinates
-        _longLatDD.Update(_longitude, _latitude);
-        _mapPoint = _longLatDD.MapPoint;
-
-        // Set initially for the Display
-        _xCoordinateString = _longLatDD.Longitude.ToString("F6");
-        _yCoordinateString = _longLatDD.Latitude.ToString("F6");
-
         // Prevent null reference
         _selectedLatitudeBandItem = LatitudeBands.First(band => band.Key == "C");
 
-        UpdateDisplay();
+        // Initialize with map center if available, otherwise use settings default
+        _ = InitializeWithMapCenterAsync();
+
         UpdateCoordinateLabels();
 
         // Command is grayed out if there isn't an active map view
@@ -41,6 +35,61 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
         {
             CopyText();
         });
+
+        OpenSettingsCommand = new RelayCommand(() =>
+        {
+            OpenSettings();
+        });
+
+        // Subscribe to settings changes
+        ZoomToCoordinatesModule.Current.SettingsUpdated += OnSettingsUpdated;
+    }
+
+    /// <summary>
+    /// Initializes the coordinate values with the current map view's center point.
+    /// Falls back to settings default if no active map view.
+    /// </summary>
+    private async Task InitializeWithMapCenterAsync()
+    {
+        MapPoint? centerPoint = null;
+
+        if (MapView.Active != null)
+        {
+            centerPoint = await QueuedTask.Run(() =>
+            {
+                var camera = MapView.Active?.Camera;
+                if (camera == null) return null;
+
+                // Get center point from camera
+                var point = MapPointBuilderEx.CreateMapPoint(camera.X, camera.Y, camera.SpatialReference);
+
+                // Convert to WGS84 if needed
+                if (point.SpatialReference?.Wkid != 4326)
+                {
+                    return (MapPoint)GeometryEngine.Instance.Project(point, SpatialReferences.WGS84);
+                }
+
+                return point;
+            });
+        }
+
+        // Use map center if available, otherwise fall back to settings default
+        if (centerPoint != null)
+        {
+            _longitude = centerPoint.X;
+            _latitude = centerPoint.Y;
+        }
+        // else: keep the settings defaults that were initialized in the field declarations
+
+        // Update the coordinate models and display
+        _longLatDD.Update(_longitude, _latitude);
+        _mapPoint = _longLatDD.MapPoint;
+
+        // Set initially for the Display
+        _xCoordinateString = _longLatDD.Longitude.ToString("F6");
+        _yCoordinateString = _longLatDD.Latitude.ToString("F6");
+
+        UpdateDisplay();
     }
     public ICommand ZoomCommand { get; }
 
@@ -162,6 +211,24 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                 case CoordinateFormat.MGRS:
                     _mgrs.Update(_mapPoint!);
 
+                    // Check if conversion failed (e.g., polar coordinates)
+                    if (!string.IsNullOrEmpty(_mgrs.ErrorMessage))
+                    {
+                        ErrorMessage = _mgrs.ErrorMessage;
+                        _xCoordinateValidated = false;
+                        _yCoordinateValidated = false;
+                        _xCoordinateString = "";
+                        _yCoordinateString = "";
+                        // Set defaults for UI controls to avoid showing invalid values
+                        _selectedUTMZone = 1;
+                        _selectedLatitudeBand = "C";
+                        _selectedLatitudeBandItem = LatitudeBands.First(band => band.Key == "C");
+                        _oneHundredKMGridID = "";
+                        XRowIndex = 3;
+                        YRowIndex = 4;
+                        break;
+                    }
+
                     // Track initial value
                     string initialOneHundredKMGridId = _oneHundredKMGridID;
 
@@ -182,6 +249,24 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
 
                 case CoordinateFormat.UTM:
                     _utm.Update(_mapPoint!);
+
+                    // Check if conversion failed (e.g., polar coordinates)
+                    if (!string.IsNullOrEmpty(_utm.ErrorMessage))
+                    {
+                        ErrorMessage = _utm.ErrorMessage;
+                        _xCoordinateValidated = false;
+                        _yCoordinateValidated = false;
+                        _xCoordinateString = "";
+                        _yCoordinateString = "";
+                        // Set defaults for UI controls to avoid showing invalid values
+                        _selectedUTMZone = 1;
+                        _selectedLatitudeBand = "C";
+                        _selectedLatitudeBandItem = LatitudeBands.First(band => band.Key == "C");
+                        XRowIndex = 3;
+                        YRowIndex = 4;
+                        break;
+                    }
+
                     _selectedUTMZone = _utm.Zone;
                     _selectedLatitudeBand = _utm.LatitudeBand;
                     _selectedLatitudeBandItem = LatitudeBands.First(band => band.Key == _selectedLatitudeBand);
@@ -224,6 +309,14 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                         if (_mgrs.ErrorMessage != String.Empty)
                         {
                             ErrorMessage = _mgrs.ErrorMessage;
+                            _xCoordinateValidated = false;
+                            _yCoordinateValidated = false;
+                            _xCoordinateString = "";
+                            _yCoordinateString = "";
+                            NotifyPropertyChanged(nameof(XCoordinateString));
+                            NotifyPropertyChanged(nameof(YCoordinateString));
+                            UpdateDisplay();
+                            return;
                         }
                         else
                         {
@@ -233,6 +326,22 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                         break;
                     case CoordinateFormat.UTM:
                         _utm.Zone = _selectedUTMZone;
+                        if (!string.IsNullOrEmpty(_utm.ErrorMessage))
+                        {
+                            ErrorMessage = _utm.ErrorMessage;
+                            _xCoordinateValidated = false;
+                            _yCoordinateValidated = false;
+                            _xCoordinateString = "";
+                            _yCoordinateString = "";
+                            NotifyPropertyChanged(nameof(XCoordinateString));
+                            NotifyPropertyChanged(nameof(YCoordinateString));
+                            UpdateDisplay();
+                            return;
+                        }
+                        else
+                        {
+                            ErrorMessage = String.Empty;
+                        }
                         break;
                     default:
                         break;
@@ -272,6 +381,14 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                     if (_mgrs.ErrorMessage != String.Empty)
                     {
                         ErrorMessage = _mgrs.ErrorMessage;
+                        _xCoordinateValidated = false;
+                        _yCoordinateValidated = false;
+                        _xCoordinateString = "";
+                        _yCoordinateString = "";
+                        NotifyPropertyChanged(nameof(XCoordinateString));
+                        NotifyPropertyChanged(nameof(YCoordinateString));
+                        UpdateDisplay();
+                        return;
                     }
                     else
                     {
@@ -281,6 +398,22 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                     break;
                 case CoordinateFormat.UTM:
                     _utm.LatitudeBand = _selectedLatitudeBand;
+                    if (!string.IsNullOrEmpty(_utm.ErrorMessage))
+                    {
+                        ErrorMessage = _utm.ErrorMessage;
+                        _xCoordinateValidated = false;
+                        _yCoordinateValidated = false;
+                        _xCoordinateString = "";
+                        _yCoordinateString = "";
+                        NotifyPropertyChanged(nameof(XCoordinateString));
+                        NotifyPropertyChanged(nameof(YCoordinateString));
+                        UpdateDisplay();
+                        return;
+                    }
+                    else
+                    {
+                        ErrorMessage = String.Empty;
+                    }
                     break;
                 default:
                     break;
@@ -306,6 +439,22 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
             if (_xCoordinateValidated && _yCoordinateValidated)
             {
                 _mgrs.OneHundredKMGridID = _oneHundredKMGridID;
+                if (!string.IsNullOrEmpty(_mgrs.ErrorMessage))
+                {
+                    ErrorMessage = _mgrs.ErrorMessage;
+                    _xCoordinateValidated = false;
+                    _yCoordinateValidated = false;
+                    _xCoordinateString = "";
+                    _yCoordinateString = "";
+                    NotifyPropertyChanged(nameof(XCoordinateString));
+                    NotifyPropertyChanged(nameof(YCoordinateString));
+                    UpdateDisplay();
+                    return;
+                }
+                else
+                {
+                    ErrorMessage = String.Empty;
+                }
                 UpdateMapPoint();
                 UpdateDisplay();
             }
@@ -619,6 +768,12 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                 break;
 
             case CoordinateFormat.MGRS:
+                // Check for error state first - don't update with invalid data
+                if (!string.IsNullOrEmpty(_mgrs.ErrorMessage))
+                {
+                    break;
+                }
+
                 MapPoint = _mgrs.MapPoint;
 
                 // Trigger UI refreshes only as necessary
@@ -638,12 +793,17 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                     _oneHundredKMGridID = _mgrs.OneHundredKMGridID;
                     NotifyPropertyChanged(nameof(OneHundredKMGridID));
                 }
-                if (_mgrs.Easting != int.Parse(_xCoordinateString))
+                // Safe parsing with error checks
+                if (!string.IsNullOrEmpty(_xCoordinateString) &&
+                    int.TryParse(_xCoordinateString, out int mgrsCurrentEasting) &&
+                    _mgrs.Easting != mgrsCurrentEasting)
                 {
                     _xCoordinateString = _mgrs.Easting.ToString();
                     NotifyPropertyChanged(nameof(XCoordinateString));
                 }
-                if (_mgrs.Northing != int.Parse(_yCoordinateString))
+                if (!string.IsNullOrEmpty(_yCoordinateString) &&
+                    int.TryParse(_yCoordinateString, out int mgrsCurrentNorthing) &&
+                    _mgrs.Northing != mgrsCurrentNorthing)
                 {
                     _yCoordinateString = _mgrs.Northing.ToString();
                     NotifyPropertyChanged(nameof(YCoordinateString));
@@ -651,6 +811,12 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                 break;
 
             case CoordinateFormat.UTM:
+                // Check for error state first - don't update with invalid data
+                if (!string.IsNullOrEmpty(_utm.ErrorMessage))
+                {
+                    break;
+                }
+
                 MapPoint = _utm.MapPoint;
 
                 // Trigger UI refreshes only as necessary
@@ -663,12 +829,17 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
                 {
                     SelectedLatitudeBandItem = LatitudeBands.Where(x => x.Key == _utm.LatitudeBand).First();
                 }
-                if (_utm.Easting != int.Parse(_xCoordinateString))
+                // Safe parsing with error checks
+                if (!string.IsNullOrEmpty(_xCoordinateString) &&
+                    int.TryParse(_xCoordinateString, out int utmCurrentEasting) &&
+                    _utm.Easting != utmCurrentEasting)
                 {
                     _xCoordinateString = _utm.Easting.ToString();
                     NotifyPropertyChanged(nameof(XCoordinateString));
                 }
-                if (_utm.Northing != int.Parse(_yCoordinateString))
+                if (!string.IsNullOrEmpty(_yCoordinateString) &&
+                    int.TryParse(_yCoordinateString, out int utmCurrentNorthing) &&
+                    _utm.Northing != utmCurrentNorthing)
                 {
                     _yCoordinateString = _utm.Northing.ToString();
                     NotifyPropertyChanged(nameof(YCoordinateString));
@@ -875,6 +1046,22 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
         });
     }
 
+    private void OnSettingsUpdated(object? sender, EventArgs e)
+    {
+        // Update backing fields from settings
+        _showFormattedCoordinates = _settings.ShowFormattedCoordinates;
+        _showGraphic = _settings.ShowGraphic;
+        _scale = _settings.Scale;
+
+        // Notify UI of settings changes
+        NotifyPropertyChanged(nameof(ShowFormattedCoordinates));
+        NotifyPropertyChanged(nameof(ShowGraphic));
+        NotifyPropertyChanged(nameof(Scale));
+
+        // Refresh display with new formatting settings
+        UpdateDisplay();
+    }
+
     private static readonly char[] separator = [' '];
     private bool _xCoordinateValidated = true;  // when tool loads, valid coordinates are put into the text boxes
     private bool _yCoordinateValidated = true;
@@ -895,10 +1082,10 @@ public class ZoomCoordinatesViewModel : CoordinatesBaseViewModel, IDataErrorInfo
     /// <summary>
     ///     Regardless of selected coordinate format, we ALWAYS store a longitude value in decimal degrees.
     /// </summary>
-    private double _longitude = _settings.Longitude;
+    private double _longitude = 0.0;
 
     /// <summary>
     ///     Regardless of selected coordinate format, we ALWAYS store a latitude value in decimal degrees.
     /// </summary>
-    private double _latitude = _settings.Latitude;
+    private double _latitude = 0.0;
 }
