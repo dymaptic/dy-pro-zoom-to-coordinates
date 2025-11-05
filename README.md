@@ -1,8 +1,8 @@
 # dy-pro-zoom-to-coordinates
 An open-source repository of an ArcGIS Pro v3.3+ Add-In.
 
-## 📍 Dymaptic Coordinates Add-In for ArcGIS Pro
-The Dymaptic Coordinates Add-In enhances your ArcGIS Pro experience by enabling precise coordinate input, dynamic coordinate retrieval, and highly customizable map graphics—all with support for multiple coordinate formats. Whether you’re zooming to a location or extracting coordinates on the fly, this add-in offers accuracy, flexibility, and ease of use.
+## 📍 dymaptic Coordinates Add-In for ArcGIS Pro
+The dymaptic Coordinates Add-In enhances your ArcGIS Pro experience by enabling precise coordinate input, dynamic coordinate retrieval, and highly customizable map graphics—all with support for multiple coordinate formats. Whether you’re zooming to a location or extracting coordinates on the fly, this add-in offers accuracy, flexibility, and ease of use.
 
 ### 🔍 Zoom To Coordinates
 Navigate directly to a location by entering coordinates in your preferred format:
@@ -44,7 +44,7 @@ Customize the tool to match your preferences and workflow:
 Settings are saved with your ArcGIS Pro project and persist across sessions as long as the project is saved.
 
 ### 🏢 About dymaptic
-The Dymaptic Coordinates Add-In is developed by [dymaptic](https://dymaptic.com) —a leading, woman-owned GIS software development company and proud Esri Gold Partner.
+The dymaptic Coordinates Add-In is developed by [dymaptic](https://dymaptic.com) —a leading, woman-owned GIS software development company and proud Esri Gold Partner.
 
 We specialize in crafting innovative, tailored GIS solutions, including custom Add-In development for ArcGIS Pro and ArcGIS Enterprise.
 
@@ -66,4 +66,4 @@ https://support.esri.com/en/technical-article/000026259
 	- Double-clicking .esriAddinX will copy the AddIn to your default ArcGIS Pro Add-In directory (C:\[user profile]\Documents\ArcGIS\AddIns\ArcGISPro)
 	- The installed Add-In is also visible from ArcGIS Pro (ArcGIS Pro Project tab -> Add-In Manager -> My Add-Ins)
 	- Ensure that ArcGIS Pro is configured to find your Add-In directory after double-clicking .esriAddinX (ArcGIS Pro Project tab -> Add-In Manager -> Options)
-- The Dymaptic Coordinates Add-In is now available for use from the dymaptic ArcGIS Pro tab.
+- The dymaptic Coordinates Add-In is now available for use from the dymaptic ArcGIS Pro tab.
