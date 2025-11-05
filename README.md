@@ -26,13 +26,13 @@ Quickly retrieve live coordinates by moving the mouse across the map:
 - Convert coordinates on the fly by selecting a different format.
 - Toggle a formatted view for more readable output.
 - Enable Create Graphic mode to drop a labeled graphic at the clicked location.
+- Double-click the map to "freeze" and copy the current coordinates. Double-click again to unfreeze and resume live coordinates.
 
 ### ⚙️ Coordinate Settings
 Customize the tool to match your preferences and workflow:
 
 - Location Settings:
-	- Set a default starting location (latitude and longitude)
-    	- Define a default zoom scale
+    - Define a default zoom scale
 	- Choose whether to create graphics by default
 
 - Graphic Settings:
