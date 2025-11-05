@@ -55,9 +55,7 @@ We specialize in crafting innovative, tailored GIS solutions, including custom A
 
 
 ##### Screenshot of Add-In in ArcGIS Pro
-<img width="899" alt="Coordinates Addin" src="https://github.com/user-attachments/assets/b6f806b4-4449-4fe5-8ba8-b75bffdc98b4" />
-
----
+<img width="870" height="685" alt="dymaptic Coordinates Addin" src="https://github.com/user-attachments/assets/67aca539-4eeb-433a-bd0c-0a0a08584cea" />
 
 ##### Esri Add-In Install Documentation
 https://support.esri.com/en/technical-article/000026259
